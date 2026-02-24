@@ -1,0 +1,133 @@
+<div class="appointments-container">
+  <mat-card class="appointments-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div>
+          <mat-card-title>
+            <mat-icon>event</mat-icon>
+            My Appointments
+          </mat-card-title>
+          <mat-card-subtitle>View and manage your medical appointments</mat-card-subtitle>
+        </div>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="openCreateDialog()"
+          class="add-button"
+        >
+          <mat-icon>add</mat-icon>
+          New Appointment
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Loading appointments...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-container">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <h3>Failed to load appointments</h3>
+        <p>{{ error }}</p>
+        <button mat-raised-button color="primary" (click)="loadAppointments()">
+          <mat-icon>refresh</mat-icon>
+          Retry
+        </button>
+      </div>
+
+      <!-- Appointments Table -->
+      <div *ngIf="!loading && !error" class="table-container">
+        <table mat-table [dataSource]="dataSource" class="appointments-table">
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date & Time</th>
+            <td mat-cell *matCellDef="let appointment">
+              <div class="date-cell">
+                <mat-icon class="date-icon">schedule</mat-icon>
+                <span>{{ formatDate(appointment.appointmentDate) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Doctor Column -->
+          <ng-container matColumnDef="doctor">
+            <th mat-header-cell *matHeaderCellDef>Doctor</th>
+            <td mat-cell *matCellDef="let appointment">
+              <div class="doctor-cell">
+                <mat-icon class="doctor-icon">person</mat-icon>
+                <span>{{ appointment.doctorName }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Reason Column -->
+          <ng-container matColumnDef="reason">
+            <th mat-header-cell *matHeaderCellDef>Reason</th>
+            <td mat-cell *matCellDef="let appointment">{{ appointment.reason }}</td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let appointment">
+              <mat-chip [color]="getStatusColor(appointment.status)" selected>
+                {{ appointment.status }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let appointment">
+              <button 
+                mat-icon-button 
+                color="primary"
+                (click)="openDetailDialog(appointment)"
+                matTooltip="View Details"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button 
+                *ngIf="canCancel(appointment)"
+                mat-icon-button 
+                color="warn"
+                (click)="cancelAppointment(appointment)"
+                matTooltip="Cancel Appointment"
+              >
+                <mat-icon>cancel</mat-icon>
+              </button>
+              <button 
+                *ngIf="canDelete(appointment)"
+                mat-icon-button 
+                color="warn"
+                (click)="deleteAppointment(appointment)"
+                matTooltip="Delete Appointment"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr 
+            mat-row 
+            *matRowDef="let row; columns: displayedColumns;"
+            class="appointment-row"
+          ></tr>
+        </table>
+
+        <!-- No Data -->
+        <div *ngIf="dataSource.data.length === 0" class="no-data">
+          <mat-icon>event_busy</mat-icon>
+          <p>No appointments found</p>
+          <p class="no-data-subtitle">Schedule your first appointment by clicking "New Appointment"</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

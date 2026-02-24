@@ -1,0 +1,56 @@
+.toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.dashboard-container {
+  padding: 100px 2rem 2rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.welcome-card {
+  margin-bottom: 2rem;
+}
+
+.roles-section {
+  margin-top: 1rem;
+}
+
+.role-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.role-chip {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.dashboard-card {
+  mat-icon[mat-card-avatar] {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #1976d2;
+  }
+}

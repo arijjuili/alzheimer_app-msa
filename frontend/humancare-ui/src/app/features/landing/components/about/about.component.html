@@ -1,0 +1,71 @@
+<section id="about" class="about-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">About Us</span>
+      <h2 class="section-title">About HumanCare</h2>
+    </div>
+
+    <div class="about-content">
+      <div class="about-story">
+        <div class="story-text">
+          <h3 class="story-title">Transforming Healthcare Through Technology</h3>
+          <p class="story-paragraph">
+            Founded in 2024, HumanCare is a modern healthcare management platform designed to bridge 
+            the gap between patients, caregivers, and healthcare providers. Our mission is to make 
+            healthcare management simple, secure, and accessible for everyone.
+          </p>
+          <p class="story-paragraph">
+            We believe that technology should empower healthcare professionals to deliver better care, 
+            not create more administrative burden. That's why we've built a platform that streamlines 
+            workflows while maintaining the highest standards of security and compliance.
+          </p>
+          <div class="story-values">
+            <div class="value-item">
+              <mat-icon>verified</mat-icon>
+              <span>Patient-Centered Care</span>
+            </div>
+            <div class="value-item">
+              <mat-icon>shield</mat-icon>
+              <span>Data Security First</span>
+            </div>
+            <div class="value-item">
+              <mat-icon>lightbulb</mat-icon>
+              <span>Continuous Innovation</span>
+            </div>
+          </div>
+        </div>
+        <div class="story-visual">
+          <div class="visual-card">
+            <mat-icon class="visual-icon">health_and_safety</mat-icon>
+            <span class="visual-text">Trusted by Healthcare Professionals</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <div class="stat-card" *ngFor="let stat of stats">
+          <div class="stat-icon-wrapper">
+            <mat-icon>{{ stat.icon }}</mat-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ stat.value }}</span>
+            <span class="stat-label">{{ stat.label }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-section">
+        <h3 class="team-title">Meet Our Leadership Team</h3>
+        <div class="team-grid">
+          <mat-card class="team-card" *ngFor="let member of teamMembers">
+            <div class="team-avatar">{{ member.avatar }}</div>
+            <mat-card-header>
+              <mat-card-title>{{ member.name }}</mat-card-title>
+              <mat-card-subtitle>{{ member.role }}</mat-card-subtitle>
+            </mat-card-header>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

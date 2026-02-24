@@ -1,0 +1,46 @@
+.profile-layout {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.content-container {
+  padding-top: 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-tabs {
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab-icon {
+  margin-right: 8px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.tab-panel {
+  display: block;
+}
+
+.tab-content {
+  padding: 24px;
+}
+
+[hidden] {
+  display: none !important;
+}

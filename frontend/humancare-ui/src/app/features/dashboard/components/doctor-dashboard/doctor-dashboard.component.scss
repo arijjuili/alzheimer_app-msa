@@ -1,0 +1,68 @@
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(63, 81, 181, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  mat-icon {
+    color: #3f51b5;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dashboard-card {
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.appointments-table {
+  width: 100%;
+}
+
+mat-chip {
+  font-size: 12px;
+  min-height: 24px;
+}

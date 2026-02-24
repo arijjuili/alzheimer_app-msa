@@ -1,0 +1,118 @@
+<div class="profile-audit-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading audit logs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Failed to load audit logs</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadAuditLogs()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Audit Logs Content -->
+  <mat-card *ngIf="!loading && !error" class="audit-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>history</mat-icon>
+        Profile Audit Log
+      </mat-card-title>
+      <mat-card-subtitle>Track all changes made to your profile</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- No Data -->
+      <div *ngIf="auditLogs.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">inventory_2</mat-icon>
+        <h3>No audit logs found</h3>
+        <p>There are no recorded changes to your profile yet.</p>
+      </div>
+
+      <!-- Audit Table -->
+      <div *ngIf="auditLogs.length > 0" class="audit-table-container">
+        <table mat-table [dataSource]="auditLogs" class="audit-table" multiTemplateDataRows>
+          <!-- Action Column -->
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>Action</th>
+            <td mat-cell *matCellDef="let log">
+              <mat-chip-listbox>
+                <mat-chip [class]="getActionClass(log.action)">
+                  {{ log.action }}
+                </mat-chip>
+              </mat-chip-listbox>
+            </td>
+          </ng-container>
+
+          <!-- Changed By Column -->
+          <ng-container matColumnDef="changedBy">
+            <th mat-header-cell *matHeaderCellDef>Changed By</th>
+            <td mat-cell *matCellDef="let log">{{ log.changedBy }}</td>
+          </ng-container>
+
+          <!-- Changed At Column -->
+          <ng-container matColumnDef="changedAt">
+            <th mat-header-cell *matHeaderCellDef>Changed At</th>
+            <td mat-cell *matCellDef="let log">{{ log.changedAt | dateFormat:'relative' }}</td>
+          </ng-container>
+
+          <!-- Expand Column -->
+          <ng-container matColumnDef="expand">
+            <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+            <td mat-cell *matCellDef="let log">
+              <button mat-icon-button aria-label="expand row" (click)="toggleRow(log); $event.stopPropagation()">
+                <mat-icon>{{ expandedLog === log ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Expanded Content Column -->
+          <ng-container matColumnDef="expandedDetail">
+            <td mat-cell *matCellDef="let log" [attr.colspan]="displayedColumns.length">
+              <div class="expanded-detail" [@detailExpand]="expandedLog === log ? 'expanded' : 'collapsed'">
+                <div class="detail-content">
+                  <h4>Change Details</h4>
+                  <div class="change-comparison">
+                    <div class="old-value" *ngIf="log.oldValue">
+                      <h5>Previous Value</h5>
+                      <pre>{{ log.oldValue }}</pre>
+                    </div>
+                    <div class="arrow">
+                      <mat-icon>arrow_forward</mat-icon>
+                    </div>
+                    <div class="new-value" *ngIf="log.newValue">
+                      <h5>New Value</h5>
+                      <pre>{{ log.newValue }}</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let log; columns: displayedColumns;"
+              class="audit-row"
+              [class.expanded-row]="expandedLog === log"
+              (click)="toggleRow(log)">
+          </tr>
+          <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+        </table>
+
+        <mat-paginator
+          [length]="totalLogs"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 25, 50]"
+          [pageIndex]="pageIndex"
+          (page)="onPageChange($event)"
+          aria-label="Select page">
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,80 @@
+# Patient Service Configuration (Node.js + Express + PostgreSQL)
+
+# Server Configuration
+server:
+  port: 8082
+
+# Database Configuration (for reference - Node.js uses env vars)
+database:
+  host: localhost
+  port: 5434
+  name: patient_db
+  username: ${DB_USERNAME:postgres}
+  password: ${DB_PASSWORD:postgres}
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.humancare.patient: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management / Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# Eureka Client Configuration (for service registration from Node.js)
+# Using prefer-ip-address: true for containerized environments
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+database:
+  host: hc-postgres-patient
+  port: 5432
+  name: patient_db
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://hc-eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+database:
+  host: localhost
+  port: 5434
+  name: patient_db
+
+logging:
+  level:
+    com.humancare.patient: DEBUG

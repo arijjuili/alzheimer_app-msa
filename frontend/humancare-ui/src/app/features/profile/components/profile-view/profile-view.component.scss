@@ -1,0 +1,110 @@
+.profile-view-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 16px;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+
+  .error-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #f44336;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 0 0 8px;
+    color: #333;
+  }
+
+  p {
+    margin: 0 0 16px;
+    color: #666;
+  }
+}
+
+.profile-card {
+  .profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+
+    .avatar-text {
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+    }
+  }
+
+  mat-card-title {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  mat-card-subtitle {
+    color: #666;
+  }
+}
+
+.section {
+  padding: 16px 0;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 8px;
+    color: #333;
+
+    mat-icon {
+      color: #666;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.medical-history {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 8px;
+
+  p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  .empty-text {
+    color: #999;
+    font-style: italic;
+  }
+}
+
+mat-card-actions {
+  padding: 16px;
+}

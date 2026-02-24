@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: medication-service
+  config:
+    import: "optional:configserver:http://localhost:8888"
+
+---
+# Docker profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: "optional:configserver:http://hc-config-server:8888"

@@ -1,0 +1,59 @@
+<mat-toolbar color="primary" class="header-toolbar">
+  <button 
+    mat-icon-button 
+    class="menu-button"
+    (click)="toggleSidebar()"
+    aria-label="Toggle sidebar">
+    <mat-icon>menu</mat-icon>
+  </button>
+  
+  <span class="app-title">HumanCare</span>
+  
+  <span class="spacer"></span>
+  
+  <div class="header-actions" *ngIf="currentUser$ | async as user">
+    <button mat-icon-button [matBadge]="unreadCount$ | async" matBadgeColor="warn" matBadgeSize="small" [matBadgeHidden]="(unreadCount$ | async) === 0" (click)="openNotifications()" aria-label="Notifications">
+      <mat-icon>notifications</mat-icon>
+    </button>
+    
+    <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+      <div class="user-info">
+        <div class="user-avatar">
+          {{ getInitials(user) }}
+        </div>
+        <span class="user-name hide-on-mobile">{{ user.firstName }} {{ user.lastName }}</span>
+        <mat-icon>expand_more</mat-icon>
+      </div>
+    </button>
+    
+    <mat-menu #userMenu="matMenu" xPosition="before" class="user-dropdown">
+      <div class="user-menu-header" *ngIf="currentUser$ | async as user">
+        <div class="user-avatar-large">{{ getInitials(user) }}</div>
+        <div class="user-details">
+          <p class="user-fullname">{{ user.firstName }} {{ user.lastName }}</p>
+          <p class="user-email">{{ user.email }}</p>
+          <p class="user-roles">{{ getRolesDisplay(user) }}</p>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+      <button mat-menu-item routerLink="/app/profile">
+        <mat-icon>person</mat-icon>
+        <span>Profile</span>
+      </button>
+      <button mat-menu-item routerLink="/app/settings">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()" class="logout-item">
+        <mat-icon color="warn">logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </div>
+  
+  <div class="header-actions" *ngIf="!(currentUser$ | async)">
+    <button mat-button routerLink="/login">Login</button>
+    <button mat-raised-button color="accent" routerLink="/register">Sign Up</button>
+  </div>
+</mat-toolbar>

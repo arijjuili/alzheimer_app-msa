@@ -1,0 +1,49 @@
+/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+// Import prebuilt theme for indigo-pink
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+// Global styles
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Material divider style fix
+mat-divider {
+  margin: 8px 0;
+}
+
+// Global utility classes
+.full-width {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.p-16 {
+  padding: 16px;
+}
+
+// Fix for mat-menu user dropdown
+.user-dropdown {
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}

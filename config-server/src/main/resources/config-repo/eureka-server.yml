@@ -1,0 +1,39 @@
+# Eureka Server Configuration
+
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+    prefer-ip-address: true
+  client:
+    # Don't register with itself
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${EUREKA_HOSTNAME:localhost}:${server.port:8761}/eureka/
+  server:
+    # Enable self-preservation mode
+    enable-self-preservation: true
+    # Renewal percent threshold
+    renewal-percent-threshold: 0.85
+    # Eviction interval (ms)
+    eviction-interval-timer-in-ms: 60000
+    # Response cache update interval
+    response-cache-update-interval-ms: 30000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: AlzCare Eureka Server
+    description: Service Discovery for AlzCare Platform
+    version: 1.0.0

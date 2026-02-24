@@ -1,0 +1,45 @@
+<section id="features" class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Features</span>
+      <h2 class="section-title">Why Choose HumanCare?</h2>
+      <p class="section-description">
+        Our platform provides everything you need to manage healthcare efficiently and securely
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <mat-card class="feature-card" *ngFor="let feature of features; let i = index" 
+                [style.animation-delay]="i * 0.1 + 's'">
+        <div class="feature-icon-wrapper">
+          <mat-icon class="feature-icon">{{ feature.icon }}</mat-icon>
+        </div>
+        <mat-card-header>
+          <mat-card-title class="feature-title">{{ feature.title }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="feature-description">{{ feature.description }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="features-benefits">
+      <div class="benefit-item">
+        <mat-icon class="benefit-icon">check_circle</mat-icon>
+        <span>HIPAA Compliant</span>
+      </div>
+      <div class="benefit-item">
+        <mat-icon class="benefit-icon">check_circle</mat-icon>
+        <span>24/7 Support</span>
+      </div>
+      <div class="benefit-item">
+        <mat-icon class="benefit-icon">check_circle</mat-icon>
+        <span>Cloud Based</span>
+      </div>
+      <div class="benefit-item">
+        <mat-icon class="benefit-icon">check_circle</mat-icon>
+        <span>API Ready</span>
+      </div>
+    </div>
+  </div>
+</section>

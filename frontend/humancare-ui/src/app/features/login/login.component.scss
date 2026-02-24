@@ -1,0 +1,30 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  text-align: center;
+}
+
+mat-card-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.login-message {
+  color: #666;
+  margin-top: 1rem;
+}

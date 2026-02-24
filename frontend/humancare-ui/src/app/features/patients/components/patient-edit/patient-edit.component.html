@@ -1,0 +1,134 @@
+<div class="patient-edit-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>{{ isNewPatient ? 'Creating patient...' : 'Loading patient...' }}</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Failed to {{ isNewPatient ? 'create' : 'load' }} patient</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="isNewPatient ? goBack() : loadPatient()">
+      <mat-icon>{{ isNewPatient ? 'arrow_back' : 'refresh' }}</mat-icon>
+      {{ isNewPatient ? 'Go Back' : 'Retry' }}
+    </button>
+  </div>
+
+  <!-- Edit Form -->
+  <mat-card *ngIf="!loading && !error && patientForm" class="edit-card">
+    <mat-card-header>
+      <button mat-icon-button (click)="onCancel()" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <mat-card-title>{{ isNewPatient ? 'Add New Patient' : 'Edit Patient' }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ isNewPatient ? 'Create a new patient record' : 'Update patient information' }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
+      <mat-card-content>
+        <!-- Personal Information Section -->
+        <div class="form-section">
+          <h3 class="section-title">Personal Information</h3>
+          
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" placeholder="Enter first name">
+              <mat-error *ngIf="patientForm.get('firstName')?.hasError('required')">
+                First name is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" placeholder="Enter last name">
+              <mat-error *ngIf="patientForm.get('lastName')?.hasError('required')">
+                Last name is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" placeholder="Enter email" type="email">
+              <mat-error *ngIf="patientForm.get('email')?.hasError('required')">
+                Email is required
+              </mat-error>
+              <mat-error *ngIf="patientForm.get('email')?.hasError('email')">
+                Please enter a valid email
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Date of Birth</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" placeholder="Choose date">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Contact Information Section -->
+        <div class="form-section">
+          <h3 class="section-title">Contact Information</h3>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Phone</mat-label>
+              <input matInput formControlName="phone" placeholder="Enter phone number">
+              <mat-icon matSuffix>phone</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Address</mat-label>
+            <textarea matInput formControlName="address" placeholder="Enter address" rows="2"></textarea>
+            <mat-icon matSuffix>home</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Emergency Contact</mat-label>
+            <input matInput formControlName="emergencyContact" placeholder="Name and phone number">
+            <mat-icon matSuffix>contact_emergency</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Medical Information Section -->
+        <div class="form-section">
+          <h3 class="section-title">Medical Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Medical History</mat-label>
+            <textarea matInput formControlName="medicalHistory" placeholder="Enter medical history, allergies, current medications, etc." rows="6"></textarea>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button 
+          mat-button 
+          type="button" 
+          (click)="onCancel()"
+          [disabled]="saving"
+        >
+          Cancel
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          type="submit"
+          [disabled]="patientForm.invalid || saving || (!isNewPatient && !patientForm.dirty)"
+        >
+          <mat-spinner *ngIf="saving" diameter="20" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!saving">save</mat-icon>
+          {{ saving ? 'Saving...' : (isNewPatient ? 'Create Patient' : 'Save Changes') }}
+        </button>
+      </mat-card-actions>
+    </form>
+  </mat-card>
+</div>

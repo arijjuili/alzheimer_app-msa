@@ -1,0 +1,94 @@
+<mat-toolbar color="primary" class="toolbar">
+  <span>HumanCare Platform</span>
+  <span class="spacer"></span>
+  <button mat-icon-button [matMenuTriggerFor]="userMenu">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/app/profile">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/logout">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<div class="dashboard-container">
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-card-title>Welcome, {{ currentUser?.firstName }} {{ currentUser?.lastName }}!</mat-card-title>
+      <mat-card-subtitle>Role: {{ getPrimaryRole() }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>You are logged in as: <strong>{{ currentUser?.email }}</strong></p>
+      <div class="roles-section" *ngIf="currentUser?.roles?.length">
+        <p>Your roles:</p>
+        <div class="role-chips">
+          <span class="role-chip" *ngFor="let role of currentUser?.roles">{{ role }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="dashboard-grid">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>people</mat-icon>
+        <mat-card-title>Patients</mat-card-title>
+        <mat-card-subtitle>Manage patient records</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>View and manage patient information, medical history, and care plans.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary">VIEW PATIENTS</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>calendar_today</mat-icon>
+        <mat-card-title>Appointments</mat-card-title>
+        <mat-card-subtitle>Schedule management</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>View upcoming appointments and schedule new ones.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary">VIEW SCHEDULE</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card" *ngIf="hasRole(Role.ADMIN) || hasRole(Role.DOCTOR)">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>analytics</mat-icon>
+        <mat-card-title>Reports</mat-card-title>
+        <mat-card-subtitle>Analytics & insights</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Access detailed reports and analytics.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary">VIEW REPORTS</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card" *ngIf="hasRole(Role.ADMIN)">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>settings</mat-icon>
+        <mat-card-title>Administration</mat-card-title>
+        <mat-card-subtitle>System settings</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Manage users, roles, and system configuration.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary">ADMIN PANEL</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

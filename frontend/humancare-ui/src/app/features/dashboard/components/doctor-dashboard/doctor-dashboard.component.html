@@ -1,0 +1,174 @@
+<div class="dashboard-grid">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container full-width">
+    <mat-spinner diameter="64"></mat-spinner>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && error" class="error-container full-width">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Failed to load dashboard</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadDashboard()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Real Data Content -->
+  <ng-container *ngIf="!loading && !error">
+    <!-- Statistics Cards -->
+    <div class="stats-row">
+      <mat-card class="stat-card clickable" (click)="viewMyPatients()">
+        <mat-card-content>
+          <div class="stat-icon primary">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ myPatientsCount }}</span>
+            <span class="stat-label">My Patients</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <mat-card class="stat-card clickable" (click)="viewAllPatients()">
+        <mat-card-content>
+          <div class="stat-icon accent">
+            <mat-icon>group</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ totalPatientsCount || '...' }}</span>
+            <span class="stat-label">All Patients</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <mat-card class="stat-card clickable" (click)="viewUnassigned()">
+        <mat-card-content>
+          <div class="stat-icon warn">
+            <mat-icon>person_add</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ unassignedCount || '...' }}</span>
+            <span class="stat-label">Unassigned</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <mat-card class="dashboard-card full-width">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">flash_on</mat-icon>
+        <mat-card-title>Quick Actions</mat-card-title>
+        <mat-card-subtitle>Manage your patients efficiently</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="quick-actions">
+          <button mat-raised-button color="primary" (click)="viewAllPatients()">
+            <mat-icon>people</mat-icon>
+            View All Patients
+          </button>
+          <button mat-raised-button color="accent" (click)="viewUnassigned()">
+            <mat-icon>person_add</mat-icon>
+            Assign Patients
+          </button>
+          <button mat-raised-button color="primary" routerLink="/medications">
+            <mat-icon>medication</mat-icon>
+            Manage Medications
+          </button>
+          <button mat-raised-button color="primary" routerLink="/appointments">
+            <mat-icon>event</mat-icon>
+            View Appointments
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- My Patients -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">recent_actors</mat-icon>
+        <mat-card-title>My Patients</mat-card-title>
+        <mat-card-subtitle>Your assigned patients ({{ myPatients.length }})</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Loading state for patients -->
+        <div *ngIf="loadingPatients" class="loading-small">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+
+        <!-- Patient list -->
+        <mat-list *ngIf="!loadingPatients">
+          <mat-list-item 
+            *ngFor="let patient of myPatients.slice(0, 5)" 
+            class="patient-list-item"
+            (click)="viewPatient(patient)"
+          >
+            <div class="patient-avatar" matListItemIcon>
+              {{ patient.firstName[0] }}{{ patient.lastName[0] }}
+            </div>
+            <div matListItemTitle>{{ patient.firstName }} {{ patient.lastName }}</div>
+            <div matListItemLine>
+              <span *ngIf="patient.email">{{ patient.email }}</span>
+              <span *ngIf="!patient.email">No email</span>
+            </div>
+            <button 
+              mat-icon-button 
+              matListItemMeta
+              (click)="addMedication(patient, $event)"
+              matTooltip="Add Medication"
+            >
+              <mat-icon>medication</mat-icon>
+            </button>
+          </mat-list-item>
+
+          <!-- Empty state -->
+          <div *ngIf="myPatients.length === 0" class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No assigned patients yet</p>
+            <button mat-button color="primary" (click)="viewUnassigned()">
+              Find Patients to Assign
+            </button>
+          </div>
+
+          <!-- More patients indicator -->
+          <mat-list-item *ngIf="myPatients.length > 5" class="more-item">
+            <div matListItemTitle class="more-text">
+              +{{ myPatients.length - 5 }} more patients
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+      <mat-card-actions align="end" *ngIf="myPatients.length > 0">
+        <button mat-button color="primary" (click)="viewMyPatients()">
+          View All My Patients
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Recent Activity / Placeholder for now -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="accent">timeline</mat-icon>
+        <mat-card-title>Recent Activity</mat-card-title>
+        <mat-card-subtitle>Latest updates</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item>
+            <mat-icon matListItemIcon color="primary">info</mat-icon>
+            <div matListItemTitle>Welcome to HumanCare</div>
+            <div matListItemLine>Use the Quick Actions to manage your patients</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="myPatients.length > 0">
+            <mat-icon matListItemIcon color="accent">check_circle</mat-icon>
+            <div matListItemTitle>You have {{ myPatients.length }} assigned patients</div>
+            <div matListItemLine>Click "View All My Patients" to see details</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

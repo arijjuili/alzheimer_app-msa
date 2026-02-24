@@ -1,0 +1,26 @@
+<div class="dashboard-layout">
+  <div class="dashboard-header" *ngIf="currentUser$ | async as user">
+    <div class="welcome-section">
+      <h1 class="welcome-title">
+        Welcome back, {{ user.firstName }}! 👋
+      </h1>
+      <p class="welcome-subtitle">
+        {{ getWelcomeMessage(user) }}
+      </p>
+    </div>
+    <div class="quick-actions">
+      <button mat-raised-button color="primary">
+        <mat-icon>add</mat-icon>
+        New Appointment
+      </button>
+      <button mat-stroked-button>
+        <mat-icon>notifications</mat-icon>
+        View Updates
+      </button>
+    </div>
+  </div>
+  
+  <div class="dashboard-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

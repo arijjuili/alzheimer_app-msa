@@ -1,0 +1,141 @@
+<div class="signup-container">
+  <div class="signup-wrapper">
+    <!-- Left Side - Info -->
+    <div class="signup-info">
+      <div class="brand">
+        <mat-icon class="brand-icon">health_and_safety</mat-icon>
+        <span class="brand-name">HumanCare</span>
+      </div>
+      <h1 class="info-title">Join HumanCare Today</h1>
+      <p class="info-description">
+        Create an account to access healthcare services, connect with providers, and manage your health journey.
+      </p>
+      <div class="info-features">
+        <div class="feature">
+          <mat-icon>verified_user</mat-icon>
+          <span>Secure & Private</span>
+        </div>
+        <div class="feature">
+          <mat-icon>schedule</mat-icon>
+          <span>24/7 Access</span>
+        </div>
+        <div class="feature">
+          <mat-icon>people</mat-icon>
+          <span>Connect with Caregivers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side - Form -->
+    <mat-card class="signup-card">
+      <mat-card-header>
+        <mat-card-title>Create Your Account</mat-card-title>
+        <mat-card-subtitle>Fill in your details to get started</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+          <!-- Name Row -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" placeholder="John" required>
+              <mat-icon matPrefix>person_outline</mat-icon>
+              <mat-error *ngIf="signupForm.get('firstName')?.invalid">
+                {{ getErrorMessage('firstName') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" placeholder="Doe" required>
+              <mat-icon matPrefix>person_outline</mat-icon>
+              <mat-error *ngIf="signupForm.get('lastName')?.invalid">
+                {{ getErrorMessage('lastName') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Email -->
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="john.doe@example.com" required>
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="signupForm.get('email')?.invalid">
+              {{ getErrorMessage('email') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Username -->
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" placeholder="johndoe" required>
+            <mat-icon matPrefix>account_circle</mat-icon>
+            <mat-hint>Letters, numbers, and underscores only</mat-hint>
+            <mat-error *ngIf="signupForm.get('username')?.invalid">
+              {{ getErrorMessage('username') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password -->
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Password</mat-label>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-hint>Min 8 chars with uppercase, lowercase, number, and special character</mat-hint>
+            <mat-error *ngIf="signupForm.get('password')?.invalid">
+              {{ getErrorMessage('password') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Role Selection -->
+          <div class="role-section">
+            <label class="role-label">I am a:</label>
+            <div class="role-options">
+              <div 
+                *ngFor="let role of roles" 
+                class="role-option"
+                [class.selected]="signupForm.get('role')?.value === role.value"
+                (click)="signupForm.get('role')?.setValue(role.value)">
+                <mat-icon class="role-icon">{{ role.icon }}</mat-icon>
+                <div class="role-info">
+                  <span class="role-name">{{ role.label }}</span>
+                  <span class="role-description">{{ role.description }}</span>
+                </div>
+                <mat-icon class="check-icon" *ngIf="signupForm.get('role')?.value === role.value">check_circle</mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terms Checkbox -->
+          <div class="terms-section">
+            <mat-checkbox formControlName="agreeTerms" color="primary">
+              I agree to the <a href="#" (click)="$event.preventDefault()">Terms of Service</a> 
+              and <a href="#" (click)="$event.preventDefault()">Privacy Policy</a>
+            </mat-checkbox>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit" 
+            class="submit-button"
+            [disabled]="isLoading || signupForm.invalid">
+            <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+            <span *ngIf="!isLoading">Create Account</span>
+          </button>
+
+          <!-- Login Link -->
+          <div class="login-link">
+            Already have an account? 
+            <a (click)="goToLogin()" class="link">Sign In</a>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

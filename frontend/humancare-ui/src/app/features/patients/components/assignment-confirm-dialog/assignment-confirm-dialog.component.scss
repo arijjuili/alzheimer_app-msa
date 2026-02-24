@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+mat-dialog-content {
+  padding-top: 16px;
+  min-width: 300px;
+}
+
+.dialog-description {
+  margin-bottom: 20px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.assignment-details {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.label {
+  font-weight: 500;
+  min-width: 80px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.value {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.warning-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background-color: #fff3cd;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 0;
+}

@@ -1,0 +1,30 @@
+<div class="unauthorized-container">
+  <mat-card class="unauthorized-card">
+    <mat-card-content>
+      <div class="error-icon">
+        <mat-icon color="warn">block</mat-icon>
+      </div>
+      <h1 class="error-code">403</h1>
+      <h2 class="error-title">Access Denied</h2>
+      <p class="error-message">
+        Sorry, you don't have permission to access this page. 
+        Please contact your administrator if you believe this is an error.
+      </p>
+      <div class="error-actions">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          routerLink="/app/dashboard">
+          <mat-icon>dashboard</mat-icon>
+          Go to Dashboard
+        </button>
+        <button 
+          mat-stroked-button 
+          routerLink="/">
+          <mat-icon>home</mat-icon>
+          Go Home
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

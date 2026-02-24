@@ -1,0 +1,106 @@
+<div class="landing-page">
+  <!-- Sticky Navigation -->
+  <mat-toolbar 
+    class="landing-navbar"
+    [class.scrolled]="isScrolled"
+    [class.mobile-open]="mobileMenuOpen">
+    <div class="navbar-container">
+      <!-- Logo -->
+      <a class="navbar-brand" (click)="scrollToSection('home')">
+        <mat-icon class="brand-icon">health_and_safety</mat-icon>
+        <span class="brand-text">HumanCare</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="navbar-nav desktop-nav">
+        <button 
+          *ngFor="let link of navLinks"
+          mat-button
+          class="nav-link"
+          (click)="scrollToSection(link.section)">
+          {{ link.label }}
+        </button>
+      </nav>
+
+      <!-- Desktop Login/Signup/Dashboard Buttons -->
+      <div class="navbar-actions desktop-actions">
+        <ng-container *ngIf="isAuthenticated; else notAuthenticated">
+          <a mat-raised-button 
+             color="primary" 
+             routerLink="/app/dashboard"
+             class="login-button">
+            <mat-icon>dashboard</mat-icon>
+            Dashboard
+          </a>
+        </ng-container>
+        <ng-template #notAuthenticated>
+          <a mat-button 
+             routerLink="/login"
+             class="login-button">
+            <mat-icon>login</mat-icon>
+            Login
+          </a>
+          <a mat-raised-button 
+             color="primary" 
+             routerLink="/signup"
+             class="signup-button">
+            <mat-icon>person_add</mat-icon>
+            Sign Up
+          </a>
+        </ng-template>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button 
+        mat-icon-button
+        class="mobile-menu-button"
+        (click)="toggleMobileMenu()"
+        [attr.aria-label]="mobileMenuOpen ? 'Close menu' : 'Open menu'">
+        <mat-icon>{{ mobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" [class.open]="mobileMenuOpen">
+      <button 
+        *ngFor="let link of navLinks"
+        mat-button
+        class="mobile-nav-link"
+        (click)="scrollToSection(link.section)">
+        {{ link.label }}
+      </button>
+      <ng-container *ngIf="isAuthenticated; else mobileNotAuthenticated">
+        <a mat-raised-button 
+           color="primary" 
+           routerLink="/app/dashboard"
+           class="mobile-login-button">
+          <mat-icon>dashboard</mat-icon>
+          Dashboard
+        </a>
+      </ng-container>
+      <ng-template #mobileNotAuthenticated>
+        <a mat-button 
+           routerLink="/login"
+           class="mobile-login-button">
+          <mat-icon>login</mat-icon>
+          Login
+        </a>
+        <a mat-raised-button 
+           color="primary" 
+           routerLink="/signup"
+           class="mobile-signup-button">
+          <mat-icon>person_add</mat-icon>
+          Sign Up
+        </a>
+      </ng-template>
+    </div>
+  </mat-toolbar>
+
+  <!-- Main Content -->
+  <main class="landing-content">
+    <app-hero />
+    <app-features />
+    <app-about />
+    <app-contact />
+  </main>
+</div>

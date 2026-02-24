@@ -1,0 +1,66 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        # Native file system backend for local development
+        # In production, this could be Git backend
+        native:
+          search-locations: file:///config-repo
+        # Uncomment for Git backend:
+        # git:
+        #   uri: https://github.com/alzcare/config-repo
+        #   default-label: main
+        #   search-paths: '{application}'
+      # Fail fast on startup if config can't be loaded
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+        max-interval: 2000
+        multiplier: 1.1
+  # Activate native profile for file-based config
+  profiles:
+    active: native
+
+# Eureka Client Configuration
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${HOSTNAME:localhost}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+    # Health check
+    healthcheck:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: HumanCare Config Server
+    description: Centralized Configuration for HumanCare Platform
+    version: 1.0.0
+
+# Security for config server endpoints
+spring.security:
+  user:
+    name: ${CONFIG_SERVER_USERNAME:config}
+    password: ${CONFIG_SERVER_PASSWORD:config123}

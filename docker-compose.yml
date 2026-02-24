@@ -1,0 +1,779 @@
+# =============================================================================
+# HumanCare Platform - Docker Compose (School Project)
+# 
+# ⚠️  PORT MAPPINGS - DIFFERENT FROM AlzCare TO AVOID CONFLICTS
+# 
+# | Service            | HumanCare Port | AlzCare Port (your other cluster) |
+# |--------------------|----------------|-----------------------------------|
+# | Eureka             | 8761           | 8761 (same, no conflict)          |
+# | Config Server      | 8888           | 8888 (same, no conflict)          |
+# | RabbitMQ AMQP      | 5673 ← CHANGED | 5672 (CONFLICT if running)        |
+# | RabbitMQ UI        | 15673 ← CHANGED| 15672 (CONFLICT if running)       |
+# | PostgreSQL Identity| 5434 ← CHANGED | 5432 (CONFLICT if running)        |
+# | Keycloak           | 8090           | 8090 (probably different)         |
+# | Gateway            | 8081 ← CHANGED | 8080 (CONFLICT!)                  |
+# | Patient Service    | 8082           | -                                 |
+# | Appointments       | 8085           | -                                 |
+# | MySQL Appointments | 3307           | -                                 |
+# | Notification       | 8088           | -                                 |
+# | MySQL Notification | 3310           | -                                 |
+# | Routine            | 8089           | -                                 |
+# | MySQL Routine      | 3309           | -                                 |
+#
+# IMPORTANT: Container names are prefixed with 'hc-' to avoid conflicts
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Eureka Server - Service Discovery
+  # ---------------------------------------------------------------------------
+  hc-eureka-server:
+    container_name: hc-eureka-server
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    image: humancare/eureka:latest
+    environment:
+      EUREKA_HOSTNAME: hc-eureka-server
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      SERVER_PORT: 8761
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Config Server - Centralized Configuration
+  # ---------------------------------------------------------------------------
+  hc-config-server:
+    container_name: hc-config-server
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    image: humancare/config:latest
+    environment:
+      SERVER_PORT: 8888
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      CONFIG_SERVER_USERNAME: config
+      CONFIG_SERVER_PASSWORD: config123
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-server/src/main/resources/config-repo:/config-repo:ro
+    depends_on:
+      hc-eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # RabbitMQ - Message Broker (DIFFERENT PORTS: 5673, 15673)
+  # ---------------------------------------------------------------------------
+  hc-rabbitmq:
+    container_name: hc-rabbitmq
+    image: rabbitmq:3.12-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: humancare
+      RABBITMQ_DEFAULT_PASS: humancare123
+    volumes:
+      - hc_rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5673:5672"          # ← CHANGED from 5672 to 5673
+      - "15673:15672"        # ← CHANGED from 15672 to 15673
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database for Patient Service (DIFFERENT PORT: 5434)
+  # ---------------------------------------------------------------------------
+  hc-postgres-patient:
+    container_name: hc-postgres-patient
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: patient_db
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - hc_pg_patient:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"          # ← CHANGED from 5432 to 5434
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d patient_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Patient Service - Node.js + Express + PostgreSQL
+  # ---------------------------------------------------------------------------
+  hc-patient-service:
+    container_name: hc-patient-service
+    build:
+      context: ./services/patient-service
+      dockerfile: Dockerfile
+    image: humancare/patient:latest
+    environment:
+      NODE_ENV: production
+      PORT: 8082
+      HOSTNAME: hc-patient-service
+      DB_HOST: hc-postgres-patient
+      DB_PORT: 5432
+      DB_NAME: patient_db
+      DB_USER: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      EUREKA_HOST: hc-eureka-server
+      EUREKA_PORT: 8761
+      KEYCLOAK_URL: http://hc-keycloak:8080
+      KEYCLOAK_REALM: humancare
+      KEYCLOAK_ADMIN_USERNAME: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8082:8082"
+    depends_on:
+      hc-postgres-patient:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database for Keycloak (DIFFERENT PORT: 5435)
+  # ---------------------------------------------------------------------------
+  hc-postgres-keycloak:
+    container_name: hc-postgres-keycloak
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: keycloak_hc
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_password_hc
+    volumes:
+      - hc_pg_keycloak:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"        # ← CHANGED from 5439 to 5435
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak_hc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Keycloak - OAuth2/OIDC Identity Provider
+  # ---------------------------------------------------------------------------
+  hc-keycloak:
+    container_name: hc-keycloak
+    image: quay.io/keycloak/keycloak:22.0.5
+    command: 
+      - start-dev
+      - --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://hc-postgres-keycloak:5432/keycloak_hc
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_password_hc
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8090
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_FEATURES: token-exchange,admin-fine-grained-authz
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak-service/realm-config:/opt/keycloak/data/import:ro
+    ports:
+      - "8090:8080"
+    depends_on:
+      hc-postgres-keycloak:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/localhost/8080 && echo \"UP\"' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database for Safety Alert Engine (DIFFERENT PORT: 5436)
+  # ---------------------------------------------------------------------------
+  hc-postgres-safety:
+    container_name: hc-postgres-safety
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: humancare_safety
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - hc_pg_safety:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"        # ← CHANGED from 5433 to 5436
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d humancare_safety"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    command: >
+      postgres
+        -c shared_buffers=256MB
+        -c effective_cache_size=768MB
+        -c maintenance_work_mem=64MB
+        -c wal_buffers=16MB
+
+  # ---------------------------------------------------------------------------
+  # MySQL Database for Medication Service (PORT: 3308)
+  # ---------------------------------------------------------------------------
+  hc-mysql-medication:
+    container_name: hc-mysql-medication
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: medication_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - hc_mysql_medication:/var/lib/mysql
+    ports:
+      - "3308:3306"        # External 3308 to avoid conflicts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # ---------------------------------------------------------------------------
+  # Medication Service - Java + Spring Boot + MySQL
+  # ---------------------------------------------------------------------------
+  hc-medication-service:
+    container_name: hc-medication-service
+    build:
+      context: ./services/medication
+      dockerfile: Dockerfile
+    image: humancare/medication:latest
+    environment:
+      SERVER_PORT: 8083
+      SPRING_APPLICATION_NAME: medication-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8083:8083"
+    depends_on:
+      hc-mysql-medication:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  hc-mysql-appointments:
+    container_name: hc-mysql-appointments
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: appointments_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - hc_mysql_appointments:/var/lib/mysql
+    ports:
+      - "3307:3306"        # External 3307 to avoid conflicts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # ---------------------------------------------------------------------------
+  # Appointments Service - Java + Spring Boot + MySQL
+  # ---------------------------------------------------------------------------
+  hc-appointments-service:
+    container_name: hc-appointments-service
+    build:
+      context: ./services/appointments-service
+      dockerfile: Dockerfile
+    image: humancare/appointments:latest
+    environment:
+      SERVER_PORT: 8085
+      SPRING_APPLICATION_NAME: appointments-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8085:8085"
+    depends_on:
+      hc-mysql-appointments:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # MySQL Database for Notification Service (PORT: 3310)
+  # ---------------------------------------------------------------------------
+  hc-mysql-notification:
+    container_name: hc-mysql-notification
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: notifications_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - hc_mysql_notification:/var/lib/mysql
+    ports:
+      - "3310:3306"        # External 3310 to avoid conflicts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # ---------------------------------------------------------------------------
+  # Notification Service - Java + Spring Boot + MySQL
+  # ---------------------------------------------------------------------------
+  hc-notification-service:
+    container_name: hc-notification-service
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    image: humancare/notification:latest
+    environment:
+      SERVER_PORT: 8088
+      SPRING_APPLICATION_NAME: notification-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8088:8088"
+    depends_on:
+      hc-mysql-notification:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # MySQL Database for Routine Service (PORT: 3309)
+  # ---------------------------------------------------------------------------
+  hc-mysql-routine:
+    container_name: hc-mysql-routine
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: routine_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - hc_mysql_routine:/var/lib/mysql
+    ports:
+      - "3309:3306"        # External 3309 to avoid conflicts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # ---------------------------------------------------------------------------
+  # Routine Service - Java + Spring Boot + MySQL
+  # ---------------------------------------------------------------------------
+  hc-routine-service:
+    container_name: hc-routine-service
+    build:
+      context: ./services/routine-service
+      dockerfile: Dockerfile
+    image: humancare/routine:latest
+    environment:
+      SERVER_PORT: 8089
+      SPRING_APPLICATION_NAME: routine-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8089:8089"
+    depends_on:
+      hc-mysql-routine:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8089/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # MySQL Database for Community Service (PORT: 3311)
+  # ---------------------------------------------------------------------------
+  hc-mysql-community:
+    container_name: hc-mysql-community
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: community_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - hc_mysql_community:/var/lib/mysql
+    ports:
+      - "3311:3306"        # External 3311 to avoid conflicts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # ---------------------------------------------------------------------------
+  # Community Service - Java + Spring Boot + MySQL
+  # ---------------------------------------------------------------------------
+  hc-community-service:
+    container_name: hc-community-service
+    build:
+      context: ./services/community-service
+      dockerfile: Dockerfile
+    image: humancare/community:latest
+    environment:
+      SERVER_PORT: 8087
+      SPRING_APPLICATION_NAME: community-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8087:8087"
+    depends_on:
+      hc-mysql-community:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Daily Check-in Service - Java + Spring Boot + H2
+  # ---------------------------------------------------------------------------
+  hc-daily-checkin-service:
+    container_name: hc-daily-checkin-service
+    build:
+      context: ./services/daily-checkin-service
+      dockerfile: Dockerfile
+    image: humancare/daily-checkin:latest
+    environment:
+      SERVER_PORT: 8084
+      SPRING_APPLICATION_NAME: daily-checkin-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8084:8084"
+    volumes:
+      - hc_checkin_data:/data
+    depends_on:
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # API Gateway - Spring Cloud Gateway (DIFFERENT PORT: 8081)
+  # ---------------------------------------------------------------------------
+  hc-api-gateway:
+    container_name: hc-api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: humancare/gateway:latest
+    environment:
+      SERVER_PORT: 8080     # Internal port (inside container)
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      KEYCLOAK_ISSUER_URI: http://hc-keycloak:8080/realms/humancare
+      KEYCLOAK_JWK_SET_URI: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8081:8080"        # ← CHANGED from 8080 to 8081 (external access)
+    depends_on:
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+      hc-keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+# -----------------------------------------------------------------------------
+# Named Volumes (prefixed with hc_)
+# -----------------------------------------------------------------------------
+volumes:
+  hc_mongo_notif:
+    driver: local
+  hc_pg_patient:
+    driver: local
+  hc_pg_keycloak:
+    driver: local
+  hc_pg_safety:
+    driver: local
+  hc_mysql_appointments:
+    driver: local
+  hc_mysql_medication:
+    driver: local
+  hc_mysql_routine:
+    driver: local
+  hc_mysql_notification:
+    driver: local
+  hc_mysql_community:
+    driver: local
+  hc_rabbitmq_data:
+    driver: local
+  hc_checkin_data:
+    driver: local
+

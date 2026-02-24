@@ -1,0 +1,80 @@
+<div class="notifications-dialog">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="header-title">
+      <h2 mat-dialog-title>Notifications</h2>
+      <span *ngIf="unreadCount > 0" class="notification-count">
+        {{ unreadCount }}
+      </span>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-icon>sync</mat-icon>
+    <p>Loading notifications...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && notifications.length === 0" class="empty-state">
+    <mat-icon>notifications_off</mat-icon>
+    <h3>No notifications</h3>
+    <p>You're all caught up!</p>
+  </div>
+
+  <!-- Notifications List -->
+  <mat-list *ngIf="!loading && notifications.length > 0" class="notifications-list">
+    <ng-container *ngFor="let notification of notifications; let last = last">
+      <mat-list-item 
+        class="notification-item"
+        [class.unread]="!notification.isRead">
+        
+        <!-- Notification Icon -->
+        <div 
+          matListItemIcon 
+          class="notification-icon"
+          [class]="getIconClass(notification.type)">
+          <mat-icon>{{ getIconForType(notification.type) }}</mat-icon>
+        </div>
+
+        <!-- Notification Content -->
+        <div matListItemTitle class="notification-content">
+          <div class="notification-title">{{ notification.title }}</div>
+          <div class="notification-message">{{ notification.message }}</div>
+          <div class="notification-time">{{ formatTimestamp(notification.createdAt) }}</div>
+        </div>
+
+        <!-- Unread Indicator -->
+        <div 
+          *ngIf="!notification.isRead" 
+          class="unread-indicator"
+          matListItemMeta>
+        </div>
+      </mat-list-item>
+
+      <mat-divider *ngIf="!last"></mat-divider>
+    </ng-container>
+  </mat-list>
+
+  <mat-divider></mat-divider>
+
+  <!-- Dialog Actions -->
+  <div class="dialog-actions" mat-dialog-actions>
+    <button 
+      mat-button 
+      color="primary"
+      (click)="markAllAsRead()"
+      [disabled]="unreadCount === 0">
+      <mat-icon>done_all</mat-icon>
+      Mark all as read
+    </button>
+    
+    <button 
+      mat-stroked-button 
+      (click)="close()">
+      Close
+    </button>
+  </div>
+</div>

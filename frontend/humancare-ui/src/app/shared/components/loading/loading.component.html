@@ -1,0 +1,10 @@
+<div *ngIf="loading" class="loading-container" [class.overlay]="overlay" [class.inline]="!overlay" [class.fullscreen]="fullscreen">
+  <div class="loading-content">
+    <mat-spinner 
+      [diameter]="diameter" 
+      [strokeWidth]="strokeWidth"
+      [color]="color">
+    </mat-spinner>
+    <p *ngIf="message" class="loading-message">{{ message }}</p>
+  </div>
+</div>

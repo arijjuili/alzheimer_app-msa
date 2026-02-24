@@ -1,0 +1,121 @@
+<section id="contact" class="contact-section">
+  <div class="container">
+    <div class="contact-content">
+      <div class="contact-info">
+        <span class="section-label">Contact Us</span>
+        <h2 class="contact-title">Get in Touch</h2>
+        <p class="contact-description">
+          Have questions about HumanCare? We're here to help. Send us a message 
+          and our team will get back to you as soon as possible.
+        </p>
+        
+        <div class="contact-details">
+          <div class="contact-item">
+            <div class="contact-icon-wrapper">
+              <mat-icon>location_on</mat-icon>
+            </div>
+            <div class="contact-item-content">
+              <span class="contact-item-label">Address</span>
+              <span class="contact-item-value">123 Healthcare Ave, Medical District, CA 90210</span>
+            </div>
+          </div>
+          
+          <div class="contact-item">
+            <div class="contact-icon-wrapper">
+              <mat-icon>email</mat-icon>
+            </div>
+            <div class="contact-item-content">
+              <span class="contact-item-label">Email</span>
+              <span class="contact-item-value">contact&#64;humancare.com</span>
+            </div>
+          </div>
+          
+          <div class="contact-item">
+            <div class="contact-icon-wrapper">
+              <mat-icon>phone</mat-icon>
+            </div>
+            <div class="contact-item-content">
+              <span class="contact-item-label">Phone</span>
+              <span class="contact-item-value">+1 (555) 123-4567</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="social-links">
+          <a *ngFor="let link of socialLinks" 
+             [href]="link.url" 
+             class="social-link"
+             [attr.aria-label]="link.label">
+            <mat-icon>{{ link.icon }}</mat-icon>
+          </a>
+        </div>
+      </div>
+
+      <mat-card class="contact-form-card">
+        <form class="contact-form" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Your Name</mat-label>
+            <input matInput 
+                   [(ngModel)]="contactForm.name" 
+                   name="name"
+                   placeholder="Enter your name"
+                   required>
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Email Address</mat-label>
+            <input matInput 
+                   [(ngModel)]="contactForm.email" 
+                   name="email"
+                   type="email"
+                   placeholder="Enter your email"
+                   required>
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Your Message</mat-label>
+            <textarea matInput 
+                      [(ngModel)]="contactForm.message" 
+                      name="message"
+                      placeholder="How can we help you?"
+                      rows="4"
+                      required></textarea>
+            <mat-icon matPrefix>message</mat-icon>
+          </mat-form-field>
+
+          <button mat-raised-button 
+                  color="primary" 
+                  type="submit"
+                  class="submit-button">
+            <mat-icon>send</mat-icon>
+            Send Message
+          </button>
+        </form>
+      </mat-card>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <mat-icon>health_and_safety</mat-icon>
+        <span>HumanCare</span>
+      </div>
+      <p class="footer-tagline">Healthcare Management Made Simple</p>
+    </div>
+
+    <div class="footer-links">
+      <a *ngFor="let link of footerLinks" [href]="link.url" class="footer-link">
+        {{ link.label }}
+      </a>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="copyright">&copy; 2024 HumanCare. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,109 @@
+# Notification Service Configuration
+# Service Owner: HumanCare Team | Port: 8088 | Database: MySQL
+
+server:
+  port: 8088
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/notifications_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/humancare
+          jwk-set-uri: http://localhost:8090/realms/humancare/protocol/openid-connect/certs
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Management / Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    com.humancare.notification: DEBUG
+    org.springframework.cloud: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:mysql://hc-mysql-notification:3306/notifications_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://hc-keycloak:8080/realms/humancare
+          jwk-set-uri: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://hc-eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: false
+    hostname: hc-notification-service
+    non-secure-port: 8088
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/notifications_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ''
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging:
+  level:
+    com.humancare.notification: DEBUG
+    org.hibernate.SQL: DEBUG

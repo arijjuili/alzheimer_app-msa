@@ -1,0 +1,112 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.stats-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  &.primary {
+    background-color: rgba(63, 81, 181, 0.1);
+    mat-icon { color: #3f51b5; }
+  }
+  
+  &.accent {
+    background-color: rgba(255, 64, 129, 0.1);
+    mat-icon { color: #ff4081; }
+  }
+  
+  &.warn {
+    background-color: rgba(244, 67, 54, 0.1);
+    mat-icon { color: #f44336; }
+  }
+  
+  &.success {
+    background-color: rgba(76, 175, 80, 0.1);
+    mat-icon { color: #4caf50; }
+  }
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dashboard-card {
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.users-table {
+  width: 100%;
+}
+
+.health-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.health-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+mat-chip {
+  font-size: 12px;
+  min-height: 24px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,446 @@
+# API Gateway Configuration
+
+spring:
+  cloud:
+    gateway:
+      # Global CORS configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+              - "http://localhost:4201"
+              - "http://127.0.0.1:4200"
+              - "http://127.0.0.1:4201"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      # Route definitions using lb:// for Eureka service discovery
+      routes:
+        # Patient Service (Node.js + Express)
+        - id: patient-service
+          uri: lb://patient-service
+          predicates:
+            - Path=/api/v1/patients/**,/api/v1/audit/**,/auth/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Event Ingestion Service (placeholder)
+        - id: event-ingestion
+          uri: lb://event-ingestion
+          predicates:
+            - Path=/api/v1/events/**, /api/v1/devices/**
+          filters:
+            - StripPrefix=0
+
+        # Safety Alert Engine
+        - id: safety-alert-engine
+          uri: lb://safety-alert-engine
+          predicates:
+            - Path=/api/behavior-logs/**, /api/alerts/**
+          filters:
+            - StripPrefix=0
+
+        # Notification Service
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**,/api/notification-templates/**,/api/schedules/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Cognitive Memory Service (placeholder)
+        - id: cognitive-memory
+          uri: lb://cognitive-memory
+          predicates:
+            - Path=/api/v1/cognitive/**, /api/v1/games/**, /api/v1/memories/**
+          filters:
+            - StripPrefix=0
+
+        # Daily Care Service (placeholder)
+        - id: daily-care
+          uri: lb://daily-care
+          predicates:
+            - Path=/api/v1/daily-care/**, /api/v1/habits/**
+          filters:
+            - StripPrefix=0
+
+        # Appointments Service (Java + Eureka)
+        - id: appointments-service
+          uri: lb://appointments-service
+          predicates:
+            - Path=/api/appointments/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Medication Service (Java + Eureka)
+        - id: medication-service
+          uri: lb://medication-service
+          predicates:
+            - Path=/api/medications/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Routine Service (Java + Eureka)
+        - id: routine-service
+          uri: lb://routine-service
+          predicates:
+            - Path=/api/routines/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Community Service (Java + Eureka)
+        - id: community-service
+          uri: lb://community-service
+          predicates:
+            - Path=/api/community/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Medical Management Service (placeholder)
+        - id: medical-management
+          uri: lb://medical-management
+          predicates:
+            - Path=/api/v1/medical/**
+          filters:
+            - StripPrefix=0
+
+        # Care Team Service (placeholder)
+        - id: care-team
+          uri: lb://care-team
+          predicates:
+            - Path=/api/v1/care-team/**
+          filters:
+            - StripPrefix=0
+
+        # Community Social Service (placeholder)
+        - id: community-social
+          uri: lb://community-social
+          predicates:
+            - Path=/api/v1/community/**
+          filters:
+            - StripPrefix=0
+
+        # ML Prediction Service (placeholder)
+        - id: ml-prediction
+          uri: lb://ml-prediction
+          predicates:
+            - Path=/api/v1/ml/**
+          filters:
+            - StripPrefix=0
+
+        # Keycloak (proxy to Keycloak for OAuth flows)
+        - id: keycloak
+          uri: http://hc-keycloak:8080
+          predicates:
+            - Path=/realms/**, /resources/**
+          filters:
+            - StripPrefix=0
+
+  # OAuth2 Resource Server Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://hc-keycloak:8080/realms/humancare
+          jwk-set-uri: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,metrics
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    com.humancare.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{X-Correlation-ID}] %-5level %logger{36} - %msg%n"
+
+---
+# Docker profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+  cloud:
+    gateway:
+      routes:
+        # Patient Service - Docker (Node.js with Eureka)
+        - id: patient-service
+          uri: lb://patient-service
+          predicates:
+            - Path=/api/v1/patients/**,/api/v1/audit/**,/auth/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Safety Alert Engine - Docker (Java service with Eureka)
+        - id: safety-alert-engine
+          uri: lb://safety-alert-engine
+          predicates:
+            - Path=/api/behavior-logs/**, /api/alerts/**
+          filters:
+            - StripPrefix=0
+
+        # Notification Service - Docker (Java service with Eureka)
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**,/api/notification-templates/**,/api/schedules/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+
+        # Appointments Service - Docker
+        - id: appointments-service
+          uri: lb://appointments-service
+          predicates:
+            - Path=/api/appointments/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Medication Service - Docker
+        - id: medication-service
+          uri: lb://medication-service
+          predicates:
+            - Path=/api/medications/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Routine Service - Docker
+        - id: routine-service
+          uri: lb://routine-service
+          predicates:
+            - Path=/api/routines/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Community Service - Docker
+        - id: community-service
+          uri: lb://community-service
+          predicates:
+            - Path=/api/community/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Daily Check-in Service - Docker
+        - id: daily-checkin-service
+          uri: lb://daily-checkin-service
+          predicates:
+            - Path=/api/v1/checkins/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Keycloak - Docker
+        - id: keycloak
+          uri: http://hc-keycloak:8080
+          predicates:
+            - Path=/realms/**, /resources/**
+          filters:
+            - StripPrefix=0
+    loadbalancer:
+      ribbon:
+        enabled: false
+      health-check:
+        initial-delay: 5000
+        interval: 30000
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://hc-keycloak:8080/realms/humancare
+          jwk-set-uri: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://hc-eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+---
+# Local development profile
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    gateway:
+      routes:
+        # Patient Service - Local
+        - id: patient-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/patients/**,/api/v1/audit/**,/auth/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+        # Safety Alert Engine - Local
+        - id: safety-alert-engine
+          uri: http://localhost:8003
+          predicates:
+            - Path=/api/behavior-logs/**, /api/alerts/**
+          filters:
+            - StripPrefix=0
+
+        # Notification Service - Local
+        - id: notification-service
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/notifications/**,/api/notification-templates/**,/api/schedules/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - TokenRelay
+
+        # Appointments Service - Local
+        - id: appointments-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/appointments/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+
+        # Medication Service - Local
+        - id: medication-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/medications/**
+          filters:
+            - StripPrefix=0
+
+        # Routine Service - Local
+        - id: routine-service
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/routines/**
+          filters:
+            - StripPrefix=0
+
+        # Community Service - Local
+        - id: community-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/community/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+
+        # Daily Check-in Service - Local
+        - id: daily-checkin-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/checkins/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+
+        # Keycloak - Local
+        - id: keycloak
+          uri: http://localhost:8090
+          predicates:
+            - Path=/realms/**, /resources/**
+          filters:
+            - StripPrefix=0
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/humancare
+          jwk-set-uri: http://localhost:8090/realms/humancare/protocol/openid-connect/certs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

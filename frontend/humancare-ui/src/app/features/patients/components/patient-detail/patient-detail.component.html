@@ -1,0 +1,281 @@
+<div class="patient-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading patient details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Failed to load patient</h3>
+    <p>{{ error }}</p>
+    <div class="error-actions">
+      <button mat-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to List
+      </button>
+      <button mat-raised-button color="primary" (click)="loadPatient()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Patient Content -->
+  <div *ngIf="!loading && !error && patient" class="patient-content">
+    <!-- Header Card -->
+    <mat-card class="header-card">
+      <div class="header-content">
+        <button mat-icon-button (click)="goBack()" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="patient-info">
+          <div class="avatar">
+            {{ patient.firstName + ' ' + patient.lastName | initials }}
+          </div>
+          <div class="info-text">
+            <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+            <p class="subtitle">{{ patient.email }}</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button 
+            *ngIf="canEdit()"
+            mat-raised-button 
+            color="primary"
+            [routerLink]="['/patients', patient.id, 'edit']"
+          >
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+        </div>
+      </div>
+    </mat-card>
+
+    <div class="content-grid">
+      <!-- Left Column -->
+      <div class="left-column">
+        <!-- Personal Info Card -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>person</mat-icon>
+            <mat-card-title>Personal Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-list>
+              <mat-list-item>
+                <mat-icon matListItemIcon>badge</mat-icon>
+                <div matListItemTitle>Patient ID</div>
+                <div matListItemLine>{{ patient.id }}</div>
+              </mat-list-item>
+
+              <mat-list-item>
+                <mat-icon matListItemIcon>cake</mat-icon>
+                <div matListItemTitle>Date of Birth</div>
+                <div matListItemLine>{{ patient.dateOfBirth | dateFormat:'long' }}</div>
+              </mat-list-item>
+
+              <mat-list-item *ngIf="patient.createdAt">
+                <mat-icon matListItemIcon>event_available</mat-icon>
+                <div matListItemTitle>Member Since</div>
+                <div matListItemLine>{{ patient.createdAt | dateFormat:'long' }}</div>
+              </mat-list-item>
+            </mat-list>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Contact Info Card -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>contact_mail</mat-icon>
+            <mat-card-title>Contact Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-list>
+              <mat-list-item>
+                <mat-icon matListItemIcon>email</mat-icon>
+                <div matListItemTitle>Email</div>
+                <div matListItemLine>{{ patient.email }}</div>
+              </mat-list-item>
+
+              <mat-list-item>
+                <mat-icon matListItemIcon>phone</mat-icon>
+                <div matListItemTitle>Phone</div>
+                <div matListItemLine>{{ patient.phone || 'Not provided' }}</div>
+              </mat-list-item>
+
+              <mat-list-item>
+                <mat-icon matListItemIcon>home</mat-icon>
+                <div matListItemTitle>Address</div>
+                <div matListItemLine>{{ patient.address || 'Not provided' }}</div>
+              </mat-list-item>
+
+              <mat-list-item>
+                <mat-icon matListItemIcon>contact_emergency</mat-icon>
+                <div matListItemTitle>Emergency Contact</div>
+                <div matListItemLine>{{ patient.emergencyContact || 'Not provided' }}</div>
+              </mat-list-item>
+            </mat-list>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- Assignment Card -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>assignment_ind</mat-icon>
+            <mat-card-title>Assignment</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-list>
+              <!-- Doctor Assignment -->
+              <mat-list-item>
+                <mat-icon matListItemIcon>local_hospital</mat-icon>
+                <div matListItemTitle>Assigned Doctor</div>
+                <div matListItemLine>
+                  <ng-container *ngIf="patient.doctorId; else noDoctor">
+                    <span class="assigned-badge">
+                      <mat-icon class="small-icon">check_circle</mat-icon>
+                      Assigned
+                    </span>
+                    <button 
+                      *ngIf="canAssign()"
+                      mat-button 
+                      color="primary"
+                      (click)="openAssignDoctorDialog()"
+                    >
+                      Change
+                    </button>
+                  </ng-container>
+                  <ng-template #noDoctor>
+                    <span class="unassigned-badge">Not assigned</span>
+                    <button 
+                      *ngIf="canAssign()"
+                      mat-button 
+                      color="accent"
+                      (click)="assignToMe()"
+                      [disabled]="assigning"
+                    >
+                      <mat-spinner *ngIf="assigning" diameter="16"></mat-spinner>
+                      <span *ngIf="!assigning">Assign to Me</span>
+                    </button>
+                  </ng-template>
+                </div>
+              </mat-list-item>
+
+              <!-- Caregiver Assignment -->
+              <mat-list-item>
+                <mat-icon matListItemIcon>support_agent</mat-icon>
+                <div matListItemTitle>Assigned Caregiver</div>
+                <div matListItemLine>
+                  <ng-container *ngIf="patient.caregiverId; else noCaregiver">
+                    <span class="assigned-badge">
+                      <mat-icon class="small-icon">check_circle</mat-icon>
+                      Assigned
+                    </span>
+                    <button 
+                      *ngIf="canAssignCaregiver()"
+                      mat-button 
+                      color="primary"
+                      (click)="openAssignCaregiverDialog()"
+                    >
+                      Change
+                    </button>
+                  </ng-container>
+                  <ng-template #noCaregiver>
+                    <span class="unassigned-badge">Not assigned</span>
+                    <button 
+                      *ngIf="canAssignCaregiver()"
+                      mat-button 
+                      color="primary"
+                      (click)="openAssignCaregiverDialog()"
+                    >
+                      Assign Caregiver
+                    </button>
+                  </ng-template>
+                </div>
+              </mat-list-item>
+            </mat-list>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Quick Actions Card -->
+        <mat-card class="info-card" *ngIf="isMyPatient()">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>flash_on</mat-icon>
+            <mat-card-title>Quick Actions</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="quick-actions">
+              <button mat-raised-button color="primary" (click)="addMedication()">
+                <mat-icon>medication</mat-icon>
+                Add Medication
+              </button>
+              <button mat-raised-button color="accent" (click)="scheduleAppointment()">
+                <mat-icon>event</mat-icon>
+                Schedule Appointment
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Medical Info Card -->
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>medical_services</mat-icon>
+            <mat-card-title>Medical Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="medical-history">
+              <h4>Medical History</h4>
+              <p *ngIf="patient.medicalHistory; else noHistory">{{ patient.medicalHistory }}</p>
+              <ng-template #noHistory>
+                <p class="empty-text">No medical history recorded</p>
+              </ng-template>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Audit Log Section -->
+        <mat-card class="info-card" *ngIf="auditLogs.length > 0">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>history</mat-icon>
+            <mat-card-title>Recent Changes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-accordion>
+              <mat-expansion-panel *ngFor="let log of auditLogs.slice(0, 3)">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-chip-set>
+                      <mat-chip [class]="getActionClass(log.action)">
+                        {{ log.action }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    {{ log.changedBy }} - {{ log.changedAt | dateFormat:'relative' }}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="audit-detail">
+                  <div *ngIf="log.oldValue" class="old-value">
+                    <strong>Previous:</strong> {{ log.oldValue }}
+                  </div>
+                  <div *ngIf="log.newValue" class="new-value">
+                    <strong>New:</strong> {{ log.newValue }}
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </mat-accordion>
+            <div class="view-all-link" *ngIf="auditLogs.length > 3">
+              <a [routerLink]="['/patients', patient.id, 'audit']">View all changes</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

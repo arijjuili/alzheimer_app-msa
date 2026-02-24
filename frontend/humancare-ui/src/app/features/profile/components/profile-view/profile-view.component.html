@@ -1,0 +1,118 @@
+<div class="profile-view-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading profile...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Failed to load profile</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadProfile()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && !error && patient" class="profile-content">
+    <!-- Personal Info Card -->
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <div mat-card-avatar class="profile-avatar">
+          <span class="avatar-text">{{ patient.firstName + ' ' + patient.lastName | initials }}</span>
+        </div>
+        <mat-card-title>{{ patient.firstName }} {{ patient.lastName }}</mat-card-title>
+        <mat-card-subtitle>{{ patient.email }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="section">
+          <h3 class="section-title">
+            <mat-icon>person</mat-icon>
+            Personal Information
+          </h3>
+          <mat-list>
+            <mat-list-item>
+              <mat-icon matListItemIcon>badge</mat-icon>
+              <div matListItemTitle>Patient ID</div>
+              <div matListItemLine>{{ patient.id }}</div>
+            </mat-list-item>
+
+            <mat-list-item>
+              <mat-icon matListItemIcon>cake</mat-icon>
+              <div matListItemTitle>Date of Birth</div>
+              <div matListItemLine>{{ patient.dateOfBirth | dateFormat:'long' }}</div>
+            </mat-list-item>
+
+            <mat-list-item *ngIf="patient.createdAt">
+              <mat-icon matListItemIcon>event_available</mat-icon>
+              <div matListItemTitle>Member Since</div>
+              <div matListItemLine>{{ patient.createdAt | dateFormat:'long' }}</div>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Contact Info -->
+        <div class="section">
+          <h3 class="section-title">
+            <mat-icon>contact_mail</mat-icon>
+            Contact Information
+          </h3>
+          <mat-list>
+            <mat-list-item>
+              <mat-icon matListItemIcon>email</mat-icon>
+              <div matListItemTitle>Email</div>
+              <div matListItemLine>{{ patient.email }}</div>
+            </mat-list-item>
+
+            <mat-list-item>
+              <mat-icon matListItemIcon>phone</mat-icon>
+              <div matListItemTitle>Phone</div>
+              <div matListItemLine>{{ patient.phone || 'Not provided' }}</div>
+            </mat-list-item>
+
+            <mat-list-item>
+              <mat-icon matListItemIcon>home</mat-icon>
+              <div matListItemTitle>Address</div>
+              <div matListItemLine>{{ patient.address || 'Not provided' }}</div>
+            </mat-list-item>
+
+            <mat-list-item>
+              <mat-icon matListItemIcon>contact_emergency</mat-icon>
+              <div matListItemTitle>Emergency Contact</div>
+              <div matListItemLine>{{ patient.emergencyContact || 'Not provided' }}</div>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Medical Info -->
+        <div class="section">
+          <h3 class="section-title">
+            <mat-icon>medical_services</mat-icon>
+            Medical Information
+          </h3>
+          <div class="medical-history">
+            <p *ngIf="patient.medicalHistory; else noHistory">{{ patient.medicalHistory }}</p>
+            <ng-template #noHistory>
+              <p class="empty-text">No medical history recorded</p>
+            </ng-template>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button color="primary" routerLink="/profile/edit">
+          <mat-icon>edit</mat-icon>
+          Edit Profile
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

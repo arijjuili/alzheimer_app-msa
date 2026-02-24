@@ -1,0 +1,93 @@
+<section class="hero-section">
+  <div class="hero-background">
+    <div class="gradient-overlay"></div>
+    <div class="pattern-overlay"></div>
+  </div>
+  
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1 class="hero-title">
+        <span class="title-highlight">HumanCare</span>
+        <span class="title-separator"> - </span>
+        Healthcare Management Made Simple
+      </h1>
+      <p class="hero-subtitle">
+        Connect patients, caregivers, and doctors in one secure platform.
+        Streamline healthcare workflows with modern, intuitive tools.
+      </p>
+      <div class="hero-actions">
+        <ng-container *ngIf="isAuthenticated; else notAuthenticated">
+          <a mat-raised-button 
+             color="primary" 
+             routerLink="/app/dashboard"
+             class="cta-button cta-primary">
+            <mat-icon>dashboard</mat-icon>
+            Dashboard
+          </a>
+        </ng-container>
+        <ng-template #notAuthenticated>
+          <a mat-raised-button 
+             color="primary" 
+             routerLink="/login"
+             class="cta-button cta-primary">
+            <mat-icon>login</mat-icon>
+            Get Started
+          </a>
+          <a mat-stroked-button 
+             routerLink="/signup"
+             class="cta-button cta-secondary">
+            <mat-icon>person_add</mat-icon>
+            Sign Up
+          </a>
+        </ng-template>
+        <button mat-stroked-button 
+                *ngIf="isAuthenticated"
+                class="cta-button cta-secondary"
+                (click)="scrollToFeatures()">
+          <mat-icon>arrow_downward</mat-icon>
+          Learn More
+        </button>
+      </div>
+    </div>
+    
+    <div class="hero-visual">
+      <div class="floating-icons">
+        <div class="icon-wrapper icon-1">
+          <mat-icon>health_and_safety</mat-icon>
+        </div>
+        <div class="icon-wrapper icon-2">
+          <mat-icon>local_hospital</mat-icon>
+        </div>
+        <div class="icon-wrapper icon-3">
+          <mat-icon>medical_services</mat-icon>
+        </div>
+        <div class="icon-wrapper icon-4">
+          <mat-icon>favorite</mat-icon>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">10K+</span>
+          <span class="stat-label">Patients</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Providers</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">99.9%</span>
+          <span class="stat-label">Uptime</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="scroll-indicator" (click)="scrollToFeatures()">
+    <div class="scroll-mouse">
+      <div class="scroll-wheel"></div>
+    </div>
+    <span class="scroll-text">Scroll to explore</span>
+  </div>
+</section>

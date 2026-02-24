@@ -1,0 +1,78 @@
+.unauthorized-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 64px);
+  padding: 24px;
+  background-color: #f5f5f5;
+}
+
+.unauthorized-card {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  padding: 32px;
+}
+
+.error-icon {
+  margin-bottom: 16px;
+}
+
+.error-icon mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+}
+
+.error-code {
+  font-size: 96px;
+  font-weight: 300;
+  margin: 0;
+  color: #f44336;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 16px 0;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.error-message {
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.error-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .unauthorized-card {
+    padding: 24px 16px;
+  }
+  
+  .error-code {
+    font-size: 72px;
+  }
+  
+  .error-title {
+    font-size: 20px;
+  }
+  
+  .error-message {
+    font-size: 14px;
+  }
+}

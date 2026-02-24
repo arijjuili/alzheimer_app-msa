@@ -1,0 +1,199 @@
+.medications-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #1976d2;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 500;
+    }
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.loading-container,
+.error-container,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 16px;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
+  }
+
+  p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+.error-container {
+  mat-icon {
+    color: #f44336;
+  }
+}
+
+mat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.medications-table {
+  width: 100%;
+
+  .medication-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      color: #1976d2;
+    }
+  }
+
+  .expanded-row {
+    background-color: #f5f5f5;
+  }
+
+  tr.mat-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.intakes-container {
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 4px;
+  margin-top: 8px;
+
+  .intakes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 18px;
+      color: #333;
+
+      mat-icon {
+        color: #1976d2;
+      }
+    }
+  }
+
+  .intakes-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+  }
+}
+
+.intakes-table {
+  width: 100%;
+  background-color: white;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.no-intakes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 8px;
+
+  mat-icon {
+    color: #999;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+// Status chip colors
+::ng-deep .mat-mdc-chip.mat-mdc-standard-chip {
+  &.mat-accent {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &.mat-warn {
+    background-color: #f44336;
+    color: white;
+  }
+
+  &[color="orange"] {
+    background-color: #ff9800;
+    color: white;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .medications-container {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+
+    .header-title {
+      h1 {
+        font-size: 24px;
+      }
+    }
+  }
+
+  .medications-table {
+    .mat-column-form,
+    .mat-column-frequency {
+      display: none;
+    }
+  }
+}

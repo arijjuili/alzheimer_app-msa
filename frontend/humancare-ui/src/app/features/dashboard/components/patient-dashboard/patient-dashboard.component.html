@@ -1,0 +1,93 @@
+<div class="dashboard-grid">
+  <!-- Health Overview Card -->
+  <mat-card class="dashboard-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="primary">favorite</mat-icon>
+      <mat-card-title>Health Overview</mat-card-title>
+      <mat-card-subtitle>Your latest health metrics</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <span class="metric-value">72</span>
+          <span class="metric-label">BPM</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-value">120/80</span>
+          <span class="metric-label">BP</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-value">98%</span>
+          <span class="metric-label">SpO2</span>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button color="primary">View Details</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Upcoming Appointments Card -->
+  <mat-card class="dashboard-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="accent">event</mat-icon>
+      <mat-card-title>Upcoming Appointments</mat-card-title>
+      <mat-card-subtitle>Next 7 days</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let appt of upcomingAppointments">
+          <mat-icon matListItemIcon>schedule</mat-icon>
+          <div matListItemTitle>{{ appt.doctor }}</div>
+          <div matListItemLine>{{ appt.date }} at {{ appt.time }}</div>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button color="primary" routerLink="/app/appointments">View All</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Medications Card -->
+  <mat-card class="dashboard-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="warn">medication</mat-icon>
+      <mat-card-title>Today's Medications</mat-card-title>
+      <mat-card-subtitle>Don't forget to take your meds</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let med of medications">
+          <mat-icon matListItemIcon [color]="med.taken ? 'primary' : 'warn'">
+            {{ med.taken ? 'check_circle' : 'schedule' }}
+          </mat-icon>
+          <div matListItemTitle>{{ med.name }}</div>
+          <div matListItemLine>{{ med.dosage }} - {{ med.time }}</div>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button color="primary">Manage Medications</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Care Team Card -->
+  <mat-card class="dashboard-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="primary">people</mat-icon>
+      <mat-card-title>Your Care Team</mat-card-title>
+      <mat-card-subtitle>Healthcare professionals</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let member of careTeam">
+          <div matListItemTitle>{{ member.name }}</div>
+          <div matListItemLine>{{ member.role }}</div>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button color="primary">Contact Team</button>
+    </mat-card-actions>
+  </mat-card>
+</div>
