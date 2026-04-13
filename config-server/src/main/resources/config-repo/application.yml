@@ -30,6 +30,14 @@ management:
     tags:
       application: ${spring.application.name}
 
+# RabbitMQ defaults
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: humancare
+    password: humancare123
+
 # Common logging
 logging:
   level:

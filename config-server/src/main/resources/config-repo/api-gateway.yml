@@ -124,7 +124,7 @@ spring:
         - id: community-service
           uri: lb://community-service
           predicates:
-            - Path=/api/community/**
+            - Path=/api/community/**,/api/v1/posts/**
           filters:
             - StripPrefix=0
             - TokenRelay
@@ -304,7 +304,7 @@ spring:
         - id: community-service
           uri: lb://community-service
           predicates:
-            - Path=/api/community/**
+            - Path=/api/community/**,/api/v1/posts/**
           filters:
             - StripPrefix=0
             - TokenRelay
@@ -436,7 +436,7 @@ spring:
         - id: community-service
           uri: http://localhost:8087
           predicates:
-            - Path=/api/community/**
+            - Path=/api/community/**,/api/v1/posts/**
           filters:
             - StripPrefix=0
             - TokenRelay

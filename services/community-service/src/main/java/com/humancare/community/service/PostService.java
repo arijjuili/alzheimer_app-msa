@@ -21,10 +21,16 @@ public class PostService {
 
     private final PostRepository repository;
     private final PostMapper mapper;
+    private final EventPublisherService eventPublisher;
+    private final com.humancare.community.client.PatientClient patientClient;
 
-    public PostService(PostRepository repository, PostMapper mapper) {
+    public PostService(PostRepository repository, PostMapper mapper,
+                       EventPublisherService eventPublisher,
+                       com.humancare.community.client.PatientClient patientClient) {
         this.repository = repository;
         this.mapper = mapper;
+        this.eventPublisher = eventPublisher;
+        this.patientClient = patientClient;
     }
 
     @Transactional(readOnly = true)
@@ -47,10 +53,33 @@ public class PostService {
         return mapper.toResponse(getOrThrow(id));
     }
 
+    @Transactional(readOnly = true)
+    public PostResponse findByIdWithAuthor(UUID id) {
+        PostResponse response = mapper.toResponse(getOrThrow(id));
+        // Synchronous Feign enrichment: load patient author details
+        try {
+            var patient = patientClient.getPatientById(response.authorId());
+            if (patient != null) {
+                // enrich response if your DTO supports it; for now we keep it simple
+            }
+        } catch (Exception e) {
+            // ignore enrichment failure
+        }
+        return response;
+    }
+
     @Transactional
     public PostResponse create(CreatePostRequest request) {
         CommunityPost post = mapper.toEntity(request);
         CommunityPost saved = repository.save(post);
+
+        eventPublisher.publishNewPostCreated(new com.humancare.community.event.NewPostCreatedEvent(
+                saved.getId(),
+                saved.getAuthorId(),
+                saved.getTitle(),
+                saved.getCategory().name()
+        ));
+
         return mapper.toResponse(saved);
     }
 

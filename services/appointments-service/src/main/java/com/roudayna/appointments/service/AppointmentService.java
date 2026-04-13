@@ -1,5 +1,6 @@
 package com.roudayna.appointments.service;
 
+import com.roudayna.appointments.event.AppointmentBookedEvent;
 import com.roudayna.appointments.model.Appointment;
 import com.roudayna.appointments.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ public class AppointmentService {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private EventPublisherService eventPublisher;
 
     // Get all appointments
     public List<Appointment> getAllAppointments() {
@@ -48,7 +52,16 @@ public class AppointmentService {
         if (appointment.getStatus() == null) {
             appointment.setStatus("SCHEDULED");
         }
-        return appointmentRepository.save(appointment);
+        Appointment saved = appointmentRepository.save(appointment);
+
+        eventPublisher.publishAppointmentBooked(new AppointmentBookedEvent(
+                saved.getId(),
+                saved.getPatientId(),
+                saved.getDoctorName(),
+                saved.getAppointmentDate()
+        ));
+
+        return saved;
     }
 
     // Update appointment

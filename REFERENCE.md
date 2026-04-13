@@ -75,7 +75,14 @@
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐             │   │
 │  │  │ Routines │ │Community │ │Notification│ │ Memory   │             │   │
 │  │  │ (8089)   │ │ (8087)   │ │ (8088)   │ │ (8086)   │             │   │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘             │   │
+│  │  └────┬─────┘ └────┬─────┘ └─────┬────┘ └────┬─────┘             │   │
+│  │       │            │             │           │                   │   │
+│  │       └────────────┴──────┬──────┘           │                   │   │
+│  │                           ▼                  │                   │   │
+│  │              ┌─────────────────────┐         │                   │   │
+│  │              │   RabbitMQ Events   │         │                   │   │
+│  │              │  humancare.events   │         │                   │   │
+│  │              └─────────────────────┘         │                   │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -241,7 +248,7 @@
 └─────────────────────────────────────────┘
 ```
 
-### 4.2 Asynchronous Communication (Events)
+### 4.2 Asynchronous Communication (Events via RabbitMQ)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -252,9 +259,9 @@
 │  │   Service    │────────►│   RABBITMQ   │────────────────►│  Service ││
 │  │  Publishes:  │         │   (5673)     │                 │          ││
 │  │ • Medication │         │              │                 │ Consumes:││
-│  │   Taken      │         │  Exchanges:  │                 │ • All    ││
-│  │ • Medication │         │  • alerts    │                 │   events ││
-│  │   Missed     │         │  • notifications              │          ││
+│  │   Taken      │         │  Exchange:   │                 │ • All    ││
+│  │ • Medication │         │  humancare   │                 │   events ││
+│  │   Missed     │         │   .events    │                 │          ││
 │  └──────────────┘         └──────────────┘                 └──────────┘│
 │  ┌──────────────┐                                                      │
 │  │ Appointment  │──────────────────────────────────────────────────────┤
@@ -263,17 +270,42 @@
 │  │ • Appointment│                                                      │
 │  │   Booked     │                                                      │
 │  └──────────────┘                                                      │
+│  ┌──────────────┐                                                      │
+│  │   Community  │──────────────────────────────────────────────────────┤
+│  │   Service    │                                                      │
+│  │  Publishes:  │                                                      │
+│  │ • NewPost    │                                                      │
+│  │   Created    │                                                      │
+│  └──────────────┘                                                      │
+│  ┌──────────────┐                                                      │
+│  │   Routine    │──────────────────────────────────────────────────────┤
+│  │   Service    │                                                      │
+│  │  Publishes:  │                                                      │
+│  │ • Routine    │                                                      │
+│  │   Completed  │                                                      │
+│  └──────────────┘                                                      │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 4.3 Event Catalog
 
-| Event Name | Publisher | Consumer | Payload |
-|------------|-----------|----------|---------|
-| `MedicationTaken` | Medication Service | Notification Service | patientId, medication, timestamp |
-| `MedicationMissed` | Medication Service | Notification Service | patientId, medication, scheduledTime |
-| `AppointmentBooked` | Appointment Service | Notification Service | patientId, doctorId, dateTime |
-| `NewPostCreated` | Community Service | Notification Service | authorId, postId, content |
+| Event Name | Publisher | Consumer | Queue | Payload |
+|------------|-----------|----------|-------|---------|
+| `MedicationTaken` | Medication Service | Notification Service | notifications.medication.taken | patientId, medicationName, timestamp |
+| `MedicationMissed` | Medication Service | Notification Service | notifications.medication.missed | patientId, medicationName, scheduledTime |
+| `AppointmentBooked` | Appointment Service | Notification Service | notifications.appointments | patientId, doctorName, dateTime |
+| `NewPostCreated` | Community Service | Notification Service | notifications.community | authorId, postId, title, category |
+| `RoutineCompleted` | Routine Service | Notification Service | notifications.routine | patientId, routineId, title, completedAt |
+
+### 4.4 Synchronous Communication (OpenFeign)
+
+| Client Service | Provider Service | Purpose |
+|----------------|------------------|---------|
+| notification-service | appointments-service | Fetch upcoming appointments for reminder notifications |
+| notification-service | patient-service | Convert patient DB ID to Keycloak user ID |
+| medication-service | patient-service | Validate patient existence when creating a medication plan |
+| community-service | patient-service | Enrich post author details via Feign lookup |
+| routine-service | patient-service | Validate patient existence when creating a routine |
 
 ---
 

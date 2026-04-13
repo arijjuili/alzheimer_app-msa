@@ -3,6 +3,8 @@ package medication.medication.service;
 import medication.medication.entity.MedicationIntake;
 import medication.medication.entity.MedicationPlan;
 import medication.medication.entity.enums.IntakeStatus;
+import medication.medication.event.MedicationMissedEvent;
+import medication.medication.event.MedicationTakenEvent;
 import medication.medication.exception.BadRequestException;
 import medication.medication.exception.ResourceNotFoundException;
 import medication.medication.repository.MedicationIntakeRepository;
@@ -21,12 +23,15 @@ public class MedicationIntakeService {
 
     private final MedicationIntakeRepository intakeRepository;
     private final MedicationPlanRepository planRepository;
+    private final EventPublisherService eventPublisher;
 
     @Autowired
-    public MedicationIntakeService(MedicationIntakeRepository intakeRepository, 
-                                   MedicationPlanRepository planRepository) {
+    public MedicationIntakeService(MedicationIntakeRepository intakeRepository,
+                                   MedicationPlanRepository planRepository,
+                                   EventPublisherService eventPublisher) {
         this.intakeRepository = intakeRepository;
         this.planRepository = planRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -128,7 +133,17 @@ public class MedicationIntakeService {
         if (notes != null && !notes.isEmpty()) {
             intake.setNotes(notes);
         }
-        return intakeRepository.save(intake);
+        MedicationIntake saved = intakeRepository.save(intake);
+
+        eventPublisher.publishMedicationTaken(new MedicationTakenEvent(
+                saved.getId(),
+                saved.getPlan().getId(),
+                saved.getPlan().getPatientId(),
+                saved.getPlan().getMedicationName(),
+                saved.getTakenAt()
+        ));
+
+        return saved;
     }
 
     /**
@@ -140,7 +155,17 @@ public class MedicationIntakeService {
         if (notes != null && !notes.isEmpty()) {
             intake.setNotes(notes);
         }
-        return intakeRepository.save(intake);
+        MedicationIntake saved = intakeRepository.save(intake);
+
+        eventPublisher.publishMedicationMissed(new MedicationMissedEvent(
+                saved.getId(),
+                saved.getPlan().getId(),
+                saved.getPlan().getPatientId(),
+                saved.getPlan().getMedicationName(),
+                saved.getScheduledAt()
+        ));
+
+        return saved;
     }
 
     /**

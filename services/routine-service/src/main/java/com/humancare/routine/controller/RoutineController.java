@@ -72,4 +72,9 @@ public class RoutineController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<RoutineResponse> complete(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.completeRoutine(id));
+    }
 }

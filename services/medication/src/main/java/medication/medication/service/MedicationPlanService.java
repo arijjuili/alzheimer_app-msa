@@ -1,5 +1,7 @@
 package medication.medication.service;
 
+import medication.medication.client.PatientClient;
+import medication.medication.dto.PatientDto;
 import medication.medication.entity.MedicationPlan;
 import medication.medication.exception.ResourceNotFoundException;
 import medication.medication.repository.MedicationPlanRepository;
@@ -15,16 +17,24 @@ import java.util.UUID;
 public class MedicationPlanService {
 
     private final MedicationPlanRepository medicationPlanRepository;
+    private final PatientClient patientClient;
 
     @Autowired
-    public MedicationPlanService(MedicationPlanRepository medicationPlanRepository) {
+    public MedicationPlanService(MedicationPlanRepository medicationPlanRepository,
+                                 PatientClient patientClient) {
         this.medicationPlanRepository = medicationPlanRepository;
+        this.patientClient = patientClient;
     }
 
     /**
      * Create a new medication plan
      */
     public MedicationPlan createPlan(MedicationPlan plan) {
+        // Synchronous Feign validation: ensure patient exists
+        PatientDto patient = patientClient.getPatientById(plan.getPatientId());
+        if (patient == null) {
+            throw new ResourceNotFoundException("Patient", "id", plan.getPatientId());
+        }
         return medicationPlanRepository.save(plan);
     }
 

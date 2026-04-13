@@ -46,6 +46,9 @@ public class Routine {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "completed", nullable = false)
+    private Boolean completed = false;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
@@ -58,7 +61,7 @@ public class Routine {
     }
 
     public Routine(UUID id, UUID patientId, String title, String description, RoutineFrequency frequency,
-                   LocalTime timeOfDay, Boolean isActive, Instant createdAt, Instant updatedAt) {
+                   LocalTime timeOfDay, Boolean isActive, Boolean completed, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.patientId = patientId;
         this.title = title;
@@ -66,6 +69,7 @@ public class Routine {
         this.frequency = frequency;
         this.timeOfDay = timeOfDay;
         this.isActive = isActive;
+        this.completed = completed;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -140,5 +144,13 @@ public class Routine {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
     }
 }

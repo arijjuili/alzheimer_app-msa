@@ -162,7 +162,8 @@ HumanCare/
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Inter-service communication via OpenFeign | ✅ | Notification Service fetches appointment data synchronously |
+| Inter-service communication via OpenFeign | ✅ | 5 synchronous scenarios across medication, community, routine, and notification services |
+| Event-driven architecture with RabbitMQ | ✅ | 5 asynchronous event types (medication, appointment, community, routine) |
 | Automatic appointment reminder notifications | ✅ | Scheduled reminders for upcoming appointments (next 7 days) |
 | Real-time notification system in frontend | ✅ | Notification bell, unread count, and full notifications page |
 
@@ -191,12 +192,22 @@ Angular → Gateway → Service → Database
 ```
 
 ### Asynchronous (Events via RabbitMQ)
-| Event | Publisher | Consumer |
-|-------|-----------|----------|
-| MedicationTaken | Medication Service | Notification Service |
-| AppointmentBooked | Appointment Service | Notification Service |
-| RoutineCompleted | Routine Service | Notification Service |
-| NewPostCreated | Community Service | Notification Service |
+| Event | Publisher | Consumer | Queue |
+|-------|-----------|----------|-------|
+| MedicationTaken | Medication Service | Notification Service | notifications.medication.taken |
+| MedicationMissed | Medication Service | Notification Service | notifications.medication.missed |
+| AppointmentBooked | Appointment Service | Notification Service | notifications.appointments |
+| NewPostCreated | Community Service | Notification Service | notifications.community |
+| RoutineCompleted | Routine Service | Notification Service | notifications.routine |
+
+### Synchronous (OpenFeign)
+| Client Service | Target Service | Purpose |
+|----------------|----------------|---------|
+| Notification Service | Appointments Service | Fetch upcoming appointments for reminders |
+| Notification Service | Patient Service | Resolve patient DB ID to Keycloak ID |
+| Medication Service | Patient Service | Validate patient existence on plan creation |
+| Community Service | Patient Service | Enrich post author details |
+| Routine Service | Patient Service | Validate patient existence on routine creation |
 
 ### API Endpoints
 

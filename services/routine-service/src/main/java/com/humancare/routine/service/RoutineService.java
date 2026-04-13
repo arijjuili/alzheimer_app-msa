@@ -20,10 +20,16 @@ public class RoutineService {
 
     private final RoutineRepository repository;
     private final RoutineMapper mapper;
+    private final EventPublisherService eventPublisher;
+    private final com.humancare.routine.client.PatientClient patientClient;
 
-    public RoutineService(RoutineRepository repository, RoutineMapper mapper) {
+    public RoutineService(RoutineRepository repository, RoutineMapper mapper,
+                          EventPublisherService eventPublisher,
+                          com.humancare.routine.client.PatientClient patientClient) {
         this.repository = repository;
         this.mapper = mapper;
+        this.eventPublisher = eventPublisher;
+        this.patientClient = patientClient;
     }
 
     @Transactional(readOnly = true)
@@ -43,8 +49,30 @@ public class RoutineService {
 
     @Transactional
     public RoutineResponse create(CreateRoutineRequest request) {
+        // Synchronous Feign validation: ensure patient exists
+        var patient = patientClient.getPatientById(request.getPatientId());
+        if (patient == null) {
+            throw new com.humancare.routine.exception.RoutineNotFoundException(request.getPatientId());
+        }
         Routine routine = mapper.toEntity(request);
         Routine saved = repository.save(routine);
+        return mapper.toResponse(saved);
+    }
+
+    @Transactional
+    public RoutineResponse completeRoutine(UUID id) {
+        Routine routine = getOrThrow(id);
+        routine.setCompleted(true);
+        routine.setIsActive(false);
+        Routine saved = repository.save(routine);
+
+        eventPublisher.publishRoutineCompleted(new com.humancare.routine.event.RoutineCompletedEvent(
+                saved.getId(),
+                saved.getPatientId(),
+                saved.getTitle(),
+                java.time.LocalDateTime.now()
+        ));
+
         return mapper.toResponse(saved);
     }
 

@@ -411,6 +411,10 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: ${DB_PASSWORD:-root}
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: hc-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: humancare
+      SPRING_RABBITMQ_PASSWORD: humancare123
       JAVA_OPTS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
@@ -424,6 +428,8 @@ services:
       hc-eureka-server:
         condition: service_healthy
       hc-config-server:
+        condition: service_healthy
+      hc-rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
@@ -484,6 +490,10 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: hc-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: humancare
+      SPRING_RABBITMQ_PASSWORD: humancare123
       JAVA_OPTS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
@@ -497,6 +507,8 @@ services:
       hc-eureka-server:
         condition: service_healthy
       hc-config-server:
+        condition: service_healthy
+      hc-rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
@@ -529,6 +541,10 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: hc-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: humancare
+      SPRING_RABBITMQ_PASSWORD: humancare123
       JAVA_OPTS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
@@ -542,6 +558,8 @@ services:
       hc-eureka-server:
         condition: service_healthy
       hc-config-server:
+        condition: service_healthy
+      hc-rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8089/actuator/health"]
@@ -647,6 +665,10 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: ${DB_PASSWORD:-root}
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: hc-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: humancare
+      SPRING_RABBITMQ_PASSWORD: humancare123
       JAVA_OPTS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
@@ -660,6 +682,8 @@ services:
       hc-eureka-server:
         condition: service_healthy
       hc-config-server:
+        condition: service_healthy
+      hc-rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8087/actuator/health"]
