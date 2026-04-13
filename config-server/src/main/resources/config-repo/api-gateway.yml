@@ -67,13 +67,17 @@ spring:
                 retries: 3
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
 
-        # Cognitive Memory Service (placeholder)
-        - id: cognitive-memory
-          uri: lb://cognitive-memory
+        # Memory Service (Java + Eureka)
+        - id: memory-service
+          uri: lb://memory-service
           predicates:
-            - Path=/api/v1/cognitive/**, /api/v1/games/**, /api/v1/memories/**
+            - Path=/api/memory-items/**
           filters:
             - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
 
         # Daily Care Service (placeholder)
         - id: daily-care
@@ -313,6 +317,18 @@ spring:
                 retries: 3
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
 
+        # Memory Service - Docker
+        - id: memory-service
+          uri: lb://memory-service
+          predicates:
+            - Path=/api/memory-items/**
+          filters:
+            - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
         # Keycloak - Docker
         - id: keycloak
           uri: http://hc-keycloak:8080
@@ -424,6 +440,14 @@ spring:
           filters:
             - StripPrefix=0
             - TokenRelay
+
+        # Memory Service - Local
+        - id: memory-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/memory-items/**
+          filters:
+            - StripPrefix=0
 
         # Keycloak - Local
         - id: keycloak

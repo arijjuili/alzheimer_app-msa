@@ -51,6 +51,14 @@ export const routes: Routes = [
       { 
         path: 'notifications', 
         loadChildren: () => import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES)
+      },
+      { 
+        path: 'memory-items', 
+        loadChildren: () => import('./features/memory-items/memory-items.routes').then(m => m.MEMORY_ITEMS_ROUTES)
+      },
+      { 
+        path: 'memory-wallet', 
+        loadChildren: () => import('./features/memory-wallet/memory-wallet.routes').then(m => m.MEMORY_WALLET_ROUTES)
       }
     ]
   },

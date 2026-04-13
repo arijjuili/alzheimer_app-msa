@@ -23,14 +23,15 @@ export class MenuService {
     
     // Patient menu items
     { icon: 'favorite', label: 'My Health', route: '/app/health', roles: [Role.PATIENT] },
+    { icon: 'photo_album', label: 'My Memories', route: '/app/memory-wallet', roles: [Role.PATIENT] },
     
     // Caregiver menu items
     { icon: 'people_outline', label: 'My Patients', route: '/app/my-patients', roles: [Role.CAREGIVER] },
     { icon: 'schedule', label: 'Schedule', route: '/app/schedule', roles: [Role.CAREGIVER] },
+    { icon: 'photo_library', label: 'Memory Items', route: '/app/memory-items', roles: [Role.CAREGIVER, Role.ADMIN] },
     
     // Doctor menu items
     { icon: 'groups', label: 'All Patients', route: '/app/all-patients', roles: [Role.DOCTOR] },
-    { icon: 'medical_services', label: 'Medical Records', route: '/app/medical-records', roles: [Role.DOCTOR] },
     
     // Admin menu items
     { icon: 'manage_accounts', label: 'User Management', route: '/app/users', roles: [Role.ADMIN] },

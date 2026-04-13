@@ -1,0 +1,34 @@
+server:
+  port: 8005
+
+spring:
+  application:
+    name: cognitive-memory
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config:config123@localhost:8888}
+
+app:
+  external-badge:
+    enabled: ${EXTERNAL_BADGE_ENABLED:false}
+    base-url: ${EXTERNAL_BADGE_BASE_URL:}
+    issue-path: ${EXTERNAL_BADGE_ISSUE_PATH:/badges/issue}
+    api-key: ${EXTERNAL_BADGE_API_KEY:}
+
+notification:
+  service:
+    base-url: ${NOTIFICATION_SERVICE_BASE_URL:http://localhost:8004}
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:tc:postgresql:15-alpine:///cognitive_memory_db
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false

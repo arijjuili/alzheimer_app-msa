@@ -23,8 +23,6 @@
 # IMPORTANT: Container names are prefixed with 'hc-' to avoid conflicts
 # =============================================================================
 
-version: '3.8'
-
 services:
   # ---------------------------------------------------------------------------
   # Eureka Server - Service Discovery
@@ -705,6 +703,76 @@ services:
           memory: 256M
 
   # ---------------------------------------------------------------------------
+  # PostgreSQL Database for Memory Service (PORT: 5437)
+  # ---------------------------------------------------------------------------
+  hc-postgres-memory:
+    container_name: hc-postgres-memory
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: memory_db
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - hc_pg_memory:/var/lib/postgresql/data
+    ports:
+      - "5437:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d memory_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Memory Service - Java + Spring Boot + PostgreSQL
+  # ---------------------------------------------------------------------------
+  hc-memory-service:
+    container_name: hc-memory-service
+    build:
+      context: ./services/memory-service
+      dockerfile: Dockerfile
+    image: humancare/memory:latest
+    environment:
+      SERVER_PORT: 8086
+      SPRING_APPLICATION_NAME: memory-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8086:8086"
+    depends_on:
+      hc-postgres-memory:
+        condition: service_healthy
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
   # API Gateway - Spring Cloud Gateway (DIFFERENT PORT: 8081)
   # ---------------------------------------------------------------------------
   hc-api-gateway:
@@ -775,5 +843,7 @@ volumes:
   hc_rabbitmq_data:
     driver: local
   hc_checkin_data:
+    driver: local
+  hc_pg_memory:
     driver: local
 

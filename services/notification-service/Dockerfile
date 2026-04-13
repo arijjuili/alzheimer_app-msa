@@ -2,7 +2,7 @@
 # Java 17 + Maven build
 
 # Stage 1: Build
-FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -15,16 +15,16 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Stage 2: Runtime
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 # Install curl for healthcheck
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Create non-root user
-RUN addgroup -g 1001 -S notification && \
-    adduser -u 1001 -S notification -G notification
+RUN groupadd -r -g 1001 notification && \
+    useradd -r -u 1001 -g notification notification
 
 # Copy jar from builder
 COPY --from=builder /app/target/notification-service-*.jar app.jar
