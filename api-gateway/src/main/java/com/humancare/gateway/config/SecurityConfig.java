@@ -46,6 +46,7 @@ public class SecurityConfig {
         "/actuator/**",
         "/actuator",
         "/realms/**",
+        "/resources/**",
         "/health",
         "/",
         "/favicon.ico",
@@ -77,6 +78,7 @@ public class SecurityConfig {
                 .pathMatchers("/api/routines/**").hasAnyRole("PATIENT", "CAREGIVER", "DOCTOR", "ADMIN")
                 .pathMatchers("/api/community/health").permitAll()
                 .pathMatchers("/api/community/**").hasAnyRole("PATIENT", "CAREGIVER", "DOCTOR", "ADMIN")
+                .pathMatchers("/api/memories/**").hasAnyRole("PATIENT", "CAREGIVER", "DOCTOR", "ADMIN")
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

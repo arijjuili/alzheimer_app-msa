@@ -133,6 +133,19 @@ spring:
                 retries: 3
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
 
+        # Memory Service (Java + Eureka)
+        - id: memory-service
+          uri: lb://memory-service
+          predicates:
+            - Path=/api/memories/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
         # Medical Management Service (placeholder)
         - id: medical-management
           uri: lb://medical-management
@@ -300,6 +313,19 @@ spring:
                 retries: 3
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
 
+        # Memory Service - Docker
+        - id: memory-service
+          uri: lb://memory-service
+          predicates:
+            - Path=/api/memories/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
         # Daily Check-in Service - Docker
         - id: daily-checkin-service
           uri: lb://daily-checkin-service
@@ -380,7 +406,6 @@ spring:
           filters:
             - StripPrefix=0
             - TokenRelay
-            - TokenRelay
 
         # Appointments Service - Local
         - id: appointments-service
@@ -412,6 +437,15 @@ spring:
           uri: http://localhost:8087
           predicates:
             - Path=/api/community/**
+          filters:
+            - StripPrefix=0
+            - TokenRelay
+
+        # Memory Service - Local
+        - id: memory-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/memories/**
           filters:
             - StripPrefix=0
             - TokenRelay

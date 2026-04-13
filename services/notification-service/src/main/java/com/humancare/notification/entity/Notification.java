@@ -3,51 +3,31 @@ package com.humancare.notification.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "notifications")
-@EntityListeners(AuditingEntityListener.class)
+@Document(collection = "notifications")
 public class Notification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "recipient_id", nullable = false)
     private UUID recipientId;
 
-    @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(nullable = false, length = 1000)
     private String message;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
     private NotificationType type;
 
-    @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
     @CreatedDate
-    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public Notification() {

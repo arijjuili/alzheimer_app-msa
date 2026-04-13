@@ -1,5 +1,5 @@
 # =============================================================================
-# AlzCare Eureka Server - Dockerfile
+# HumanCare Eureka Server - Dockerfile
 # Multi-stage build for optimized production image
 # =============================================================================
 
@@ -28,11 +28,11 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 
 # Metadata
-LABEL maintainer="AlzCare Team"
-LABEL description="Eureka Service Discovery for AlzCare Platform"
+LABEL maintainer="HumanCare Team"
+LABEL description="Eureka Service Discovery for HumanCare Platform"
 
 # Create non-root user
-RUN addgroup -S alzcare && adduser -S alzcare -G alzcare
+RUN addgroup -S humancare && adduser -S humancare -G humancare
 
 # Install curl for health checks
 RUN apk add --no-cache curl
@@ -43,10 +43,10 @@ WORKDIR /app
 COPY --from=builder /build/target/eureka-server-*.jar app.jar
 
 # Set ownership
-RUN chown -R alzcare:alzcare /app
+RUN chown -R humancare:humancare /app
 
 # Switch to non-root user
-USER alzcare
+USER humancare
 
 # Expose Eureka port
 EXPOSE 8761

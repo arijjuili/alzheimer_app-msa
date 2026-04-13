@@ -1,5 +1,5 @@
 # =============================================================================
-# AlzCare Config Server - Dockerfile
+# HumanCare Config Server - Dockerfile
 # Multi-stage build for optimized production image
 # =============================================================================
 
@@ -28,11 +28,11 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 
 # Metadata
-LABEL maintainer="AlzCare Team"
-LABEL description="Config Server for AlzCare Platform"
+LABEL maintainer="HumanCare Team"
+LABEL description="Config Server for HumanCare Platform"
 
 # Create non-root user
-RUN addgroup -S alzcare && adduser -S alzcare -G alzcare
+RUN addgroup -S humancare && adduser -S humancare -G humancare
 
 # Install curl for health checks
 RUN apk add --no-cache curl
@@ -40,16 +40,16 @@ RUN apk add --no-cache curl
 WORKDIR /app
 
 # Create config-repo directory for native file backend
-RUN mkdir -p /config-repo && chown -R alzcare:alzcare /config-repo
+RUN mkdir -p /config-repo && chown -R humancare:humancare /config-repo
 
 # Copy JAR from builder stage
 COPY --from=builder /build/target/config-server-*.jar app.jar
 
 # Set ownership
-RUN chown -R alzcare:alzcare /app
+RUN chown -R humancare:humancare /app
 
 # Switch to non-root user
-USER alzcare
+USER humancare
 
 # Expose Config Server port
 EXPOSE 8888

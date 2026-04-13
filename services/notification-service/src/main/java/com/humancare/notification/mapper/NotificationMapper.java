@@ -12,6 +12,7 @@ public class NotificationMapper {
 
     public Notification toEntity(CreateNotificationRequest request) {
         Notification notification = new Notification();
+        notification.setId(java.util.UUID.randomUUID());
         notification.setRecipientId(request.recipientId());
         notification.setTitle(request.title());
         notification.setMessage(request.message());

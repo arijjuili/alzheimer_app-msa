@@ -77,6 +77,7 @@ services:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
       CONFIG_SERVER_USERNAME: config
       CONFIG_SERVER_PASSWORD: config123
+      SPRING_PROFILES_ACTIVE: "docker,native"
       JAVA_OPTS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
@@ -441,33 +442,35 @@ services:
           memory: 256M
 
   # ---------------------------------------------------------------------------
-  # MySQL Database for Notification Service (PORT: 3310)
+  # MongoDB Database for Notification Service (PORT: 27017)
   # ---------------------------------------------------------------------------
-  hc-mysql-notification:
-    container_name: hc-mysql-notification
-    image: mysql:8.0
+  hc-mongo-notification:
+    container_name: hc-mongo-notification
+    image: mongo:6.0
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_DATABASE: notifications_db
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MONGO_INITDB_DATABASE: notifications_db
     volumes:
-      - hc_mysql_notification:/var/lib/mysql
+      - hc_mongo_notification:/data/db
     ports:
-      - "3310:3306"        # External 3310 to avoid conflicts
+      - "27017:27017"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     restart: unless-stopped
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # ---------------------------------------------------------------------------
-  # Notification Service - Java + Spring Boot + MySQL
+  # Notification Service - Java + Spring Boot + MongoDB
   # ---------------------------------------------------------------------------
   hc-notification-service:
     container_name: hc-notification-service
@@ -480,8 +483,6 @@ services:
       SPRING_APPLICATION_NAME: notification-service
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
-      DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD:-root}
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
       JAVA_OPTS: >
         -XX:+UseContainerSupport
@@ -491,7 +492,7 @@ services:
     ports:
       - "8088:8088"
     depends_on:
-      hc-mysql-notification:
+      hc-mongo-notification:
         condition: service_healthy
       hc-eureka-server:
         condition: service_healthy
@@ -514,33 +515,7 @@ services:
           memory: 256M
 
   # ---------------------------------------------------------------------------
-  # MySQL Database for Routine Service (PORT: 3309)
-  # ---------------------------------------------------------------------------
-  hc-mysql-routine:
-    container_name: hc-mysql-routine
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_DATABASE: routine_db
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-    volumes:
-      - hc_mysql_routine:/var/lib/mysql
-    ports:
-      - "3309:3306"        # External 3309 to avoid conflicts
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-
-  # ---------------------------------------------------------------------------
-  # Routine Service - Java + Spring Boot + MySQL
+  # Routine Service - Java + Spring Boot + H2
   # ---------------------------------------------------------------------------
   hc-routine-service:
     container_name: hc-routine-service
@@ -553,8 +528,6 @@ services:
       SPRING_APPLICATION_NAME: routine-service
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
-      DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD:-root}
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
       JAVA_OPTS: >
         -XX:+UseContainerSupport
@@ -563,9 +536,9 @@ services:
         -Djava.security.egd=file:/dev/./urandom
     ports:
       - "8089:8089"
+    volumes:
+      - hc_routine_data:/data
     depends_on:
-      hc-mysql-routine:
-        condition: service_healthy
       hc-eureka-server:
         condition: service_healthy
       hc-config-server:
@@ -611,6 +584,51 @@ services:
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
+
+  # ---------------------------------------------------------------------------
+  # Memory Service - Java + Spring Boot + H2
+  # ---------------------------------------------------------------------------
+  hc-memory-service:
+    container_name: hc-memory-service
+    build:
+      context: ./services/memory-service
+      dockerfile: Dockerfile
+    image: humancare/memory:latest
+    environment:
+      SERVER_PORT: 8086
+      SPRING_APPLICATION_NAME: memory-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
+      JAVA_OPTS: >
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8086:8086"
+    volumes:
+      - hc_memory_data:/data
+    depends_on:
+      hc-eureka-server:
+        condition: service_healthy
+      hc-config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # ---------------------------------------------------------------------------
   # Community Service - Java + Spring Boot + MySQL
@@ -716,8 +734,8 @@ services:
     environment:
       SERVER_PORT: 8080     # Internal port (inside container)
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://hc-eureka-server:8761/eureka/
-      KEYCLOAK_ISSUER_URI: http://hc-keycloak:8080/realms/humancare
-      KEYCLOAK_JWK_SET_URI: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://hc-keycloak:8080/realms/humancare
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config:config123@hc-config-server:8888"
       JAVA_OPTS: >
@@ -754,7 +772,7 @@ services:
 # Named Volumes (prefixed with hc_)
 # -----------------------------------------------------------------------------
 volumes:
-  hc_mongo_notif:
+  hc_mongo_notification:
     driver: local
   hc_pg_patient:
     driver: local
@@ -766,14 +784,15 @@ volumes:
     driver: local
   hc_mysql_medication:
     driver: local
-  hc_mysql_routine:
+  hc_routine_data:
     driver: local
-  hc_mysql_notification:
-    driver: local
+
   hc_mysql_community:
     driver: local
   hc_rabbitmq_data:
     driver: local
   hc_checkin_data:
+    driver: local
+  hc_memory_data:
     driver: local
 

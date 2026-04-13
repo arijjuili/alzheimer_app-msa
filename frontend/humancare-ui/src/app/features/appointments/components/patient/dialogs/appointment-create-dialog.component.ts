@@ -50,7 +50,7 @@ export interface AppointmentCreateDialogData {
           <!-- Patient Selection Dropdown -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Patient</mat-label>
-            <mat-select formControlName="patientId" [disabled]="!!data?.patientId">
+            <mat-select formControlName="patientId" [disabled]="!!data.patientId">
               <mat-option *ngIf="loadingPatients" disabled>
                 <mat-spinner diameter="20"></mat-spinner> Loading patients...
               </mat-option>

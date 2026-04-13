@@ -27,10 +27,12 @@ This project demonstrates enterprise-grade microservices patterns:
 │  (Port 4200)│     │  (Port 8081)│     │  (8082)   │  (8083)    │  (8084)   │
 └─────────────┘     └─────────────┘     ├─────────────────────────────────────┤
                                                │ Appointment │ Routines    │
-                                               │  (8085)     │  (8086)     │
+                                               │  (8085)     │  (8089)     │
                                         ├─────────────────────────────────────┤
                                         │ Community (8087) │ Notification   │
                                         │                  │ (8088)         │
+                                        ├─────────────────────────────────────┤
+                                        │ Memory (8086)    │                │
                                         └─────────────────────────────────────┘
                                         
 Infrastructure: Eureka (8761) │ Config (8888) │ Keycloak (8090) │ RabbitMQ (5673)
@@ -131,11 +133,12 @@ HumanCare/
 └── services/
     ├── patient-service/      ← Node.js (Salma)
     ├── medication-service/   ← Java (Yosser)
-    ├── checkin-service/      ← Java (Iheb)
+    ├── daily-checkin-service/      ← Java (Iheb)
     ├── appointment-service/  ← Java (Roudayna)
     ├── routine-service/      ← Java (Arij)
     ├── community-service/    ← Java (Mouhib)
-    └── notification-service/ ← Java (Shared)
+    ├── notification-service/ ← Java (Shared)
+    └── memory-service/       ← Java (Shared)
 ```
 
 ---
@@ -148,9 +151,10 @@ HumanCare/
 | Medication | Yosser | Java Spring Boot | 8083 | MySQL |
 | Daily Check-in | Iheb | Java Spring Boot | 8084 | H2 |
 | Appointments | Roudayna | Java Spring Boot | 8085 | MySQL |
-| Routines & Habits | Arij | Java Spring Boot | 8089 | MySQL |
+| Routines & Habits | Arij | Java Spring Boot | 8089 | H2 |
 | Community Wall | Mouhib | Java Spring Boot | 8087 | MySQL |
-| **Notifications** | Salma | Java Spring Boot | 8088 | MySQL |
+| **Notifications** | Salma | Java Spring Boot | 8088 | MongoDB |
+| **Memory** | Shared | Java Spring Boot | 8086 | H2 |
 
 ---
 
@@ -239,7 +243,7 @@ docker ps --filter "name=hc-"
 docker stop $(docker ps -q --filter "name=hc-")
 
 # View gateway logs
-docker logs -f hc-gateway-service
+docker logs -f hc-api-gateway
 ```
 
 ---

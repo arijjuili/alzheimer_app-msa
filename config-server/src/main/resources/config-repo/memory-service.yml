@@ -1,31 +1,36 @@
-# Routine Service Configuration
-# Service Owner: HumanCare | Port: 8089 | Database: H2
+# Memory Service Configuration
+# Service Owner: HumanCare | Port: 8086 | Database: H2
 
 server:
-  port: 8089
+  port: 8086
 
 spring:
   application:
-    name: routine-service
+    name: memory-service
   datasource:
-    url: jdbc:h2:file:/data/routine_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+    url: jdbc:h2:file:/data/memory_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
   h2:
     console:
       enabled: true
       path: /h2-console
       settings:
         web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/humancare
+          jwk-set-uri: http://localhost:8090/realms/humancare/protocol/openid-connect/certs
 
 # Eureka Client Configuration
 eureka:
@@ -36,7 +41,6 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 # Management / Actuator
 management:
@@ -53,7 +57,7 @@ management:
 # Logging
 logging:
   level:
-    com.humancare.routine: DEBUG
+    com.humancare.memory: DEBUG
     org.springframework.cloud: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -65,7 +69,7 @@ spring:
     activate:
       on-profile: docker
   datasource:
-    url: jdbc:h2:file:/data/routine_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+    url: jdbc:h2:file:/data/memory_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -75,15 +79,20 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://hc-keycloak:8080/realms/humancare
+          jwk-set-uri: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
 
 eureka:
   client:
     service-url:
       defaultZone: http://hc-eureka-server:8761/eureka/
   instance:
-    prefer-ip-address: false
-    hostname: hc-routine-service
-    non-secure-port: 8089
+    prefer-ip-address: true
+    hostname: hc-memory-service
 
 ---
 # Development Profile
@@ -92,7 +101,7 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:h2:file:./routine_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+    url: jdbc:h2:file:./memory_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -102,8 +111,3 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: true
-
-logging:
-  level:
-    com.humancare.routine: DEBUG
-    org.hibernate.SQL: DEBUG

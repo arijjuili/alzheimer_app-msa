@@ -24,17 +24,16 @@ This service enables the platform to send timely alerts, reminders, and informat
 | Java | 17 |
 | Spring Boot | 3.2.2 |
 | Spring Cloud | 2023.0.0 |
-| MySQL Connector | 8.x |
+| MongoDB | 6.x |
 
 ### Key Dependencies
 
 - **Spring Boot Starter Web** - REST API framework
-- **Spring Boot Starter Data JPA** - ORM and data access
+- **Spring Boot Starter Data MongoDB** - NoSQL data access
 - **Spring Boot Starter Validation** - Bean validation (JSR-380)
 - **Spring Boot Starter Actuator** - Health checks and monitoring
 - **Spring Cloud Starter Netflix Eureka Client** - Service discovery
 - **Spring Cloud Starter Config** - Externalized configuration
-- **MySQL Connector/J** - Database driver
 - **Spring Cloud Starter OpenFeign** - Inter-service communication
 - **Spring Boot Starter Scheduling** - Cron jobs and schedulers
 
@@ -52,17 +51,15 @@ This service enables the platform to send timely alerts, reminders, and informat
 
 | Property | Local Development | Docker Environment |
 |----------|------------------|-------------------|
-| **Database** | MySQL | MySQL |
+| **Database** | MongoDB | MongoDB |
 | **Database Name** | `notifications_db` | `notifications_db` |
-| **Internal Port** | 3306 | 3306 |
-| **External Port** | 3310 | 3310 |
-| **Container Name** | N/A | `hc-mysql-notification` |
+| **Internal Port** | 27017 | 27017 |
+| **External Port** | 27017 | 27017 |
+| **Container Name** | N/A | `hc-mongo-notification` |
 
 ### Database Connection (Local)
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3310/notifications_db
-spring.datasource.username=root
-spring.datasource.password=${DB_PASSWORD:root}
+spring.data.mongodb.uri=mongodb://localhost:27017/notifications_db
 ```
 
 ## Entity Model

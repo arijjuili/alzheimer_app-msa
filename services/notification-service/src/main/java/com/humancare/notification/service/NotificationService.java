@@ -73,19 +73,23 @@ public class NotificationService {
     public NotificationResponse update(UUID id, UpdateNotificationRequest request) {
         Notification notification = getOrThrow(id);
         mapper.applyUpdate(notification, request);
-        return mapper.toResponse(notification);
+        Notification saved = repository.save(notification);
+        return mapper.toResponse(saved);
     }
 
     @Transactional
     public NotificationResponse markAsRead(UUID id) {
         Notification notification = getOrThrow(id);
         notification.setIsRead(true);
-        return mapper.toResponse(notification);
+        Notification saved = repository.save(notification);
+        return mapper.toResponse(saved);
     }
 
     @Transactional
     public void markAllAsRead(UUID recipientId) {
-        repository.markAllAsReadByRecipientId(recipientId);
+        List<Notification> unread = repository.findByRecipientIdAndIsReadFalse(recipientId);
+        unread.forEach(n -> n.setIsRead(true));
+        repository.saveAll(unread);
     }
 
     @Transactional
