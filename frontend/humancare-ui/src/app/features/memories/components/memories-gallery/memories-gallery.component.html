@@ -1,0 +1,97 @@
+<div class="memories-container">
+  <mat-card class="memories-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div>
+          <mat-card-title>
+            <mat-icon>photo_library</mat-icon>
+            Memories
+          </mat-card-title>
+          <mat-card-subtitle>Relive your precious moments</mat-card-subtitle>
+        </div>
+        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+          <mat-icon>add</mat-icon>
+          Add Memory
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Filter Chips -->
+      <mat-chip-set class="filter-chips">
+        <mat-chip
+          [highlighted]="selectedType === 'ALL'"
+          (click)="applyFilter('ALL')">
+          All
+        </mat-chip>
+        <mat-chip
+          *ngFor="let type of memoryTypes"
+          [highlighted]="selectedType === type"
+          (click)="applyFilter(type)">
+          <mat-icon>{{ getTypeIcon(type) }}</mat-icon>
+          {{ type | titlecase }}
+        </mat-chip>
+      </mat-chip-set>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Loading memories...</p>
+      </div>
+
+      <!-- Grid -->
+      <div *ngIf="!loading" class="memories-grid">
+        <mat-card *ngFor="let memory of filteredMemories" class="memory-card">
+          <mat-card-header>
+            <div mat-card-avatar class="memory-avatar" [class]="'type-' + memory.memoryType.toLowerCase()">
+              <mat-icon [color]="getTypeColor(memory.memoryType)">{{ getTypeIcon(memory.memoryType) }}</mat-icon>
+            </div>
+            <mat-card-title>{{ memory.title }}</mat-card-title>
+            <mat-card-subtitle>
+              <mat-chip [color]="getTypeColor(memory.memoryType)" selected class="type-chip">
+                {{ memory.memoryType }}
+              </mat-chip>
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p class="memory-description">{{ memory.description || 'No description' }}</p>
+            <div class="memory-meta">
+              <span *ngIf="memory.memoryDate" class="memory-date">
+                <mat-icon>event</mat-icon>
+                {{ formatDate(memory.memoryDate) }}
+              </span>
+              <span class="memory-created">
+                <mat-icon>schedule</mat-icon>
+                Added {{ formatDate(memory.createdAt) }}
+              </span>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button color="primary" (click)="openDetailDialog(memory)">
+              <mat-icon>visibility</mat-icon>
+              View
+            </button>
+            <button
+              *ngIf="canDelete(memory)"
+              mat-button
+              color="warn"
+              (click)="deleteMemory(memory)">
+              <mat-icon>delete</mat-icon>
+              Delete
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredMemories.length === 0" class="no-data">
+          <mat-icon>photo_library</mat-icon>
+          <p>No memories found</p>
+          <p class="no-data-subtitle" *ngIf="selectedType !== 'ALL'">Try selecting a different filter</p>
+          <p class="no-data-subtitle" *ngIf="selectedType === 'ALL'">Start by adding your first memory</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

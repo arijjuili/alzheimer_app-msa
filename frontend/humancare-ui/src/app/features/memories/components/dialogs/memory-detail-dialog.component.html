@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>
+  <mat-icon [color]="getTypeColor(data.memory.memoryType)">{{ getTypeIcon(data.memory.memoryType) }}</mat-icon>
+  {{ data.memory.title }}
+</h2>
+
+<mat-dialog-content>
+  <div class="detail-container">
+    <div class="detail-icon-wrapper">
+      <mat-icon [color]="getTypeColor(data.memory.memoryType)" class="detail-icon">{{ getTypeIcon(data.memory.memoryType) }}</mat-icon>
+    </div>
+
+    <p class="detail-description">{{ data.memory.description || 'No description provided.' }}</p>
+
+    <div class="detail-meta">
+      <div class="meta-item" *ngIf="data.memory.memoryDate">
+        <mat-icon>event</mat-icon>
+        <span><strong>Memory Date:</strong> {{ formatDate(data.memory.memoryDate) }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon>schedule</mat-icon>
+        <span><strong>Created:</strong> {{ formatDateTime(data.memory.createdAt) }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon>update</mat-icon>
+        <span><strong>Updated:</strong> {{ formatDateTime(data.memory.updatedAt) }}</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button *ngIf="canEdit()" mat-button color="primary" (click)="openEdit()">
+    <mat-icon>edit</mat-icon>
+    Edit
+  </button>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

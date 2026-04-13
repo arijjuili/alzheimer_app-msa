@@ -1,0 +1,167 @@
+.community-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.community-card {
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 16px;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 24px;
+      font-weight: 500;
+
+      mat-icon {
+        color: #1976d2;
+      }
+    }
+
+    mat-card-subtitle {
+      margin-top: 4px;
+    }
+  }
+}
+
+.filter-chips {
+  margin-bottom: 16px;
+
+  mat-chip-listbox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  p {
+    margin-top: 16px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-card {
+  mat-card-header {
+    padding-bottom: 8px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  mat-card-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+
+    .category-chip {
+      font-size: 12px;
+      min-height: 24px;
+    }
+
+    .post-meta {
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 12px;
+    }
+  }
+
+  .post-content {
+    color: rgba(0, 0, 0, 0.8);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  mat-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 8px;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+}
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: rgba(0, 0, 0, 0.2);
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .no-data-subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+.fab-new-post {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100;
+}
+
+mat-paginator {
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .community-container {
+    padding: 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .new-post-button {
+      width: 100%;
+    }
+  }
+
+  .fab-new-post {
+    right: 16px;
+    bottom: 16px;
+  }
+}

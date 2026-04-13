@@ -1,49 +1,55 @@
 <div class="dashboard-grid">
+  <!-- Loading Overlay -->
+  <div *ngIf="loading" class="loading-overlay full-width">
+    <mat-spinner diameter="64"></mat-spinner>
+    <p>Loading dashboard...</p>
+  </div>
+
   <!-- System Overview Stats -->
-  <div class="stats-row">
+  <div class="stats-row" *ngIf="!loading">
     <mat-card class="stat-card">
       <mat-card-content>
         <div class="stat-icon primary">
           <mat-icon>people</mat-icon>
         </div>
         <div class="stat-info">
-          <span class="stat-value">1,248</span>
+          <span class="stat-value">{{ totalPatients + totalDoctors + totalCaregivers }}</span>
           <span class="stat-label">Total Users</span>
         </div>
       </mat-card-content>
     </mat-card>
-    
+
     <mat-card class="stat-card">
       <mat-card-content>
         <div class="stat-icon accent">
           <mat-icon>person_outline</mat-icon>
         </div>
         <div class="stat-info">
-          <span class="stat-value">856</span>
+          <span class="stat-value">{{ totalPatients || '—' }}</span>
           <span class="stat-label">Patients</span>
         </div>
       </mat-card-content>
     </mat-card>
-    
+
     <mat-card class="stat-card">
       <mat-card-content>
         <div class="stat-icon warn">
           <mat-icon>local_hospital</mat-icon>
         </div>
         <div class="stat-info">
-          <span class="stat-value">42</span>
+          <span class="stat-value">{{ totalDoctors || '—' }}</span>
           <span class="stat-label">Doctors</span>
         </div>
       </mat-card-content>
     </mat-card>
-    
+
     <mat-card class="stat-card">
       <mat-card-content>
         <div class="stat-icon success">
           <mat-icon>event_available</mat-icon>
         </div>
         <div class="stat-info">
-          <span class="stat-value">128</span>
+          <span class="stat-value">{{ todayAppointments || '—' }}</span>
           <span class="stat-label">Today's Appointments</span>
         </div>
       </mat-card-content>
@@ -51,7 +57,7 @@
   </div>
 
   <!-- Recent Users -->
-  <mat-card class="dashboard-card">
+  <mat-card class="dashboard-card" *ngIf="!loading">
     <mat-card-header>
       <mat-icon mat-card-avatar color="primary">recent_actors</mat-icon>
       <mat-card-title>Recent Users</mat-card-title>
@@ -61,28 +67,30 @@
       <table mat-table [dataSource]="recentUsers" class="users-table">
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Name</th>
-          <td mat-cell *matCellDef="let user">{{ user.name }}</td>
+          <td mat-cell *matCellDef="let user">{{ user.firstName }} {{ user.lastName }}</td>
         </ng-container>
-        
+
         <ng-container matColumnDef="email">
           <th mat-header-cell *matHeaderCellDef>Email</th>
           <td mat-cell *matCellDef="let user">{{ user.email }}</td>
         </ng-container>
-        
+
         <ng-container matColumnDef="role">
           <th mat-header-cell *matHeaderCellDef>Role</th>
           <td mat-cell *matCellDef="let user">
-            <mat-chip [color]="getRoleColor(user.role)" selected>
-              {{ user.role }}
-            </mat-chip>
+            <mat-chip-set>
+              <mat-chip [color]="getRoleColor('PATIENT')" selected>
+                PATIENT
+              </mat-chip>
+            </mat-chip-set>
           </td>
         </ng-container>
-        
+
         <ng-container matColumnDef="date">
           <th mat-header-cell *matHeaderCellDef>Registered</th>
-          <td mat-cell *matCellDef="let user">{{ user.registeredDate }}</td>
+          <td mat-cell *matCellDef="let user">{{ user.createdAt | date:'mediumDate' }}</td>
         </ng-container>
-        
+
         <tr mat-header-row *matHeaderRowDef="usersColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: usersColumns;"></tr>
       </table>
@@ -93,13 +101,14 @@
   </mat-card>
 
   <!-- System Health -->
-  <mat-card class="dashboard-card">
+  <mat-card class="dashboard-card" *ngIf="!loading">
     <mat-card-header>
       <mat-icon mat-card-avatar color="accent">monitor_heart</mat-icon>
       <mat-card-title>System Health</mat-card-title>
       <mat-card-subtitle>Current system status</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
+      <p class="system-metrics-note">These are static system metrics for demonstration.</p>
       <div class="health-metrics">
         <div class="health-item">
           <div class="health-header">
@@ -108,7 +117,7 @@
           </div>
           <mat-progress-bar mode="determinate" value="45" color="primary"></mat-progress-bar>
         </div>
-        
+
         <div class="health-item">
           <div class="health-header">
             <span>Memory Usage</span>
@@ -116,7 +125,7 @@
           </div>
           <mat-progress-bar mode="determinate" value="62" color="accent"></mat-progress-bar>
         </div>
-        
+
         <div class="health-item">
           <div class="health-header">
             <span>Storage</span>
@@ -124,7 +133,7 @@
           </div>
           <mat-progress-bar mode="determinate" value="78" color="warn"></mat-progress-bar>
         </div>
-        
+
         <div class="health-item">
           <div class="health-header">
             <span>Database</span>
@@ -136,26 +145,24 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- Activity Log -->
-  <mat-card class="dashboard-card">
+  <!-- System Events -->
+  <mat-card class="dashboard-card" *ngIf="!loading">
     <mat-card-header>
       <mat-icon mat-card-avatar color="primary">history</mat-icon>
-      <mat-card-title>Recent Activity</mat-card-title>
-      <mat-card-subtitle>System events log</mat-card-subtitle>
+      <mat-card-title>System Events</mat-card-title>
+      <mat-card-subtitle>Current system overview</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <mat-list>
-        <mat-list-item *ngFor="let activity of recentActivity">
-          <mat-icon matListItemIcon [color]="activity.type === 'warning' ? 'warn' : 'primary'">
-            {{ activity.icon }}
-          </mat-icon>
-          <div matListItemTitle>{{ activity.action }}</div>
-          <div matListItemLine>{{ activity.user }} • {{ activity.time }}</div>
+        <mat-list-item>
+          <mat-icon matListItemIcon color="primary">people</mat-icon>
+          <div matListItemTitle>{{ totalPatients }} patients in system</div>
+        </mat-list-item>
+        <mat-list-item>
+          <mat-icon matListItemIcon color="accent">event</mat-icon>
+          <div matListItemTitle>{{ todayAppointments }} appointments scheduled for today</div>
         </mat-list-item>
       </mat-list>
     </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button color="primary">View Full Log</button>
-    </mat-card-actions>
   </mat-card>
 </div>

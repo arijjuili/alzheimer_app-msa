@@ -1,0 +1,106 @@
+<h2 mat-dialog-title>
+  <mat-icon>fact_check</mat-icon>
+  Check-in Details
+</h2>
+
+<mat-dialog-content>
+  <div class="detail-container">
+    <!-- Date -->
+    <div class="detail-row status-row">
+      <span class="checkin-date">{{ formatDate(data.checkinDate) }}</span>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Mood & Sleep Chips -->
+    <div class="detail-row chips-row">
+      <div class="chip-item">
+        <span class="detail-label">Mood</span>
+        <mat-chip [color]="getMoodColor(data.mood)" selected>
+          {{ data.mood }}
+        </mat-chip>
+      </div>
+      <div class="chip-item">
+        <span class="detail-label">Sleep Quality</span>
+        <mat-chip [color]="getSleepColor(data.sleepQuality)" selected>
+          {{ data.sleepQuality }}
+        </mat-chip>
+      </div>
+    </div>
+
+    <!-- Energy Level -->
+    <div class="detail-row">
+      <mat-icon color="primary">bolt</mat-icon>
+      <div class="detail-content">
+        <span class="detail-label">Energy Level</span>
+        <span class="detail-value energy-value">{{ data.energyLevel }} / 10</span>
+      </div>
+    </div>
+
+    <mat-divider *ngIf="data.symptoms && data.symptoms.length > 0"></mat-divider>
+
+    <!-- Symptoms -->
+    <div class="detail-row symptoms-row" *ngIf="data.symptoms && data.symptoms.length > 0">
+      <mat-icon color="primary">healing</mat-icon>
+      <div class="detail-content">
+        <span class="detail-label">Symptoms</span>
+        <mat-list dense class="symptom-list">
+          <mat-list-item *ngFor="let symptom of data.symptoms">
+            <div matLine class="symptom-name">{{ symptom.symptomType }}</div>
+            <div matLine class="symptom-meta">
+              Severity: {{ symptom.severity }}/10
+              <span *ngIf="symptom.notes"> — {{ symptom.notes }}</span>
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+
+    <mat-divider *ngIf="data.notes"></mat-divider>
+
+    <!-- Notes -->
+    <div class="detail-row" *ngIf="data.notes">
+      <mat-icon color="primary">notes</mat-icon>
+      <div class="detail-content">
+        <span class="detail-label">Notes</span>
+        <span class="detail-value notes-value">{{ data.notes }}</span>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Timestamps -->
+    <div class="detail-row timestamps-row">
+      <div class="timestamp-item">
+        <mat-icon color="primary">schedule</mat-icon>
+        <div class="detail-content">
+          <span class="detail-label">Created</span>
+          <span class="detail-value">{{ formatDateTime(data.createdAt) }}</span>
+        </div>
+      </div>
+      <div class="timestamp-item">
+        <mat-icon color="primary">update</mat-icon>
+        <div class="detail-content">
+          <span class="detail-label">Updated</span>
+          <span class="detail-value">{{ formatDateTime(data.updatedAt) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Check-in ID -->
+    <div class="detail-row">
+      <mat-icon color="primary">tag</mat-icon>
+      <div class="detail-content">
+        <span class="detail-label">Check-in ID</span>
+        <span class="detail-value">#{{ data.id }}</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button color="primary" (click)="onClose()">
+    <mat-icon>close</mat-icon>
+    Close
+  </button>
+</mat-dialog-actions>

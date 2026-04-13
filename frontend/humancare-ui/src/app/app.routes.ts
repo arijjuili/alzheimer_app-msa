@@ -51,6 +51,22 @@ export const routes: Routes = [
       { 
         path: 'notifications', 
         loadChildren: () => import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES)
+      },
+      { 
+        path: 'checkins', 
+        loadChildren: () => import('./features/checkins/checkins.routes').then(m => m.CHECKINS_ROUTES)
+      },
+      { 
+        path: 'community', 
+        loadChildren: () => import('./features/community/community.routes').then(m => m.COMMUNITY_ROUTES)
+      },
+      { 
+        path: 'routines', 
+        loadChildren: () => import('./features/routines/routines.routes').then(m => m.ROUTINES_ROUTES)
+      },
+      { 
+        path: 'memories', 
+        loadChildren: () => import('./features/memories/memories.routes').then(m => m.MEMORIES_ROUTES)
       }
     ]
   },

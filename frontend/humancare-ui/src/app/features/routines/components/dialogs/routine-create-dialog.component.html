@@ -1,0 +1,85 @@
+<h2 mat-dialog-title>
+  <mat-icon>add_circle</mat-icon>
+  Create Routine
+</h2>
+
+<form [formGroup]="routineForm" (ngSubmit)="onSubmit()">
+  <mat-dialog-content>
+    <div class="form-container">
+      <!-- Patient ID -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Patient ID</mat-label>
+        <input matInput type="text" formControlName="patientId" placeholder="Enter patient ID" [readonly]="isPatientIdReadOnly()">
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error *ngIf="routineForm.get('patientId')?.hasError('required')">
+          Patient ID is required
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Title -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Title</mat-label>
+        <input matInput formControlName="title" placeholder="Enter routine title">
+        <mat-icon matPrefix>event_repeat</mat-icon>
+        <mat-error *ngIf="routineForm.get('title')?.hasError('required')">
+          Title is required
+        </mat-error>
+        <mat-error *ngIf="routineForm.get('title')?.hasError('maxlength')">
+          Title must not exceed 150 characters
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Description -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description (Optional)</mat-label>
+        <textarea 
+          matInput 
+          formControlName="description" 
+          rows="3"
+          placeholder="Enter routine description"
+        ></textarea>
+        <mat-icon matPrefix>notes</mat-icon>
+        <mat-error *ngIf="routineForm.get('description')?.hasError('maxlength')">
+          Description must not exceed 1000 characters
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Frequency and Time Row -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Frequency</mat-label>
+          <mat-select formControlName="frequency">
+            <mat-option *ngFor="let freq of frequencies" [value]="freq.value">
+              {{ freq.label }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>schedule</mat-icon>
+          <mat-error *ngIf="routineForm.get('frequency')?.hasError('required')">
+            Frequency is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Time of Day (Optional)</mat-label>
+          <input matInput type="text" formControlName="timeOfDay" placeholder="HH:mm:ss">
+          <mat-icon matPrefix>access_time</mat-icon>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()">
+      Cancel
+    </button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      type="submit"
+      [disabled]="routineForm.invalid || routineForm.pending"
+    >
+      <mat-icon>save</mat-icon>
+      Create
+    </button>
+  </mat-dialog-actions>
+</form>

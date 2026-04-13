@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,13 @@ import { MatListModule } from '@angular/material/list';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+import { PatientService } from '../../../profile/services/patient.service';
+import { AppointmentService } from '../../../appointments/services/appointment.service';
+import { Patient } from '../../../../shared/models/patient.model';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -19,34 +26,65 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     MatListModule,
     MatChipsModule,
     MatTableModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit {
   usersColumns: string[] = ['name', 'email', 'role', 'date'];
-  
-  recentUsers = [
-    { name: 'John Smith', email: 'john.smith@email.com', role: 'Patient', registeredDate: 'Today' },
-    { name: 'Dr. Emily Brown', email: 'emily.brown@clinic.com', role: 'Doctor', registeredDate: 'Yesterday' },
-    { name: 'Michael Johnson', email: 'mjohnson@email.com', role: 'Caregiver', registeredDate: '2 days ago' },
-    { name: 'Sarah Davis', email: 'sarah.davis@email.com', role: 'Patient', registeredDate: '3 days ago' }
-  ];
 
-  recentActivity = [
-    { action: 'New user registered', user: 'System', time: '5 minutes ago', type: 'info', icon: 'person_add' },
-    { action: 'Doctor approved patient record', user: 'Dr. Emily Brown', time: '15 minutes ago', type: 'info', icon: 'check_circle' },
-    { action: 'System backup completed', user: 'System', time: '1 hour ago', type: 'info', icon: 'backup' },
-    { action: 'High memory usage detected', user: 'System', time: '2 hours ago', type: 'warning', icon: 'warning' }
-  ];
+  totalPatients = 0;
+  totalDoctors = 0;
+  totalCaregivers = 0;
+  todayAppointments = 0;
+  loading = false;
+  recentUsers: Patient[] = [];
+
+  constructor(
+    private patientService: PatientService,
+    private appointmentService: AppointmentService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadStats();
+  }
+
+  loadStats(): void {
+    this.loading = true;
+
+    const today = new Date().toDateString();
+
+    forkJoin({
+      allPatients: this.patientService.getPatients(1, 1).pipe(catchError(() => of({ total: 0, data: [] }))),
+      recent: this.patientService.getPatients(1, 10).pipe(catchError(() => of({ total: 0, data: [] }))),
+      doctors: this.patientService.getAvailableDoctors().pipe(catchError(() => of([]))),
+      caregivers: this.patientService.getAvailableCaregivers().pipe(catchError(() => of([]))),
+      appointments: this.appointmentService.getAllAppointments().pipe(catchError(() => of([])))
+    }).subscribe({
+      next: (results) => {
+        this.totalPatients = (results.allPatients as any).total ?? 0;
+        this.recentUsers = ((results.recent as any).data || []).slice(0, 5);
+        this.totalDoctors = (results.doctors || []).length;
+        this.totalCaregivers = (results.caregivers || []).length;
+        this.todayAppointments = (results.appointments || []).filter(
+          a => new Date(a.appointmentDate).toDateString() === today
+        ).length;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
 
   getRoleColor(role: string): string {
-    switch (role) {
-      case 'Admin': return 'warn';
-      case 'Doctor': return 'primary';
-      case 'Caregiver': return 'accent';
-      case 'Patient': return 'default';
+    switch (role?.toUpperCase()) {
+      case 'ADMIN': return 'warn';
+      case 'DOCTOR': return 'primary';
+      case 'CAREGIVER': return 'accent';
+      case 'PATIENT': return 'default';
       default: return 'default';
     }
   }

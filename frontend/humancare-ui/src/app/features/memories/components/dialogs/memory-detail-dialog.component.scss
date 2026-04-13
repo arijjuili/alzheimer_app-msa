@@ -1,0 +1,52 @@
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.detail-container {
+  min-width: 400px;
+  padding-top: 8px;
+}
+
+.detail-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.detail-icon {
+  font-size: 96px;
+  width: 96px;
+  height: 96px;
+}
+
+.detail-description {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  white-space: pre-wrap;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: rgba(0, 0, 0, 0.7);
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      color: rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  gap: 8px;
+}

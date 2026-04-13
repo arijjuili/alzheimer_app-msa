@@ -9,11 +9,18 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { PatientService } from '../../../profile/services/patient.service';
 import { MedicationService } from '../../../medications/services/medication.service';
+import { AppointmentService } from '../../../appointments/services/appointment.service';
+import { CheckinService } from '../../../checkins/services/checkin.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Patient } from '../../../../shared/models/patient.model';
+import { Appointment } from '../../../../shared/models/appointment.model';
+import { IntakeStatus } from '../../../../shared/models/medication.model';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-doctor-dashboard',
@@ -28,7 +35,8 @@ import { Patient } from '../../../../shared/models/patient.model';
     MatChipsModule,
     MatTableModule,
     MatProgressSpinnerModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   templateUrl: './doctor-dashboard.component.html',
   styleUrls: ['./doctor-dashboard.component.scss']
@@ -43,9 +51,15 @@ export class DoctorDashboardComponent implements OnInit {
   error: string | null = null;
   currentDoctorId: string | null = null;
 
+  todaysAppointments: Appointment[] = [];
+  patientsWithoutCheckin: Patient[] = [];
+  missedMedications: any[] = [];
+
   constructor(
     private patientService: PatientService,
     private medicationService: MedicationService,
+    private appointmentService: AppointmentService,
+    private checkinService: CheckinService,
     private authService: AuthService,
     private router: Router,
     private dialog: MatDialog
@@ -58,8 +72,10 @@ export class DoctorDashboardComponent implements OnInit {
   loadDashboard(): void {
     this.loading = true;
     this.error = null;
-    
-    // Load current doctor's ID
+    this.todaysAppointments = [];
+    this.patientsWithoutCheckin = [];
+    this.missedMedications = [];
+
     const currentUser = this.authService.getCurrentUser();
     this.currentDoctorId = currentUser?.id || null;
 
@@ -69,15 +85,17 @@ export class DoctorDashboardComponent implements OnInit {
       return;
     }
 
-    // Load my patients
     this.loadingPatients = true;
-    this.patientService.getPatientsByDoctor(this.currentDoctorId, 1, 5)
+    this.patientService.getPatientsByDoctor(this.currentDoctorId, 1, 10)
       .subscribe({
         next: (response) => {
           this.myPatients = response.data;
           this.myPatientsCount = response.total;
           this.loadingPatients = false;
           this.loadStats();
+          this.loadTodaysAppointments();
+          this.loadPendingCheckins();
+          this.loadMedicationAlerts();
         },
         error: (err) => {
           this.loadingPatients = false;
@@ -88,14 +106,12 @@ export class DoctorDashboardComponent implements OnInit {
   }
 
   private loadStats(): void {
-    // Load total patients count
     this.patientService.getPatients(1, 1).subscribe({
       next: (response) => {
         this.totalPatientsCount = response.total;
       }
     });
 
-    // Load unassigned count
     this.patientService.getUnassignedPatients(1, 1).subscribe({
       next: (response) => {
         this.unassignedCount = response.total;
@@ -107,13 +123,78 @@ export class DoctorDashboardComponent implements OnInit {
     });
   }
 
+  private loadTodaysAppointments(): void {
+    const today = new Date().toDateString();
+    const patientIds = new Set(this.myPatients.map(p => p.id));
+    this.appointmentService.getAllAppointments().subscribe({
+      next: (appointments) => {
+        this.todaysAppointments = appointments
+          .filter(a => patientIds.has(a.patientId) && new Date(a.appointmentDate).toDateString() === today)
+          .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+      }
+    });
+  }
+
+  private loadPendingCheckins(): void {
+    const patientsToCheck = this.myPatients.slice(0, 10);
+    this.patientsWithoutCheckin = [];
+    patientsToCheck.forEach(patient => {
+      this.checkinService.getTodaysCheckin(patient.id).pipe(
+        catchError(err => {
+          if (err.status === 404) {
+            this.patientsWithoutCheckin.push(patient);
+          }
+          return of(null);
+        })
+      ).subscribe();
+    });
+  }
+
+  private loadMedicationAlerts(): void {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    this.missedMedications = [];
+    this.myPatients.forEach(patient => {
+      this.medicationService.getActivePlansByPatient(patient.id).subscribe({
+        next: (plans) => {
+          plans.forEach(plan => {
+            if (!plan.id) {
+              return;
+            }
+            this.medicationService.getIntakesByPlan(plan.id).subscribe({
+              next: (intakes) => {
+                intakes
+                  .filter(i => i.status === IntakeStatus.MISSED && new Date(i.scheduledAt).getTime() >= cutoff)
+                  .forEach(intake => {
+                    this.missedMedications.push({
+                      patientName: `${patient.firstName} ${patient.lastName}`,
+                      medicationName: plan.medicationName,
+                      scheduledAt: intake.scheduledAt
+                    });
+                  });
+              }
+            });
+          });
+        }
+      });
+    });
+  }
+
+  getPatientName(patientId: string): string {
+    const patient = this.myPatients.find(p => p.id === patientId);
+    return patient ? `${patient.firstName} ${patient.lastName}` : 'Unknown';
+  }
+
+  bookAppointment(patient: Patient): void {
+    this.router.navigate(['/appointments'], { queryParams: { patientId: patient.id } });
+  }
+
   viewAllPatients(): void {
     this.router.navigate(['/patients']);
   }
 
   viewMyPatients(): void {
-    this.router.navigate(['/patients'], { 
-      queryParams: { filter: 'my-patients' } 
+    this.router.navigate(['/patients'], {
+      queryParams: { filter: 'my-patients' }
     });
   }
 
@@ -122,22 +203,18 @@ export class DoctorDashboardComponent implements OnInit {
   }
 
   addMedication(patient: Patient, event?: Event): void {
-    // Prevent row click from triggering
     event?.stopPropagation();
-    
-    // Navigate to medication create with patient pre-selected
     this.router.navigate(['/medications', 'plans', 'new'], {
       queryParams: { patientId: patient.id }
     });
   }
 
   viewUnassigned(): void {
-    this.router.navigate(['/patients'], { 
-      queryParams: { filter: 'unassigned' } 
+    this.router.navigate(['/patients'], {
+      queryParams: { filter: 'unassigned' }
     });
   }
 
-  // Keep for backward compatibility with existing template
   getStatusColor(status: string): string {
     switch (status) {
       case 'Completed': return 'primary';

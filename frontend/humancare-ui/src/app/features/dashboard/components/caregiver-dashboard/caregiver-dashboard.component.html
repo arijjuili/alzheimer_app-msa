@@ -1,93 +1,123 @@
-<div class="dashboard-grid">
-  <!-- My Patients Card -->
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar color="primary">people</mat-icon>
-      <mat-card-title>My Patients</mat-card-title>
-      <mat-card-subtitle>Currently assigned patients</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-list>
-        <mat-list-item *ngFor="let patient of patients">
-          <div matListItemTitle>{{ patient.name }}</div>
-          <div matListItemLine>
-            <mat-chip-set>
-              <mat-chip [color]="patient.status === 'Stable' ? 'primary' : 'warn'" selected>
-                {{ patient.status }}
-              </mat-chip>
-              <mat-chip>{{ patient.condition }}</mat-chip>
-            </mat-chip-set>
-          </div>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button color="primary">View All Patients</button>
-    </mat-card-actions>
-  </mat-card>
+<div class="dashboard-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading dashboard...</p>
+  </div>
 
-  <!-- Today's Schedule Card -->
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar color="accent">schedule</mat-icon>
-      <mat-card-title>Today's Schedule</mat-card-title>
-      <mat-card-subtitle>Your visits for today</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-list>
-        <mat-list-item *ngFor="let visit of todaySchedule">
-          <mat-icon matListItemIcon>access_time</mat-icon>
-          <div matListItemTitle>{{ visit.patientName }}</div>
-          <div matListItemLine>{{ visit.time }} - {{ visit.type }}</div>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button color="primary">View Full Schedule</button>
-    </mat-card-actions>
-  </mat-card>
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadDashboard()">Try Again</button>
+  </div>
 
-  <!-- Alerts Card -->
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar color="warn">notifications_active</mat-icon>
-      <mat-card-title>Patient Alerts</mat-card-title>
-      <mat-card-subtitle>Items requiring attention</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-list>
-        <mat-list-item *ngFor="let alert of alerts">
-          <mat-icon matListItemIcon [color]="alert.severity">
-            {{ alert.severity === 'warn' ? 'warning' : 'info' }}
-          </mat-icon>
-          <div matListItemTitle>{{ alert.patient }}</div>
-          <div matListItemLine>{{ alert.message }}</div>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button color="primary">View All Alerts</button>
-    </mat-card-actions>
-  </mat-card>
+  <!-- Dashboard Grid -->
+  <div *ngIf="!loading && !error" class="dashboard-grid">
+    <!-- My Patients Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">people</mat-icon>
+        <mat-card-title>My Patients</mat-card-title>
+        <mat-card-subtitle>Currently assigned patients</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="assignedPatients.length > 0">
+          <mat-list-item
+            *ngFor="let patient of assignedPatients"
+            class="clickable"
+            (click)="viewPatient(patient)">
+            <div matListItemTitle>{{ patient.firstName }} {{ patient.lastName }}</div>
+            <div matListItemLine>
+              <mat-chip-set>
+                <mat-chip [color]="getPatientStatus(patient) === 'Stable' ? 'primary' : 'warn'" selected>
+                  {{ getPatientStatus(patient) }}
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="assignedPatients.length === 0" class="empty-state">
+          <p>No patients assigned.</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button color="primary" (click)="viewPatients()">View All Patients</button>
+      </mat-card-actions>
+    </mat-card>
 
-  <!-- Tasks Card -->
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar color="primary">task_alt</mat-icon>
-      <mat-card-title>Pending Tasks</mat-card-title>
-      <mat-card-subtitle>Tasks to complete</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-list>
-        <mat-list-item *ngFor="let task of tasks">
-          <mat-icon matListItemIcon>check_circle_outline</mat-icon>
-          <div matListItemTitle>{{ task.title }}</div>
-          <div matListItemLine>Due: {{ task.dueDate }}</div>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button color="primary">Manage Tasks</button>
-    </mat-card-actions>
-  </mat-card>
+    <!-- Today's Schedule Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="accent">schedule</mat-icon>
+        <mat-card-title>Today's Schedule</mat-card-title>
+        <mat-card-subtitle>Your visits for today</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="todaySchedule.length > 0">
+          <mat-list-item *ngFor="let visit of todaySchedule">
+            <mat-icon matListItemIcon>access_time</mat-icon>
+            <div matListItemTitle>{{ visit.patientName }}</div>
+            <div matListItemLine>{{ visit.time }} — {{ visit.type }}: {{ visit.title }}</div>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="todaySchedule.length === 0" class="empty-state">
+          <p>No schedule items for today.</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button color="primary" [routerLink]="['/appointments']">View Full Schedule</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Alerts Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="warn">notifications_active</mat-icon>
+        <mat-card-title>Patient Alerts</mat-card-title>
+        <mat-card-subtitle>Items requiring attention</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="alerts.length > 0">
+          <mat-list-item *ngFor="let alert of alerts">
+            <mat-icon matListItemIcon [color]="alert.severity">
+              {{ alert.severity === 'warn' ? 'warning' : 'info' }}
+            </mat-icon>
+            <div matListItemTitle>{{ alert.patientName }}</div>
+            <div matListItemLine>{{ alert.message }}</div>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="alerts.length === 0" class="empty-state">
+          <p>All patients are doing well</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button color="primary" [routerLink]="['/checkins']">View All Alerts</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Routines to Complete Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">task_alt</mat-icon>
+        <mat-card-title>Routines to Complete</mat-card-title>
+        <mat-card-subtitle>Tasks due today</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="routinesToComplete.length > 0">
+          <mat-list-item *ngFor="let task of routinesToComplete">
+            <mat-icon matListItemIcon>check_circle_outline</mat-icon>
+            <div matListItemTitle>{{ task.title }}</div>
+            <div matListItemLine>{{ task.patientName }} — {{ task.time }}</div>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="routinesToComplete.length === 0" class="empty-state">
+          <p>No routines due today.</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button color="primary" [routerLink]="['/routines']">Manage Routines</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
 </div>

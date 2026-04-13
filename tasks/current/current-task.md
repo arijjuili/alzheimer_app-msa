@@ -1,17 +1,19 @@
-# Current Task
+﻿# Current Task
 
-**Task:** Commit notification-service bootstrap configuration cleanup
+**Task:** Containerize frontend and push image for Railway deployment
 **Status:** COMPLETED
-**Started:** 2026-03-26
-**Completed:** 2026-03-26
+**Started:** 2026-04-08
+**Completed:** 2026-04-08
 
 ---
 
 ## Summary
 
-Committed the current notification-service configuration change and prepared it for `origin/main`.
+Created frontend Docker assets, built/pushed image to Docker Hub, and verified container startup.
 
 ### Scope
-- Commit the `notification-service` bootstrap property cleanup in `application.properties`
-- Record the task in `tasks/current/`
-- Push the resulting commit to the remote repository
+- Add `frontend/humancare-ui/Dockerfile`
+- Add `frontend/humancare-ui/.dockerignore`
+- Build and push `hebhebj/humancare:frontend-latest`
+- Verify local run returns HTTP 200
+- Record task in `tasks/current/2026-04-08_frontend-docker-railway.md`

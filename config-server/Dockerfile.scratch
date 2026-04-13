@@ -1,0 +1,13 @@
+﻿# Simple Config Server Dockerfile (single-stage)
+FROM maven:3.9.6-eclipse-temurin-17-alpine
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests -B && cp target/config-server-*.jar app.jar
+
+# Needed by Spring Cloud Config native backend in this project
+RUN mkdir -p /config-repo
+
+EXPOSE 8888
+ENTRYPOINT ["java", "-jar", "app.jar"]

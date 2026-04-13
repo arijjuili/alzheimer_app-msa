@@ -30,6 +30,8 @@ The service is built with **Spring Boot** and **Java 17**, uses **MySQL** for da
 - `spring-boot-starter-actuator` - Health checks and metrics
 - `spring-cloud-starter-netflix-eureka-client` - Service registration/discovery
 - `spring-cloud-starter-config` - Externalized configuration
+- `spring-cloud-starter-openfeign` - Inter-service communication
+- `spring-boot-starter-amqp` - RabbitMQ event publishing
 - `mysql-connector-j` - MySQL JDBC driver
 
 ---
@@ -601,7 +603,8 @@ The Community Service integrates with the broader HumanCare platform:
 |---------|-----------------|-------------|
 | **API Gateway** | Routes traffic | Gateway routes `/api/v1/posts/**` to this service |
 | **Keycloak** | Authentication | JWT token validation via Gateway |
-| **Patient Service** | Business Logic | Posts may reference patients via `authorId` |
+| **Patient Service** | OpenFeign | Enriches post responses with author email |
+| **RabbitMQ** | Event Bus | Publishes `NewPostCreatedEvent` to notification service |
 
 ---
 
@@ -732,6 +735,26 @@ docker-compose logs -f hc-community-service
 # View specific log level
 mvn spring-boot:run -Dspring-boot.run.arguments="--logging.level.com.humancare.community=DEBUG"
 ```
+
+---
+
+## Inter-Service Communication
+
+### OpenFeign Integration
+
+The community service uses **OpenFeign** to enrich post data with patient information:
+
+| Client | Target | Purpose |
+|--------|--------|---------|
+| `PatientClient` | `patient-service` | `GET /api/v1/patients/{patientId}` — retrieves author details (email) |
+
+### RabbitMQ Event Publishing
+
+When a new post is created, the service publishes a `NewPostCreatedEvent` to the `notifications.community` queue.
+
+| Event | Queue | Consumer |
+|-------|-------|----------|
+| `NewPostCreatedEvent` | `notifications.community` | Notification Service |
 
 ---
 

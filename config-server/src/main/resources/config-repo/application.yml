@@ -13,6 +13,11 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
     default-property-inclusion: non_null
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: humancare
+    password: humancare123
 
 # Common management settings
 management:
@@ -29,14 +34,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-
-# RabbitMQ defaults
-spring:
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: humancare
-    password: humancare123
 
 # Common logging
 logging:

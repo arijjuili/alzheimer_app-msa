@@ -337,7 +337,7 @@
   "userManagedAccessAllowed": false,
   "users": [
     {
-      "id": "admin-user",
+      "id": "5f144724-2a86-4f7c-9c7e-3ab4dd1359a9",
       "username": "admin",
       "enabled": true,
       "emailVerified": true,
@@ -351,21 +351,26 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["ADMIN"],
+      "realmRoles": [
+        "ADMIN"
+      ],
       "attributes": {
-        "status": ["ACTIVE"],
-        "lastLogin": ["2024-01-15T10:30:00Z"]
+        "status": [
+          "ACTIVE"
+        ],
+        "lastLogin": [
+          "2024-01-15T10:30:00Z"
+        ]
       }
     },
     {
-      "id": "doctor-user",
-      "username": "doctor",
+      "id": "3458aef7-4819-4951-b7f4-370fe7afb5b6",
+      "username": "doctor@example.com",
       "enabled": true,
       "emailVerified": true,
       "firstName": "Michael",
       "lastName": "Smith",
       "email": "doctor@example.com",
-      "username": "doctor@example.com",
       "credentials": [
         {
           "type": "password",
@@ -373,21 +378,26 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["DOCTOR"],
+      "realmRoles": [
+        "DOCTOR"
+      ],
       "attributes": {
-        "status": ["ACTIVE"],
-        "lastLogin": ["2024-01-15T08:45:00Z"]
+        "status": [
+          "ACTIVE"
+        ],
+        "lastLogin": [
+          "2024-01-15T08:45:00Z"
+        ]
       }
     },
     {
-      "id": "caregiver-user",
-      "username": "caregiver",
+      "id": "30f7c6b5-aa95-4e52-88da-402798535569",
+      "username": "caregiver@example.com",
       "enabled": true,
       "emailVerified": true,
       "firstName": "Sarah",
       "lastName": "Johnson",
       "email": "caregiver@example.com",
-      "username": "caregiver@example.com",
       "credentials": [
         {
           "type": "password",
@@ -395,21 +405,26 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["CAREGIVER"],
+      "realmRoles": [
+        "CAREGIVER"
+      ],
       "attributes": {
-        "status": ["ACTIVE"],
-        "lastLogin": ["2024-01-14T16:20:00Z"]
+        "status": [
+          "ACTIVE"
+        ],
+        "lastLogin": [
+          "2024-01-14T16:20:00Z"
+        ]
       }
     },
     {
-      "id": "patient-user",
-      "username": "patient",
+      "id": "9d759e71-5802-47a8-a086-76f8cc2f8522",
+      "username": "patient@example.com",
       "enabled": true,
       "emailVerified": true,
       "firstName": "John",
       "lastName": "Patient",
       "email": "patient@example.com",
-      "username": "patient@example.com",
       "credentials": [
         {
           "type": "password",
@@ -417,12 +432,17 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["PATIENT"],
+      "realmRoles": [
+        "PATIENT"
+      ],
       "attributes": {
-        "status": ["PENDING"],
-        "lastLogin": ["2024-01-10T09:00:00Z"]
+        "status": [
+          "PENDING"
+        ],
+        "lastLogin": [
+          "2024-01-10T09:00:00Z"
+        ]
       }
     }
   ]
 }
-

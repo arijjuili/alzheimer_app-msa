@@ -425,6 +425,18 @@ The notification service uses **OpenFeign** to communicate with other microservi
 └─────────────────────┘                       └─────────────────────┘
 ```
 
+### RabbitMQ Event Consumers
+
+The notification service also listens for asynchronous events from other services via **RabbitMQ**:
+
+| Queue | Source Service | Event | Notification Created |
+|-------|---------------|-------|---------------------|
+| `notifications.medication.taken` | Medication Service | `MedicationTakenEvent` | INFO: "Medication Taken" |
+| `notifications.medication.missed` | Medication Service | `MedicationMissedEvent` | ALERT: "Medication Missed" |
+| `notifications.appointments` | Appointments Service | `AppointmentBookedEvent` | INFO: "Appointment Booked" |
+| `notifications.community` | Community Service | `NewPostCreatedEvent` | INFO: "Post Published" |
+| `notifications.routine` | Routine Service | `RoutineCompletedEvent` | INFO: "Routine Completed" |
+
 ### Health Check Endpoints
 
 | Endpoint | Description |
@@ -473,7 +485,7 @@ record NotificationResponse(
 ### Prerequisites
 - Java 17 or higher
 - Maven 3.8+
-- MySQL 8.0+ (running on port 3310)
+- MongoDB 6.0+ (running on port 27017)
 
 ### Build Commands
 
@@ -491,7 +503,7 @@ mvn clean package
 # Skip tests and package
 mvn clean package -DskipTests
 
-# Run locally (requires MySQL running)
+# Run locally (requires MongoDB running)
 mvn spring-boot:run
 ```
 
@@ -516,11 +528,11 @@ docker-compose build hc-notification-service
 ### Run with Docker Compose (Recommended)
 
 ```bash
-# Start all services (includes notification service and MySQL)
+# Start all services (includes notification service and MongoDB)
 docker-compose up -d
 
 # Start only notification service with dependencies
-docker-compose up -d hc-mysql-notification hc-notification-service
+docker-compose up -d hc-mongo-notification hc-notification-service
 
 # View logs
 docker-compose logs -f hc-notification-service
@@ -532,13 +544,12 @@ curl http://localhost:8088/actuator/health
 ### Run Standalone Docker Container
 
 ```bash
-# Run MySQL container first
+# Run MongoDB container first
 docker run -d \
-  --name hc-mysql-notification \
-  -e MYSQL_ROOT_PASSWORD=root \
-  -e MYSQL_DATABASE=notifications_db \
-  -p 3310:3306 \
-  mysql:8.0
+  --name hc-mongo-notification \
+  -e MONGO_INITDB_DATABASE=notifications_db \
+  -p 27017:27017 \
+  mongo:6.0
 
 # Build and run notification service
 docker build -t humancare/notification:latest .
@@ -548,10 +559,9 @@ docker run -d \
   -p 8088:8088 \
   -e SERVER_PORT=8088 \
   -e SPRING_PROFILES_ACTIVE=docker \
-  -e DB_USERNAME=root \
-  -e DB_PASSWORD=root \
+  -e SPRING_DATA_MONGODB_URI=mongodb://hc-mongo-notification:27017/notifications_db \
   -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://hc-eureka-server:8761/eureka/ \
-  --link hc-mysql-notification \
+  --link hc-mongo-notification \
   humancare/notification:latest
 ```
 
@@ -561,17 +571,18 @@ The Notification Service depends on the following infrastructure:
 
 | Service | Required | Purpose |
 |---------|----------|---------|
-| **MySQL** | Yes | Primary data storage |
+| **MongoDB** | Yes | Primary data storage |
 | **Eureka Server** | Yes | Service discovery and registration |
 | **Config Server** | No | Externalized configuration (optional) |
 | **API Gateway** | No | Request routing (for external access) |
 | **Keycloak** | No | JWT token validation (handled at Gateway) |
 | **Appointments Service** | No | Upcoming appointment data (for scheduler) |
+| **RabbitMQ** | Yes | Async event consumption from other services |
 
 ### Dependency Startup Order
 
 ```
-MySQL → Eureka Server → Config Server (optional) → Appointments Service → Notification Service
+MongoDB → Eureka Server → Config Server (optional) → Appointments Service → Notification Service
 ```
 
 ## Architecture
@@ -601,7 +612,7 @@ MySQL → Eureka Server → Config Server (optional) → Appointments Service �
                │
                ▼
       ┌────────────────┐
-      │  MySQL 8.0     │ (Port 3310)
+      │  MongoDB 6.0   │ (Port 27017)
       │ notifications_db│
       └────────────────┘
 ```

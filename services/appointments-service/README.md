@@ -25,6 +25,7 @@ The Appointments Service is a core microservice in the HumanCare platform respon
 - ✅ Filter appointments by status (SCHEDULED, COMPLETED, CANCELLED)
 - ✅ Get upcoming appointments (next 7 days) for appointment reminders
 - ✅ Automatic status defaulting to "SCHEDULED" on creation
+- ✅ Publishes `AppointmentBookedEvent` to RabbitMQ when appointments are created
 - ✅ Eureka service discovery integration
 - ✅ Config Server integration for externalized configuration
 - ✅ Health checks and actuator endpoints
@@ -628,6 +629,7 @@ docker run -d \
 | hc-keycloak | Indirect | Authentication via API Gateway |
 | hc-api-gateway | Indirect | Route external requests to this service |
 | notification-service | Consumer | Consumes `/upcoming` endpoint via OpenFeign for appointment reminders |
+| RabbitMQ | Publisher | Publishes `AppointmentBookedEvent` to `notifications.appointments` queue |
 
 ---
 
@@ -750,6 +752,18 @@ curl -X DELETE \
 
 ---
 
+## 🔄 Inter-Service Communication
+
+### RabbitMQ Event Publishing
+
+When a new appointment is created, the service publishes an `AppointmentBookedEvent` to the `notifications.appointments` queue.
+
+| Event | Queue | Consumer |
+|-------|-------|----------|
+| `AppointmentBookedEvent` | `notifications.appointments` | Notification Service |
+
+---
+
 ## 🌐 Platform Architecture
 
 The Appointments Service is part of the HumanCare microservices ecosystem:
@@ -824,10 +838,10 @@ Could not locate PropertySource
 | Medication Service | 8083 | Yosser | Java |
 | Daily Check-in Service | 8084 | Iheb | Java |
 | **Appointments Service** | **8085** | **Roudayna** | **Java** |
-| Routine & Habits Service | 8086 | Arij | Java |
+| Memory Service | 8086 | Arij | Java |
 | Community Service | 8087 | Mouhib | Java |
 | Notification Service | 8088 | Salma | Java |
-| Safety Alert Engine | 8089 | Amal | Python |
+| Routine Service | 8089 | Arij | Java |
 | API Gateway | 8081 | - | Java |
 | Eureka Server | 8761 | - | Java |
 | Config Server | 8888 | - | Java |

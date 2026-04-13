@@ -148,15 +148,22 @@ public class NotificationController {
             throw new IllegalStateException("User not authenticated");
         }
         
+        String subject = null;
+        
         // If it's a JWT authentication, extract the subject claim
         if (principal instanceof org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken jwtAuth) {
-            String subject = jwtAuth.getToken().getClaimAsString("sub");
-            if (subject != null) {
-                return UUID.fromString(subject);
-            }
+            subject = jwtAuth.getToken().getClaimAsString("sub");
         }
         
-        // Fallback to principal name (should be the UUID in sub claim)
-        return UUID.fromString(principal.getName());
+        if (subject == null) {
+            subject = principal.getName();
+        }
+        
+        try {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException e) {
+            // Fallback for non-UUID subjects (e.g., legacy Keycloak user IDs)
+            return UUID.nameUUIDFromBytes(subject.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
     }
 }

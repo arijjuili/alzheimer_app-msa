@@ -29,6 +29,8 @@ This service enables:
 - **Lombok** - Boilerplate code reduction
 - **Spring Cloud Starter Netflix Eureka Client** - Service discovery
 - **Spring Cloud Starter Config** - External configuration support
+- **Spring Cloud Starter OpenFeign** - Inter-service communication
+- **Spring Boot Starter AMQP** - RabbitMQ event publishing
 - **Spring Boot Starter Actuator** - Health checks and monitoring
 
 ## Service Configuration
@@ -850,6 +852,25 @@ docker run -d \
 
 ---
 
+## Inter-Service Communication
+
+### OpenFeign Integration
+
+The medication service uses **OpenFeign** to validate patient existence before creating a medication plan:
+
+| Client | Target | Purpose |
+|--------|--------|---------|
+| `PatientClient` | `patient-service` | `GET /api/v1/patients/{patientId}` — validates the patient exists |
+
+### RabbitMQ Event Publishing
+
+When a medication intake is marked as taken or missed, the service publishes events to RabbitMQ:
+
+| Event | Queue | Consumer |
+|-------|-------|----------|
+| `MedicationTakenEvent` | `notifications.medication.taken` | Notification Service |
+| `MedicationMissedEvent` | `notifications.medication.missed` | Notification Service |
+
 ## Service Dependencies
 
 The medication service depends on the following services:
@@ -873,6 +894,8 @@ The medication service depends on the following services:
 | `hc-mysql-medication` | Persistent data storage | Yes |
 | `hc-eureka-server` | Service discovery and registration | Yes |
 | `hc-config-server` | External configuration | Optional (config import is optional) |
+| `hc-rabbitmq` | Event publishing | No |
+| `patient-service` | Patient validation via Feign | No |
 
 ---
 

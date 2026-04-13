@@ -1,0 +1,153 @@
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+
+  mat-icon {
+    color: #1976d2;
+  }
+}
+
+mat-dialog-content {
+  padding-top: 16px;
+  min-width: 500px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-form-field {
+  mat-icon[matPrefix] {
+    color: #666;
+    margin-right: 8px;
+  }
+}
+
+.slider-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .slider-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #333;
+
+    mat-icon {
+      color: #666;
+    }
+  }
+
+  mat-slider {
+    width: 100%;
+  }
+}
+
+.symptoms-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+
+  .symptoms-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+
+      mat-icon {
+        color: #666;
+      }
+    }
+  }
+
+  .no-symptoms {
+    color: #999;
+    font-size: 14px;
+    font-style: italic;
+  }
+}
+
+.symptoms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.symptom-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #eee;
+}
+
+.symptom-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+
+  .symptom-type {
+    grid-column: 1 / -1;
+  }
+
+  .symptom-severity {
+    grid-column: 1 / -1;
+  }
+
+  .symptom-notes {
+    grid-column: 1 / -1;
+  }
+}
+
+textarea {
+  resize: vertical;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  gap: 8px;
+
+  button[mat-raised-button] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.button-spinner {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+@media (max-width: 600px) {
+  mat-dialog-content {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .symptom-fields {
+    grid-template-columns: 1fr;
+  }
+}

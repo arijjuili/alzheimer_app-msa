@@ -1,5 +1,8 @@
 package com.humancare.community.mapper;
 
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 import com.humancare.community.dto.CreatePostRequest;
@@ -10,9 +13,17 @@ import com.humancare.community.entity.CommunityPost;
 @Component
 public class PostMapper {
 
+    private UUID parseAuthorId(String authorId) {
+        try {
+            return UUID.fromString(authorId);
+        } catch (IllegalArgumentException e) {
+            return UUID.nameUUIDFromBytes(authorId.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
     public CommunityPost toEntity(CreatePostRequest request) {
         CommunityPost post = new CommunityPost();
-        post.setAuthorId(request.authorId());
+        post.setAuthorId(parseAuthorId(request.authorId()));
         post.setTitle(request.title());
         post.setContent(request.content());
         post.setCategory(request.category());

@@ -27,6 +27,11 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/patients', patientRoutes);
 app.use('/auth', authRoutes);
 
+// Doctor & Caregiver lookups (Keycloak proxy)
+const { getDoctors, getCaregivers } = require('./controllers/authController');
+app.get('/api/v1/doctors', getDoctors);
+app.get('/api/v1/caregivers', getCaregivers);
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });

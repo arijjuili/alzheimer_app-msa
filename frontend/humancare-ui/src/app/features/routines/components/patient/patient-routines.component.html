@@ -1,0 +1,59 @@
+<div class="routines-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <mat-icon>event_repeat</mat-icon>
+      <h1>My Routines</h1>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading routines...</p>
+  </div>
+
+  <!-- Routines Cards -->
+  <div class="routines-grid" *ngIf="!loading">
+    <mat-card *ngFor="let routine of routines" [class.inactive-routine]="!routine.isActive">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon [color]="routine.isActive ? 'primary' : ''">event_repeat</mat-icon>
+          <span>{{ routine.title }}</span>
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p *ngIf="routine.description" class="routine-description">{{ routine.description }}</p>
+        
+        <div class="routine-meta">
+          <mat-chip [color]="routine.isActive ? 'primary' : 'warn'" selected>
+            {{ getFrequencyLabel(routine.frequency) }}
+          </mat-chip>
+          <span *ngIf="routine.timeOfDay" class="time-of-day">
+            <mat-icon>schedule</mat-icon>
+            {{ routine.timeOfDay }}
+          </span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          [disabled]="!routine.isActive"
+          (click)="completeRoutine(routine)"
+        >
+          <mat-icon>check_circle</mat-icon>
+          Complete
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && routines.length === 0">
+    <mat-icon>event_repeat</mat-icon>
+    <p>No routines found</p>
+  </div>
+</div>

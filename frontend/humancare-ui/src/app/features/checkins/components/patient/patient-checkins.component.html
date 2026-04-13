@@ -1,0 +1,141 @@
+<div class="checkins-container">
+  <!-- Today's Check-in Hero Card -->
+  <mat-card class="dashboard-card today-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div>
+          <mat-card-title>
+            <mat-icon>today</mat-icon>
+            Today's Check-in
+          </mat-card-title>
+          <mat-card-subtitle>Track how you're feeling today</mat-card-subtitle>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Loading check-ins...</p>
+      </div>
+
+      <!-- Today's Check-in Present -->
+      <div *ngIf="!loading && todaysCheckin" class="today-content">
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <span class="metric-label">Mood</span>
+            <mat-chip [color]="getMoodColor(todaysCheckin.mood)" selected>
+              {{ todaysCheckin.mood }}
+            </mat-chip>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Energy Level</span>
+            <div class="energy-display">
+              <div class="energy-bar-container">
+                <div class="energy-bar" [style.width.%]="todaysCheckin.energyLevel * 10"></div>
+              </div>
+              <span class="energy-value">{{ todaysCheckin.energyLevel }}/10</span>
+            </div>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Sleep Quality</span>
+            <mat-chip [color]="getSleepColor(todaysCheckin.sleepQuality)" selected>
+              {{ todaysCheckin.sleepQuality }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <div *ngIf="todaysCheckin.symptoms && todaysCheckin.symptoms.length > 0" class="symptoms-section">
+          <h4><mat-icon>healing</mat-icon> Symptoms</h4>
+          <mat-list dense>
+            <mat-list-item *ngFor="let symptom of todaysCheckin.symptoms">
+              <mat-icon matListIcon>healing</mat-icon>
+              <div matLine>{{ symptom.symptomType }}</div>
+              <div matLine class="symptom-details">
+                Severity: {{ symptom.severity }}/10
+                <span *ngIf="symptom.notes"> — {{ symptom.notes }}</span>
+              </div>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <div *ngIf="todaysCheckin.notes" class="notes-section">
+          <h4><mat-icon>notes</mat-icon> Notes</h4>
+          <p class="notes-text">{{ todaysCheckin.notes }}</p>
+        </div>
+
+        <div class="today-actions">
+          <button mat-icon-button color="primary" (click)="openDetailDialog(todaysCheckin!)" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteCheckin(todaysCheckin!.id)" matTooltip="Delete Check-in">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- No Check-in Today -->
+      <div *ngIf="!loading && !todaysCheckin" class="empty-state">
+        <mat-icon>sentiment_dissatisfied</mat-icon>
+        <p>You haven't checked in today</p>
+        <p class="empty-state-subtitle">Take a moment to track your mood, energy, and sleep</p>
+        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+          <mat-icon>add</mat-icon>
+          Check In Today
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Past Check-ins Section -->
+  <mat-card class="dashboard-card past-checkins-card" *ngIf="!loading || pastCheckins.length > 0">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>history</mat-icon>
+        Past Check-ins
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="pastCheckins.length === 0 && !loading" class="empty-state">
+        <mat-icon>history_toggle_off</mat-icon>
+        <p>No past check-ins found</p>
+        <p class="empty-state-subtitle">Your check-in history will appear here</p>
+      </div>
+
+      <mat-list *ngIf="pastCheckins.length > 0" class="checkin-list">
+        <mat-list-item *ngFor="let checkin of pastCheckins" class="checkin-list-item">
+          <div matLine class="checkin-header">
+            <span class="checkin-date">{{ formatDate(checkin.checkinDate) }}</span>
+            <div class="checkin-chips">
+              <mat-chip [color]="getMoodColor(checkin.mood)" selected>
+                {{ checkin.mood }}
+              </mat-chip>
+              <mat-chip [color]="getSleepColor(checkin.sleepQuality)" selected>
+                {{ checkin.sleepQuality }}
+              </mat-chip>
+            </div>
+          </div>
+          <div matLine class="checkin-subheader">
+            <span class="energy-badge">
+              <mat-icon>bolt</mat-icon> Energy: {{ checkin.energyLevel }}/10
+            </span>
+            <span *ngIf="checkin.symptoms && checkin.symptoms.length > 0" class="symptoms-badge">
+              <mat-icon>healing</mat-icon> {{ checkin.symptoms.length }} symptom{{ checkin.symptoms.length === 1 ? '' : 's' }}
+            </span>
+          </div>
+
+          <button mat-icon-button color="primary" (click)="openDetailDialog(checkin)" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteCheckin(checkin.id)" matTooltip="Delete Check-in">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+</div>

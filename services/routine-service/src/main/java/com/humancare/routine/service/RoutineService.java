@@ -50,9 +50,9 @@ public class RoutineService {
     @Transactional
     public RoutineResponse create(CreateRoutineRequest request) {
         // Synchronous Feign validation: ensure patient exists
-        var patient = patientClient.getPatientById(request.getPatientId());
+        var patient = patientClient.getPatientById(request.patientId());
         if (patient == null) {
-            throw new com.humancare.routine.exception.RoutineNotFoundException(request.getPatientId());
+            throw new com.humancare.routine.exception.RoutineNotFoundException(request.patientId());
         }
         Routine routine = mapper.toEntity(request);
         Routine saved = repository.save(routine);

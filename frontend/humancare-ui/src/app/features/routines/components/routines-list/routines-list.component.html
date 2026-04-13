@@ -1,0 +1,115 @@
+<div class="routines-container">
+  <mat-card class="routines-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div>
+          <mat-card-title>
+            <mat-icon>event_repeat</mat-icon>
+            Routines
+          </mat-card-title>
+          <mat-card-subtitle>View and manage patient routines</mat-card-subtitle>
+        </div>
+        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+          <mat-icon>add</mat-icon>
+          Create Routine
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Loading routines...</p>
+      </div>
+
+      <!-- Routines Table -->
+      <div *ngIf="!loading" class="table-container">
+        <table mat-table [dataSource]="dataSource" class="routines-table">
+          <!-- Title Column -->
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Title</th>
+            <td mat-cell *matCellDef="let routine">
+              <div class="title-cell">
+                <mat-icon color="primary">event_repeat</mat-icon>
+                <span>{{ routine.title }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Patient ID Column -->
+          <ng-container matColumnDef="patientId">
+            <th mat-header-cell *matHeaderCellDef>Patient ID</th>
+            <td mat-cell *matCellDef="let routine">
+              <span class="patient-id">#{{ routine.patientId }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Frequency Column -->
+          <ng-container matColumnDef="frequency">
+            <th mat-header-cell *matHeaderCellDef>Frequency</th>
+            <td mat-cell *matCellDef="let routine">{{ getFrequencyLabel(routine.frequency) }}</td>
+          </ng-container>
+
+          <!-- Time of Day Column -->
+          <ng-container matColumnDef="timeOfDay">
+            <th mat-header-cell *matHeaderCellDef>Time</th>
+            <td mat-cell *matCellDef="let routine">{{ routine.timeOfDay || '-' }}</td>
+          </ng-container>
+
+          <!-- Is Active Column -->
+          <ng-container matColumnDef="isActive">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let routine">
+              <mat-chip [color]="getStatusColor(routine.isActive)" selected class="status-chip">
+                {{ getStatusLabel(routine.isActive) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let routine" class="actions-cell">
+              <button 
+                mat-icon-button 
+                color="accent"
+                (click)="openEditDialog(routine)"
+                matTooltip="Edit Routine"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button 
+                mat-icon-button 
+                color="warn"
+                (click)="deleteRoutine(routine)"
+                matTooltip="Delete Routine"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="routine-row"></tr>
+        </table>
+
+        <!-- No Data -->
+        <div *ngIf="dataSource.data.length === 0" class="no-data">
+          <mat-icon>event_repeat</mat-icon>
+          <p>No routines found</p>
+        </div>
+
+        <mat-paginator
+          [length]="totalElements"
+          [pageSize]="size"
+          [pageSizeOptions]="[5, 10, 20, 50]"
+          [pageIndex]="page"
+          (page)="onPageChange($event)"
+          aria-label="Select page of routines"
+        >
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -7,34 +7,33 @@ import { MenuItem, Role, User } from '../../shared/models/user.model';
 })
 export class MenuService {
   private allMenuItems: MenuItem[] = [
-    // Common menu items - updated with /app prefix
+    // Common
     { icon: 'dashboard', label: 'Dashboard', route: '/app/dashboard', roles: [Role.PATIENT, Role.CAREGIVER, Role.DOCTOR, Role.ADMIN] },
     
-    // Patients menu item - accessible to DOCTOR, ADMIN, CAREGIVER
-    { icon: 'people', label: 'Patients', route: '/app/patients', roles: [Role.DOCTOR, Role.ADMIN, Role.CAREGIVER] },
+    // Patient
+    { icon: 'favorite', label: 'My Health', route: '/app/checkins', roles: [Role.PATIENT] },
+    { icon: 'medication', label: 'Medications', route: '/app/medications', roles: [Role.PATIENT] },
+    { icon: 'event', label: 'Appointments', route: '/app/appointments', roles: [Role.PATIENT] },
+    { icon: 'schedule', label: 'My Routines', route: '/app/routines', roles: [Role.PATIENT] },
+    { icon: 'photo_library', label: 'Memories', route: '/app/memories', roles: [Role.PATIENT] },
     
-    // Appointments menu item - accessible to PATIENT, DOCTOR, ADMIN
-    { icon: 'calendar_today', label: 'Appointments', route: '/app/appointments', roles: [Role.PATIENT, Role.DOCTOR, Role.ADMIN] },
+    // Caregiver
+    { icon: 'people', label: 'My Patients', route: '/app/patients', roles: [Role.CAREGIVER] },
+    { icon: 'schedule', label: 'Routines', route: '/app/routines', roles: [Role.CAREGIVER] },
     
-    // Medications menu item - accessible to PATIENT, DOCTOR, CAREGIVER, ADMIN
-    { icon: 'medication', label: 'Medications', route: '/app/medications', roles: [Role.PATIENT, Role.DOCTOR, Role.CAREGIVER, Role.ADMIN] },
+    // Doctor
+    { icon: 'people', label: 'Patients', route: '/app/patients', roles: [Role.DOCTOR] },
+    { icon: 'medication', label: 'Medications', route: '/app/medications', roles: [Role.DOCTOR] },
+    { icon: 'event', label: 'Appointments', route: '/app/appointments', roles: [Role.DOCTOR] },
+    { icon: 'schedule', label: 'Routines', route: '/app/routines', roles: [Role.DOCTOR] },
+
+    // Admin
+    { icon: 'people', label: 'User Management', route: '/app/patients', roles: [Role.ADMIN] },
     
-    { icon: 'person', label: 'My Profile', route: '/app/profile', roles: [Role.PATIENT, Role.CAREGIVER, Role.DOCTOR, Role.ADMIN] },
-    
-    // Patient menu items
-    { icon: 'favorite', label: 'My Health', route: '/app/health', roles: [Role.PATIENT] },
-    
-    // Caregiver menu items
-    { icon: 'people_outline', label: 'My Patients', route: '/app/my-patients', roles: [Role.CAREGIVER] },
-    { icon: 'schedule', label: 'Schedule', route: '/app/schedule', roles: [Role.CAREGIVER] },
-    
-    // Doctor menu items
-    { icon: 'groups', label: 'All Patients', route: '/app/all-patients', roles: [Role.DOCTOR] },
-    { icon: 'medical_services', label: 'Medical Records', route: '/app/medical-records', roles: [Role.DOCTOR] },
-    
-    // Admin menu items
-    { icon: 'manage_accounts', label: 'User Management', route: '/app/users', roles: [Role.ADMIN] },
-    { icon: 'settings', label: 'System Settings', route: '/app/settings', roles: [Role.ADMIN] }
+    // Common shared features
+    { icon: 'forum', label: 'Community', route: '/app/community', roles: [Role.PATIENT, Role.CAREGIVER, Role.DOCTOR, Role.ADMIN] },
+    { icon: 'notifications', label: 'Notifications', route: '/app/notifications', roles: [Role.PATIENT, Role.CAREGIVER, Role.DOCTOR, Role.ADMIN] },
+    { icon: 'person', label: 'My Profile', route: '/app/profile', roles: [Role.PATIENT, Role.CAREGIVER, Role.DOCTOR, Role.ADMIN] }
   ];
 
   constructor() {}

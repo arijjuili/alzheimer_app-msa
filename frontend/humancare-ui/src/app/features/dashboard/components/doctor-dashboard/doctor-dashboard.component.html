@@ -31,7 +31,7 @@
           </div>
         </mat-card-content>
       </mat-card>
-      
+
       <mat-card class="stat-card clickable" (click)="viewAllPatients()">
         <mat-card-content>
           <div class="stat-icon accent">
@@ -43,7 +43,7 @@
           </div>
         </mat-card-content>
       </mat-card>
-      
+
       <mat-card class="stat-card clickable" (click)="viewUnassigned()">
         <mat-card-content>
           <div class="stat-icon warn">
@@ -56,6 +56,31 @@
         </mat-card-content>
       </mat-card>
     </div>
+
+    <!-- Today's Appointments -->
+    <mat-card class="dashboard-card full-width">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">event</mat-icon>
+        <mat-card-title>Today's Appointments</mat-card-title>
+        <mat-card-subtitle>{{ todaysAppointments.length }} appointment(s) today</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="todaysAppointments.length > 0">
+          <mat-list-item *ngFor="let appt of todaysAppointments">
+            <mat-icon matListItemIcon color="primary">schedule</mat-icon>
+            <div matListItemTitle>{{ appt.appointmentDate | date:'shortTime' }} — {{ getPatientName(appt.patientId) }}</div>
+            <div matListItemLine>{{ appt.reason }}</div>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="todaysAppointments.length === 0" class="empty-state">
+          <mat-icon>event_available</mat-icon>
+          <p>No appointments scheduled for today</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button color="primary" routerLink="/appointments">View Appointments</button>
+      </mat-card-actions>
+    </mat-card>
 
     <!-- Quick Actions -->
     <mat-card class="dashboard-card full-width">
@@ -101,8 +126,8 @@
 
         <!-- Patient list -->
         <mat-list *ngIf="!loadingPatients">
-          <mat-list-item 
-            *ngFor="let patient of myPatients.slice(0, 5)" 
+          <mat-list-item
+            *ngFor="let patient of myPatients.slice(0, 5)"
             class="patient-list-item"
             (click)="viewPatient(patient)"
           >
@@ -114,8 +139,8 @@
               <span *ngIf="patient.email">{{ patient.email }}</span>
               <span *ngIf="!patient.email">No email</span>
             </div>
-            <button 
-              mat-icon-button 
+            <button
+              mat-icon-button
               matListItemMeta
               (click)="addMedication(patient, $event)"
               matTooltip="Add Medication"
@@ -148,7 +173,45 @@
       </mat-card-actions>
     </mat-card>
 
-    <!-- Recent Activity / Placeholder for now -->
+    <!-- Patient Alerts -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="warn">notification_important</mat-icon>
+        <mat-card-title>Patient Alerts</mat-card-title>
+        <mat-card-subtitle>Requires attention</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item *ngIf="patientsWithoutCheckin.length === 0 && missedMedications.length === 0">
+            <mat-icon matListItemIcon color="primary">check_circle</mat-icon>
+            <div matListItemTitle>No alerts</div>
+            <div matListItemLine>All patients are up to date</div>
+          </mat-list-item>
+
+          <mat-list-item *ngFor="let patient of patientsWithoutCheckin">
+            <mat-icon matListItemIcon color="warn">person_off</mat-icon>
+            <div matListItemTitle>{{ patient.firstName }} {{ patient.lastName }}</div>
+            <div matListItemLine>No check-in yet</div>
+            <button
+              mat-icon-button
+              matListItemMeta
+              (click)="bookAppointment(patient)"
+              matTooltip="Book Appointment"
+            >
+              <mat-icon>event</mat-icon>
+            </button>
+          </mat-list-item>
+
+          <mat-list-item *ngFor="let med of missedMedications">
+            <mat-icon matListItemIcon color="warn">medication</mat-icon>
+            <div matListItemTitle>{{ med.patientName }}</div>
+            <div matListItemLine>Missed {{ med.medicationName }} at {{ med.scheduledAt | date:'shortTime' }}</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Activity -->
     <mat-card class="dashboard-card">
       <mat-card-header>
         <mat-icon mat-card-avatar color="accent">timeline</mat-icon>

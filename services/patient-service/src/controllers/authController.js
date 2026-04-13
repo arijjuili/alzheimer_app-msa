@@ -433,8 +433,82 @@ async function syncPatientsFromKeycloak(req, res) {
   }
 }
 
+/**
+ * Get all Keycloak users with a specific realm role
+ */
+async function getUsersByRole(req, res, roleName) {
+  try {
+    const adminToken = await getAdminToken();
+    
+    // Get all users from Keycloak (max 1000)
+    const usersResponse = await axios.get(
+      `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users?max=1000`,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      }
+    );
+    
+    const users = usersResponse.data;
+    const matchedUsers = [];
+    
+    for (const user of users) {
+      try {
+        const rolesResponse = await axios.get(
+          `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${user.id}/role-mappings/realm`,
+          {
+            headers: {
+              Authorization: `Bearer ${adminToken}`
+            }
+          }
+        );
+        
+        const roles = rolesResponse.data.map(r => r.name);
+        
+        if (roles.includes(roleName)) {
+          matchedUsers.push({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            enabled: user.enabled
+          });
+        }
+      } catch (err) {
+        console.error(`[getUsersByRole] Error fetching roles for user ${user.id}:`, err.message);
+      }
+    }
+    
+    return res.json(matchedUsers);
+  } catch (error) {
+    console.error(`[getUsersByRole] Error getting ${roleName} users:`, error.response?.data || error.message);
+    return res.status(500).json({ 
+      error: `Failed to get ${roleName} users`,
+      message: error.message
+    });
+  }
+}
+
+/**
+ * Get all doctors from Keycloak
+ */
+async function getDoctors(req, res) {
+  return getUsersByRole(req, res, 'DOCTOR');
+}
+
+/**
+ * Get all caregivers from Keycloak
+ */
+async function getCaregivers(req, res) {
+  return getUsersByRole(req, res, 'CAREGIVER');
+}
+
 module.exports = {
   registerUser,
   getAvailableRoles,
-  syncPatientsFromKeycloak
+  syncPatientsFromKeycloak,
+  getDoctors,
+  getCaregivers
 };

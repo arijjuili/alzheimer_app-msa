@@ -13,7 +13,7 @@ This service enables caregivers and healthcare providers to establish structured
 | Java | 17 |
 | Spring Boot | 3.2.2 |
 | Spring Cloud | 2023.0.0 |
-| MySQL | 8.0 |
+| H2 Database | 2.2.x (embedded/file) |
 | Maven | 3.9+ |
 
 ### Spring Boot Starters
@@ -24,7 +24,9 @@ This service enables caregivers and healthcare providers to establish structured
 - `spring-boot-starter-actuator` - Health checks and metrics
 - `spring-cloud-starter-netflix-eureka-client` - Service discovery registration
 - `spring-cloud-starter-config` - External configuration support
-- `mysql-connector-j` - MySQL database driver
+- `spring-boot-starter-amqp` - RabbitMQ event publishing
+- `spring-cloud-starter-openfeign` - Inter-service communication
+- `com.h2database:h2` - H2 embedded database driver
 
 ## Service Configuration
 
@@ -34,6 +36,7 @@ This service enables caregivers and healthcare providers to establish structured
 | Port | `8089` |
 | Eureka Registration | Yes (`lb://routine-service`) |
 | Base API Path | `/api/v1/routines` |
+| Database | H2 (embedded, persisted to `/data` in Docker) |
 
 ## Database Configuration
 
@@ -41,19 +44,21 @@ This service enables caregivers and healthcare providers to establish structured
 
 | Property | Value |
 |----------|-------|
-| Database Type | MySQL 8.0 |
-| JDBC URL | `jdbc:mysql://localhost:3309/routine_db` |
+| Database Type | H2 (embedded) |
+| JDBC URL | `jdbc:h2:mem:routine_db` or `jdbc:h2:file:./routine_db` |
 | Database Name | `routine_db` |
-| Username | `root` |
-| Password | (configured via environment) |
+| Username | `sa` |
+| Password | (empty) |
+| Console URL | `http://localhost:8089/h2-console` |
 
 ### Docker Environment
 
 | Container | Value |
 |-----------|-------|
-| Container Name | `hc-mysql-routine` |
-| External Port | `3309` (mapped to internal `3306`) |
-| Volume | `hc_mysql_routine` |
+| Container Name | `hc-routine-service` |
+| External Port | `8089` |
+| Database | H2 file-based (persisted to `/data/routine_db`) |
+| Volume | `hc_routine_data` |
 
 ## Entity Model
 
@@ -99,6 +104,7 @@ Via Gateway: http://localhost:8081/api/v1/routines
 | GET | `/api/v1/routines/patient/{patientId}` | Get routines by patient ID | Yes |
 | POST | `/api/v1/routines` | Create a new routine | Yes (CAREGIVER, DOCTOR, ADMIN) |
 | PUT | `/api/v1/routines/{id}` | Update an existing routine | Yes (CAREGIVER, DOCTOR, ADMIN) |
+| PATCH | `/api/v1/routines/{id}/complete` | Mark routine as completed | Yes |
 | DELETE | `/api/v1/routines/{id}` | Delete a routine | Yes (ADMIN only) |
 
 ### Detailed API Documentation
@@ -348,7 +354,34 @@ Content-Type: application/json
 
 ---
 
-#### 6. Delete Routine
+#### 6. Complete Routine
+
+Marks a routine as completed and publishes a `RoutineCompletedEvent` to RabbitMQ.
+
+**Request:**
+```http
+PATCH /api/v1/routines/550e8400-e29b-41d4-a716-446655440000/complete
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "patientId": "550e8400-e29b-41d4-a716-446655440001",
+  "title": "Morning Walk",
+  "description": "30-minute walk around the neighborhood",
+  "frequency": "DAILY",
+  "timeOfDay": "07:00:00",
+  "isActive": true,
+  "createdAt": "2024-01-15T08:30:00Z",
+  "updatedAt": "2024-01-20T10:15:00Z"
+}
+```
+
+---
+
+#### 7. Delete Routine
 
 Deletes a routine permanently.
 
@@ -430,13 +463,27 @@ The service implements a global exception handler that returns standardized erro
 | `RoutineNotFoundException` | 404 Not Found | Routine with given ID does not exist |
 | `MethodArgumentNotValidException` | 400 Bad Request | Validation errors in request body |
 
+## Inter-Service Communication
+
+### OpenFeign Integration
+
+The routine service uses **OpenFeign** to validate patient existence before creating a routine:
+
+| Client | Target | Purpose |
+|--------|--------|---------|
+| `PatientClient` | `patient-service` | `GET /api/v1/patients/{patientId}` — validates the patient exists |
+
+### RabbitMQ Event Publishing
+
+When a routine is marked as completed (`PATCH /api/v1/routines/{id}/complete`), the service publishes a `RoutineCompletedEvent` to the `notifications.routine` queue.
+
 ## Build Instructions
 
 ### Prerequisites
 
 - Java 17 or higher
 - Maven 3.9+
-- MySQL 8.0 (or use Docker)
+- H2 Database (embedded, no external DB needed)
 
 ### Local Build
 
@@ -453,7 +500,7 @@ mvn test
 # Package application
 mvn clean package
 
-# Run application (requires MySQL running on port 3309)
+# Run application
 mvn spring-boot:run
 ```
 
@@ -489,14 +536,12 @@ docker-compose logs -f hc-routine-service
 cd services/routine-service
 docker build -t humancare/routine:latest .
 
-# Run container (requires MySQL and Eureka)
+# Run container (requires Eureka)
 docker run -d \
   --name hc-routine-service \
   -p 8089:8089 \
   -e SPRING_PROFILES_ACTIVE=docker \
   -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://hc-eureka-server:8761/eureka/ \
-  -e DB_USERNAME=root \
-  -e DB_PASSWORD=root \
   humancare/routine:latest
 ```
 
@@ -511,11 +556,12 @@ docker run -d \
 
 | Service | Required | Purpose |
 |---------|----------|---------|
-| hc-mysql-routine | Yes | Database persistence |
 | hc-eureka-server | Yes | Service discovery registration |
 | hc-config-server | Yes | External configuration |
 | hc-keycloak | Yes | OAuth2/JWT token validation |
 | hc-api-gateway | No (but recommended) | API routing and auth |
+| hc-rabbitmq | No | Publishes `RoutineCompletedEvent` |
+| Patient Service | No | Validated via OpenFeign on create |
 
 ## Health and Monitoring
 

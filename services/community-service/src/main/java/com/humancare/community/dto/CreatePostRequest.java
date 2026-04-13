@@ -1,7 +1,5 @@
 package com.humancare.community.dto;
 
-import java.util.UUID;
-
 import com.humancare.community.entity.PostCategory;
 
 import jakarta.validation.constraints.NotBlank;
@@ -9,8 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreatePostRequest(
-        @NotNull(message = "Author ID is required")
-        UUID authorId,
+        @NotBlank(message = "Author ID is required")
+        String authorId,
 
         @NotBlank(message = "Title is required")
         @Size(max = 150, message = "Title must be less than 150 characters")
