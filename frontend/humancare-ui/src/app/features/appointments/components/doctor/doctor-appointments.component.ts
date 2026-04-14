@@ -15,22 +15,34 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { debounceTime, distinctUntilChanged, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 import { AppointmentService } from '../../services/appointment.service';
+import { PatientService } from '../../../../features/profile/services/patient.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { Appointment, AppointmentCreateRequest, AppointmentStatus } from '../../../../shared/models/appointment.model';
+import { Patient } from '../../../../shared/models/patient.model';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
 import { AppointmentManageDialogComponent, AppointmentManageDialogData } from './appointment-manage-dialog.component';
 import { AppointmentStatusUpdateDialogComponent, AppointmentStatusUpdateDialogData } from './appointment-status-update-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
-import { 
-  AppointmentCreateDialogComponent, 
-  AppointmentCreateDialogData 
+import {
+  AppointmentCreateDialogComponent,
+  AppointmentCreateDialogData
 } from '../patient/dialogs/appointment-create-dialog.component';
 
-type FilterTab = 'all' | 'today' | 'scheduled' | 'completed' | 'cancelled';
+type FilterTab = 'all' | 'today' | 'scheduled' | 'completed' | 'cancelled' | 'upcoming';
+type ViewMode = 'list' | 'calendar';
+
+interface CalendarDay {
+  date: Date;
+  appointments: Appointment[];
+  isCurrentMonth: boolean;
+  isToday: boolean;
+}
 
 @Component({
   selector: 'app-doctor-appointments',
@@ -52,19 +64,26 @@ type FilterTab = 'all' | 'today' | 'scheduled' | 'completed' | 'cancelled';
     MatTooltipModule,
     MatTabsModule,
     MatDialogModule,
+    MatButtonToggleModule,
     DateFormatPipe
   ],
   templateUrl: './doctor-appointments.component.html',
   styleUrls: ['./doctor-appointments.component.scss']
 })
 export class DoctorAppointmentsComponent implements OnInit {
-  dataSource = new MatTableDataSource<Appointment>([]);
-  displayedColumns: string[] = ['appointmentDate', 'patientId', 'doctorName', 'reason', 'status', 'actions'];
+  dataSource = new MatTableDataSource<Appointment & { patientName?: string }>([]);
+  displayedColumns: string[] = ['appointmentDate', 'patientName', 'reason', 'status', 'actions'];
   loading = true;
   error: string | null = null;
   searchControl = new FormControl('');
+  uuidSearchControl = new FormControl('');
   activeFilter: FilterTab = 'all';
-  
+  viewMode: ViewMode = 'list';
+  calendarMonth = new Date();
+  calendarDays: CalendarDay[] = [];
+  doctorPatients: Patient[] = [];
+  patientMap = new Map<string, Patient>();
+
   // Pagination
   totalAppointments = 0;
   pageSize = 10;
@@ -73,30 +92,73 @@ export class DoctorAppointmentsComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // Expose enum to template
   AppointmentStatus = AppointmentStatus;
   FilterTab = {
     ALL: 'all' as FilterTab,
     TODAY: 'today' as FilterTab,
     SCHEDULED: 'scheduled' as FilterTab,
     COMPLETED: 'completed' as FilterTab,
-    CANCELLED: 'cancelled' as FilterTab
+    CANCELLED: 'cancelled' as FilterTab,
+    UPCOMING: 'upcoming' as FilterTab
   };
 
   constructor(
     private appointmentService: AppointmentService,
+    private patientService: PatientService,
+    private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.loadAppointments();
+    this.loadDoctorPatients();
     this.setupSearch();
+    this.setupUuidSearch();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
+  }
+
+  loadDoctorPatients(): void {
+    this.loading = true;
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      this.error = 'Could not identify current user';
+      this.loading = false;
+      return;
+    }
+    this.patientService.getPatients(1, 1000)
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Failed to load assigned patients';
+          return of({ data: [], total: 0, page: 1, limit: 1000, totalPages: 0 } as any);
+        })
+      )
+      .subscribe(response => {
+        this.doctorPatients = (response.data || []).filter((p: Patient) => p.doctorId === currentUser.id);
+        this.doctorPatients.forEach(p => this.patientMap.set(p.id, p));
+        this.loadAppointments();
+      });
+  }
+
+  private enrichAppointments(appointments: Appointment[]): (Appointment & { patientName?: string })[] {
+    return appointments.map(a => ({
+      ...a,
+      patientName: this.getPatientName(a.patientId)
+    }));
+  }
+
+  private filterDoctorAppointments(appointments: Appointment[]): Appointment[] {
+    const allowedIds = new Set(this.doctorPatients.map(p => p.id));
+    return appointments.filter(a => allowedIds.has(a.patientId));
+  }
+
+  getPatientName(patientId: string): string {
+    const patient = this.patientMap.get(patientId);
+    return patient ? `${patient.firstName} ${patient.lastName}` : patientId;
   }
 
   loadAppointments(): void {
@@ -113,14 +175,11 @@ export class DoctorAppointmentsComponent implements OnInit {
         finalize(() => this.loading = false)
       )
       .subscribe(appointments => {
-        // If API returns empty data, use mock data for demo
-        if (appointments.length === 0) {
-          this.dataSource.data = this.getMockAppointments();
-        } else {
-          this.dataSource.data = appointments;
-        }
+        const filtered = this.filterDoctorAppointments(appointments);
+        this.dataSource.data = this.enrichAppointments(filtered);
         this.totalAppointments = this.dataSource.data.length;
         this.applyFilter();
+        this.buildCalendar();
       });
   }
 
@@ -135,9 +194,103 @@ export class DoctorAppointmentsComponent implements OnInit {
       });
   }
 
+  setupUuidSearch(): void {
+    this.uuidSearchControl.valueChanges
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe(uuid => {
+        if (!uuid || uuid.trim().length === 0) {
+          this.loadAppointments();
+          return;
+        }
+        this.searchByUuid(uuid.trim());
+      });
+  }
+
+  searchByUuid(uuid: string): void {
+    this.loading = true;
+    this.error = null;
+    this.appointmentService.getAppointmentById(uuid)
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Appointment not found';
+          return of(null);
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe(result => {
+        if (result && this.patientMap.has(result.patientId)) {
+          this.dataSource.data = this.enrichAppointments([result]);
+          this.totalAppointments = 1;
+        } else {
+          this.dataSource.data = [];
+          this.totalAppointments = 0;
+          if (result && !this.patientMap.has(result.patientId)) {
+            this.error = 'Appointment not found or not authorized';
+          }
+        }
+        this.buildCalendar();
+      });
+  }
+
   onFilterChange(filter: FilterTab): void {
     this.activeFilter = filter;
+    if (filter === 'scheduled' || filter === 'completed' || filter === 'cancelled') {
+      const statusMap: Record<string, AppointmentStatus> = {
+        scheduled: AppointmentStatus.SCHEDULED,
+        completed: AppointmentStatus.COMPLETED,
+        cancelled: AppointmentStatus.CANCELLED
+      };
+      this.loadByStatus(statusMap[filter]);
+      return;
+    }
+    if (filter === 'upcoming') {
+      this.loadUpcoming();
+      return;
+    }
+    if (filter === 'all') {
+      this.loadAppointments();
+      return;
+    }
     this.applyFilter();
+  }
+
+  loadByStatus(status: AppointmentStatus): void {
+    this.loading = true;
+    this.appointmentService.getAppointmentsByStatus(status)
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Failed to filter appointments';
+          return of([]);
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe(appointments => {
+        const filtered = this.filterDoctorAppointments(appointments);
+        this.dataSource.data = this.enrichAppointments(filtered);
+        this.totalAppointments = this.dataSource.data.length;
+        this.buildCalendar();
+      });
+  }
+
+  loadUpcoming(): void {
+    this.loading = true;
+    this.appointmentService.getUpcomingAppointments()
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Failed to load upcoming appointments';
+          return of([]);
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe(appointments => {
+        const filtered = this.filterDoctorAppointments(appointments);
+        this.dataSource.data = this.enrichAppointments(filtered);
+        this.totalAppointments = this.dataSource.data.length;
+        this.buildCalendar();
+      });
   }
 
   applyFilter(): void {
@@ -156,13 +309,18 @@ export class DoctorAppointmentsComponent implements OnInit {
       case 'cancelled':
         filteredData = filteredData.filter(a => a.status === AppointmentStatus.CANCELLED);
         break;
+      case 'upcoming':
+        filteredData = filteredData
+          .filter(a => a.status === AppointmentStatus.SCHEDULED)
+          .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+        break;
       default:
-        // 'all' - no filter
         break;
     }
 
     this.dataSource.data = filteredData;
     this.totalAppointments = filteredData.length;
+    this.buildCalendar();
   }
 
   applySearch(query: string): void {
@@ -186,6 +344,76 @@ export class DoctorAppointmentsComponent implements OnInit {
       default:
         return 'default';
     }
+  }
+
+  setViewMode(mode: ViewMode): void {
+    this.viewMode = mode;
+    if (mode === 'calendar') {
+      this.buildCalendar();
+    }
+  }
+
+  buildCalendar(): void {
+    const year = this.calendarMonth.getFullYear();
+    const month = this.calendarMonth.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const startDay = firstDayOfMonth.getDay(); // 0 = Sunday
+    const daysInMonth = lastDayOfMonth.getDate();
+
+    const days: CalendarDay[] = [];
+    const today = new Date();
+
+    // Previous month padding
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startDay - 1; i >= 0; i--) {
+      days.push({
+        date: new Date(year, month - 1, prevMonthLastDay - i),
+        appointments: [],
+        isCurrentMonth: false,
+        isToday: false
+      });
+    }
+
+    // Current month
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      days.push({
+        date,
+        appointments: this.dataSource.data.filter(a => this.isSameDay(new Date(a.appointmentDate), date)),
+        isCurrentMonth: true,
+        isToday: this.isSameDay(date, today)
+      });
+    }
+
+    // Next month padding to fill 6 rows (42 cells)
+    const remaining = 42 - days.length;
+    for (let d = 1; d <= remaining; d++) {
+      days.push({
+        date: new Date(year, month + 1, d),
+        appointments: [],
+        isCurrentMonth: false,
+        isToday: false
+      });
+    }
+
+    this.calendarDays = days;
+  }
+
+  isSameDay(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
+  }
+
+  prevMonth(): void {
+    this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() - 1, 1);
+    this.buildCalendar();
+  }
+
+  nextMonth(): void {
+    this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() + 1, 1);
+    this.buildCalendar();
   }
 
   onViewAppointment(appointment: Appointment): void {
@@ -222,19 +450,24 @@ export class DoctorAppointmentsComponent implements OnInit {
   }
 
   openCreateDialog(): void {
+    const currentUser = this.authService.getCurrentUser();
+    const doctorName = currentUser ? `Dr. ${currentUser.firstName} ${currentUser.lastName}` : '';
     const dialogRef = this.dialog.open(AppointmentCreateDialogComponent, {
       width: '600px',
-      data: {} as AppointmentCreateDialogData
+      data: {
+        doctorName,
+        patients: this.doctorPatients,
+        professional: true
+      } as AppointmentCreateDialogData
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Add patientId if not provided (doctor must specify)
         const newAppointment: AppointmentCreateRequest = {
           ...result,
           status: AppointmentStatus.SCHEDULED
         };
-        
+
         this.appointmentService.createAppointment(newAppointment)
           .pipe(
             catchError(err => {
@@ -256,7 +489,7 @@ export class DoctorAppointmentsComponent implements OnInit {
       width: '400px',
       data: {
         title: 'Delete Appointment',
-        message: `Are you sure you want to delete this appointment for patient ID ${appointment.patientId}? This action cannot be undone.`,
+        message: `Are you sure you want to delete this appointment for ${(appointment as any).patientName || appointment.patientId}? This action cannot be undone.`,
         confirmButtonText: 'Delete',
         cancelButtonText: 'Cancel',
         confirmButtonColor: 'warn',
@@ -295,6 +528,8 @@ export class DoctorAppointmentsComponent implements OnInit {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 5);
 
     const formatDate = (date: Date, hour: number): string => {
       const d = new Date(date);
@@ -352,7 +587,7 @@ export class DoctorAppointmentsComponent implements OnInit {
         id: '550e8400-e29b-41d4-a716-446655440006',
         patientId: '550e8400-e29b-41d4-a716-446655440106',
         doctorName: 'Dr. Sarah Johnson',
-        appointmentDate: formatDate(tomorrow, 9),
+        appointmentDate: formatDate(nextWeek, 9),
         reason: 'Routine checkup',
         status: AppointmentStatus.SCHEDULED,
         notes: ''

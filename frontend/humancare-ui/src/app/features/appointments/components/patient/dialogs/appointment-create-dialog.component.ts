@@ -20,6 +20,9 @@ import { Patient } from '../../../../../shared/models/patient.model';
 export interface AppointmentCreateDialogData {
   patientId?: string;
   doctorName?: string;
+  hideDoctor?: boolean;
+  patients?: Patient[];
+  professional?: boolean;
 }
 
 @Component({
@@ -39,10 +42,11 @@ export interface AppointmentCreateDialogData {
     MatProgressSpinnerModule
   ],
   template: `
-    <h2 mat-dialog-title>
-      <mat-icon>add_circle</mat-icon>
-      New Appointment
-    </h2>
+    <div [class.professional-mode]="data.professional">
+      <h2 mat-dialog-title>
+        <mat-icon>add_circle</mat-icon>
+        New Appointment
+      </h2>
     
     <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
       <mat-dialog-content>
@@ -65,7 +69,7 @@ export interface AppointmentCreateDialogData {
           </mat-form-field>
 
           <!-- Doctor Name (Read-only, auto-filled) -->
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field *ngIf="!data.hideDoctor" appearance="outline" class="full-width">
             <mat-label>Doctor</mat-label>
             <input matInput formControlName="doctorName" readonly>
             <mat-icon matPrefix>medical_services</mat-icon>
@@ -130,6 +134,7 @@ export interface AppointmentCreateDialogData {
         </button>
       </mat-dialog-actions>
     </form>
+    </div>
   `,
   styles: [`
     h2[mat-dialog-title] {
@@ -137,21 +142,35 @@ export interface AppointmentCreateDialogData {
       align-items: center;
       gap: 12px;
       margin: 0;
-      
+      font-size: 22px;
+      font-weight: 700;
+      color: #e65100;
+
       mat-icon {
-        color: #1976d2;
+        color: #ff6f00;
+        font-size: 28px;
+        animation: bounce 2s infinite;
       }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
 
     mat-dialog-content {
       padding-top: 16px;
       min-width: 500px;
+      background: linear-gradient(180deg, #fff8e1 0%, #ffffff 100%);
+      border-radius: 20px;
+      margin: 8px 16px;
     }
 
     .form-container {
       display: flex;
       flex-direction: column;
       gap: 16px;
+      padding: 8px;
     }
 
     .full-width {
@@ -159,8 +178,13 @@ export interface AppointmentCreateDialogData {
     }
 
     mat-form-field {
+      background: rgba(255,255,255,0.9);
+      border-radius: 14px;
+      padding: 4px 8px;
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+
       mat-icon[matPrefix] {
-        color: #666;
+        color: #ff8f00;
         margin-right: 8px;
       }
     }
@@ -172,11 +196,16 @@ export interface AppointmentCreateDialogData {
     mat-dialog-actions {
       padding: 16px 24px;
       gap: 8px;
-      
+
       button[mat-raised-button] {
         display: flex;
         align-items: center;
         gap: 8px;
+        border-radius: 50px;
+        padding: 8px 24px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #ff7043, #ffca28);
+        color: white;
       }
     }
 
@@ -185,6 +214,39 @@ export interface AppointmentCreateDialogData {
         min-width: auto;
         width: 100%;
       }
+    }
+
+    /* Professional mode overrides */
+    .professional-mode h2[mat-dialog-title] {
+      color: #263238;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .professional-mode h2[mat-dialog-title] mat-icon {
+      color: #455a64;
+      animation: none;
+    }
+    .professional-mode mat-dialog-content {
+      background: #ffffff;
+      border-radius: 0;
+      margin: 0;
+    }
+    .professional-mode .form-container {
+      padding: 0;
+    }
+    .professional-mode mat-form-field {
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+    .professional-mode mat-form-field mat-icon[matPrefix] {
+      color: #607d8b;
+    }
+    .professional-mode mat-dialog-actions button[mat-raised-button] {
+      border-radius: 4px;
+      background: #1976d2;
+      font-weight: 500;
     }
   `]
 })
@@ -208,6 +270,11 @@ export class AppointmentCreateDialogComponent implements OnInit {
   }
 
   loadPatients(): void {
+    if (this.data?.patients) {
+      this.patients = this.data.patients;
+      this.loadingPatients = false;
+      return;
+    }
     this.loadingPatients = true;
     this.patientService.getPatients(1, 100)
       .pipe(
@@ -225,7 +292,7 @@ export class AppointmentCreateDialogComponent implements OnInit {
   initForm(): void {
     // Get current user for doctor name
     const currentUser = this.authService.getCurrentUser();
-    const doctorName = this.data?.doctorName || 
+    const doctorName = this.data?.doctorName ?? 
       (currentUser ? `Dr. ${currentUser.firstName} ${currentUser.lastName}` : '');
 
     // If patientId is provided (patient creating their own), use it

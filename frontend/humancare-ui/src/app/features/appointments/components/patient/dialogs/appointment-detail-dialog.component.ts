@@ -102,36 +102,62 @@ import { Appointment, AppointmentStatus } from '../../../../../shared/models/app
       align-items: center;
       gap: 12px;
       margin: 0;
-      
+      color: #e65100;
+      font-size: 22px;
+      font-weight: 700;
+
       mat-icon {
-        color: #666;
+        color: #ff6f00;
+        font-size: 28px;
+        animation: bounce 2s infinite;
       }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
 
     mat-dialog-content {
       padding-top: 16px;
       min-width: 400px;
+      background: linear-gradient(180deg, #fff8e1 0%, #ffffff 100%);
+      border-radius: 20px;
+      margin: 8px 16px;
     }
 
     .detail-container {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      padding: 8px;
     }
 
     .detail-row {
       display: flex;
       align-items: flex-start;
-      gap: 16px;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 12px 16px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.02);
+      }
 
       mat-icon {
         margin-top: 2px;
+        color: #ff8f00;
+        font-size: 24px;
       }
     }
 
     .status-row {
       justify-content: center;
-      padding: 8px 0;
+      padding: 14px;
+      background: rgba(255, 243, 224, 0.6);
     }
 
     .detail-content {
@@ -143,29 +169,50 @@ import { Appointment, AppointmentStatus } from '../../../../../shared/models/app
 
     .detail-label {
       font-size: 12px;
-      color: #666;
+      color: #bf360c;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      font-weight: 700;
     }
 
     .detail-value {
-      font-size: 16px;
-      color: #333;
+      font-size: 17px;
+      color: #3e2723;
+      font-weight: 600;
     }
 
     .notes-value {
       white-space: pre-wrap;
       line-height: 1.5;
+      color: #5d4037;
     }
 
     mat-dialog-actions {
       padding: 16px 24px;
-      
+
       button {
         display: flex;
         align-items: center;
         gap: 8px;
+        border-radius: 50px;
+        padding: 8px 24px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #ff7043, #ffca28);
+        color: white;
       }
+    }
+
+    ::ng-deep .mat-mdc-chip.mat-primary {
+      background: linear-gradient(90deg, #42a5f5, #1e88e5) !important;
+      color: white !important;
+    }
+    ::ng-deep .mat-mdc-chip.mat-accent {
+      background: linear-gradient(90deg, #66bb6a, #43a047) !important;
+      color: white !important;
+    }
+    ::ng-deep .mat-mdc-chip.mat-warn {
+      background: linear-gradient(90deg, #ef5350, #d32f2f) !important;
+      color: white !important;
     }
   `]
 })

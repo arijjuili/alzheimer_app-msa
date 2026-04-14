@@ -9,4 +9,4 @@ public record MedicationMissedEvent(
         UUID patientId,
         String medicationName,
         LocalDateTime scheduledAt
-) {}
+) implements java.io.Serializable {}

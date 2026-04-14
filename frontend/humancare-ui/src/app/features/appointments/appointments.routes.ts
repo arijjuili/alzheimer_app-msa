@@ -7,7 +7,7 @@ export const APPOINTMENTS_ROUTES: Routes = [
     loadComponent: () => import('./components/appointments-redirect/appointments-redirect.component')
       .then(m => m.AppointmentsRedirectComponent),
     canActivate: [RoleGuard],
-    data: { roles: ['PATIENT', 'DOCTOR', 'ADMIN'] }
+    data: { roles: ['PATIENT', 'CAREGIVER', 'DOCTOR', 'ADMIN'] }
   },
   {
     path: 'patient',
@@ -15,6 +15,13 @@ export const APPOINTMENTS_ROUTES: Routes = [
       .then(m => m.PatientAppointmentsComponent),
     canActivate: [RoleGuard],
     data: { roles: ['PATIENT', 'ADMIN'] }
+  },
+  {
+    path: 'caregiver',
+    loadComponent: () => import('./components/caregiver/caregiver-appointments.component')
+      .then(m => m.CaregiverAppointmentsComponent),
+    canActivate: [RoleGuard],
+    data: { roles: ['CAREGIVER', 'ADMIN'] }
   },
   {
     path: 'doctor',

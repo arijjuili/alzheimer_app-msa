@@ -130,140 +130,156 @@ export interface AppointmentStatusUpdateDialogData {
     .dialog-container {
       min-width: 400px;
       max-width: 450px;
+      background: #ffffff;
+      border-radius: 4px;
     }
 
     .dialog-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 24px 24px 0;
+      gap: 10px;
+      padding: 20px 24px 0;
+      border-bottom: 1px solid #eceff1;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
 
       h2 {
         margin: 0;
-        font-size: 20px;
+        font-size: 17px;
         font-weight: 500;
+        color: #263238;
       }
     }
 
     .header-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
     }
 
     .dialog-content {
-      padding: 16px 24px;
+      padding: 12px 24px;
     }
 
     .section-label {
-      margin: 0 0 12px;
-      color: rgba(0, 0, 0, 0.6);
-      font-size: 14px;
-      font-weight: 500;
+      margin: 0 0 10px;
+      color: #607d8b;
+      font-size: 12px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
     }
 
     .current-status {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
 
       .status-chip {
-        font-size: 14px;
-        padding: 8px 16px;
+        font-size: 12px;
+        padding: 6px 12px;
+        font-weight: 500;
       }
     }
 
     .appointment-info {
-      background: #f5f5f5;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
+      background: #fafafa;
+      border-radius: 3px;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #eceff1;
 
       .info-row {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 8px;
+        gap: 10px;
+        margin-bottom: 6px;
 
         &:last-child {
           margin-bottom: 0;
         }
 
         mat-icon {
-          color: #666;
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
+          color: #78909c;
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
         }
 
         span {
-          color: rgba(0, 0, 0, 0.87);
-          font-size: 14px;
+          color: #37474f;
+          font-size: 13px;
         }
       }
     }
 
     .content-divider {
-      margin: 20px 0;
+      margin: 16px 0;
     }
 
     .status-options {
       .option-buttons {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
       }
 
       .status-option {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 16px;
+        gap: 12px;
+        padding: 12px;
         text-align: left;
         justify-content: flex-start;
-        border: 2px solid transparent;
-        transition: all 0.2s ease;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        transition: all 0.15s ease;
+        background: #ffffff;
 
         &.selected {
-          border-color: currentColor;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          border-color: #37474f;
+          background: #eceff1;
         }
 
         &:not(.selected) {
           background-color: white;
-          color: rgba(0, 0, 0, 0.87);
+          color: #263238;
+        }
+
+        &:hover:not(.selected) {
+          background: #fafafa;
         }
 
         mat-icon {
-          font-size: 28px;
-          width: 28px;
-          height: 28px;
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
         }
 
         .option-content {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 2px;
         }
 
         .option-label {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 500;
         }
 
         .option-hint {
-          font-size: 12px;
-          opacity: 0.7;
+          font-size: 11px;
+          color: #78909c;
         }
 
         &.completed.selected {
-          background-color: #69f0ae;
-          color: rgba(0, 0, 0, 0.87);
+          background-color: #e8f5e9;
+          border-color: #43a047;
+          color: #263238;
         }
 
         &.cancelled.selected {
-          background-color: #f44336;
-          color: white;
+          background-color: #ffebee;
+          border-color: #d32f2f;
+          color: #263238;
         }
       }
     }
@@ -274,29 +290,35 @@ export interface AppointmentStatusUpdateDialogData {
       align-items: center;
       text-align: center;
       padding: 16px;
+      background: #fafafa;
+      border: 1px solid #eceff1;
+      border-radius: 3px;
 
       .info-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        color: #1976d2;
-        margin-bottom: 12px;
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+        color: #455a64;
+        margin-bottom: 10px;
       }
 
       p {
-        margin: 0 0 8px;
-        color: rgba(0, 0, 0, 0.87);
+        margin: 0 0 6px;
+        color: #263238;
+        font-size: 14px;
       }
 
       .hint {
-        font-size: 14px;
-        color: rgba(0, 0, 0, 0.6);
+        font-size: 12px;
+        color: #78909c;
       }
     }
 
     .dialog-actions {
-      padding: 16px 24px;
+      padding: 12px 24px;
       gap: 8px;
+      border-top: 1px solid #eceff1;
+      background: #fafafa;
     }
 
     .spin {

@@ -4,6 +4,97 @@
   padding: 16px;
 }
 
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.patients-sidebar {
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e0e0e0;
+
+  mat-card-header {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #eceff1;
+    padding-bottom: 12px;
+  }
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: #263238;
+    font-weight: 500;
+
+    mat-icon {
+      color: #455a64;
+      font-size: 22px;
+    }
+  }
+
+  .patient-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .patient-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    border-left: 3px solid transparent;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+
+    &.active {
+      background-color: #e8f5e9;
+      border-left-color: #43a047;
+    }
+
+    mat-icon {
+      color: #607d8b;
+      font-size: 20px;
+    }
+
+    .patient-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+
+      .patient-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #263238;
+        font-size: 14px;
+      }
+
+      .patient-email {
+        font-size: 12px;
+        color: #78909c;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
+
 .appointments-card {
   background: #ffffff;
   border-radius: 4px;
@@ -22,21 +113,9 @@
     align-items: flex-start;
     width: 100%;
 
-    @media (max-width: 700px) {
+    @media (max-width: 600px) {
       flex-direction: column;
       gap: 16px;
-    }
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-
-    @media (max-width: 700px) {
-      width: 100%;
-      justify-content: flex-start;
     }
   }
 
@@ -83,20 +162,12 @@
   }
 }
 
-.search-row {
-  display: flex;
-  gap: 16px;
+.search-container {
   margin-bottom: 16px;
-  flex-wrap: wrap;
 
   .search-field {
-    flex: 1 1 300px;
-    min-width: 200px;
-  }
-
-  .uuid-field {
-    flex: 1 1 300px;
-    min-width: 200px;
+    width: 100%;
+    max-width: 400px;
   }
 }
 
@@ -175,19 +246,6 @@
     font-weight: 500;
     color: #263238;
   }
-
-  .today-chip {
-    width: fit-content;
-    font-size: 10px;
-    min-height: 20px;
-    background: #e3f2fd;
-    color: #1565c0;
-  }
-}
-
-.patient-name {
-  font-weight: 500;
-  color: #263238;
 }
 
 .reason-cell {
@@ -213,10 +271,6 @@
       font-size: 20px;
     }
   }
-
-  .status-button {
-    color: #ff8f00;
-  }
 }
 
 .no-data {
@@ -237,133 +291,25 @@
   }
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #78909c;
+  text-align: center;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+    color: #90a4ae;
+  }
+}
+
 mat-paginator {
   border-top: 1px solid #e0e0e0;
   background: #fafafa;
-}
-
-/* Calendar Styles */
-.calendar-container {
-  .calendar-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 12px;
-
-    .calendar-month-label {
-      margin: 0;
-      font-weight: 500;
-      font-size: 16px;
-      min-width: 160px;
-      text-align: center;
-      color: #263238;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    border: 1px solid #cfd8dc;
-    background: #eceff1;
-  }
-
-  .calendar-weekday {
-    padding: 10px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 11px;
-    color: #455a64;
-    background: #eceff1;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .calendar-day {
-    min-height: 100px;
-    padding: 6px;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    &.other-month {
-      background: #f5f5f5;
-      .day-number {
-        color: #b0bec5;
-      }
-    }
-
-    &.today {
-      background: #e3f2fd;
-      .day-number {
-        color: #1565c0;
-        font-weight: 700;
-      }
-    }
-
-    .day-number {
-      font-size: 12px;
-      color: #37474f;
-      align-self: flex-end;
-      font-weight: 500;
-    }
-
-    .day-appointments {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      overflow: hidden;
-    }
-
-    .day-appointment-chip {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: pointer;
-      font-weight: 500;
-
-      &:hover {
-        opacity: 0.85;
-      }
-
-      &.status-scheduled {
-        background: #e3f2fd;
-        color: #1565c0;
-      }
-
-      &.status-completed {
-        background: #e8f5e9;
-        color: #2e7d32;
-      }
-
-      &.status-cancelled {
-        background: #ffebee;
-        color: #c62828;
-      }
-    }
-
-    .more-appointments {
-      font-size: 10px;
-      color: #607d8b;
-      text-align: center;
-      font-weight: 500;
-    }
-  }
-
-  @media (max-width: 900px) {
-    .calendar-day {
-      min-height: 70px;
-
-      .day-appointment-chip {
-        display: none;
-      }
-    }
-  }
 }

@@ -43,4 +43,8 @@ export class AppointmentService {
   deleteAppointment(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  getUpcomingAppointments(): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.apiUrl}/upcoming`);
+  }
 }

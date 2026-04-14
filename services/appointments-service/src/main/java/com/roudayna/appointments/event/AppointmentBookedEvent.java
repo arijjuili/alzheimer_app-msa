@@ -8,4 +8,4 @@ public record AppointmentBookedEvent(
         UUID patientId,
         String doctorName,
         LocalDateTime appointmentDate
-) {}
+) implements java.io.Serializable {}

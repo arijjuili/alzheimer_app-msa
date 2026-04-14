@@ -56,8 +56,8 @@ export interface AppointmentManageDialogData {
           </div>
           
           <div class="detail-row">
-            <span class="detail-label">Doctor</span>
-            <span class="detail-value">{{ data.appointment.doctorName }}</span>
+            <span class="detail-label">Patient</span>
+            <span class="detail-value">{{ $any(data.appointment).patientName || data.appointment.patientId }}</span>
           </div>
           
           <div class="detail-row">
@@ -91,16 +91,6 @@ export interface AppointmentManageDialogData {
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Patient ID</mat-label>
               <input matInput [value]="data.appointment.patientId" disabled>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Doctor Name</mat-label>
-              <input matInput formControlName="doctorName" placeholder="Enter doctor name">
-              <mat-error *ngIf="appointmentForm.get('doctorName')?.hasError('required')">
-                Doctor name is required
-              </mat-error>
             </mat-form-field>
           </div>
 
@@ -200,30 +190,36 @@ export interface AppointmentManageDialogData {
     .dialog-container {
       min-width: 500px;
       max-width: 600px;
+      background: #ffffff;
+      border-radius: 4px;
     }
 
     .dialog-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 24px 24px 0;
+      gap: 10px;
+      padding: 20px 24px 0;
+      border-bottom: 1px solid #eceff1;
+      margin: 0 0 12px 0;
+      padding-bottom: 12px;
 
       h2 {
         margin: 0;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 500;
+        color: #263238;
       }
     }
 
     .header-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-      color: #1976d2;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: #455a64;
     }
 
     .dialog-content {
-      padding: 16px 24px;
+      padding: 12px 24px;
       max-height: 60vh;
       overflow-y: auto;
     }
@@ -231,57 +227,69 @@ export interface AppointmentManageDialogData {
     .view-mode {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .detail-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+
+      &:last-child {
+        border-bottom: none;
+      }
 
       &.full-width {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: 6px;
       }
     }
 
     .detail-label {
-      color: rgba(0, 0, 0, 0.6);
-      font-size: 14px;
+      color: #607d8b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 500;
     }
 
     .detail-value {
       font-weight: 500;
-      color: rgba(0, 0, 0, 0.87);
+      color: #263238;
+      font-size: 15px;
 
       &.patient-id {
         font-family: monospace;
         background: #f5f5f5;
         padding: 4px 8px;
-        border-radius: 4px;
+        border-radius: 3px;
+        font-size: 13px;
       }
 
       &.notes {
         font-weight: 400;
         white-space: pre-wrap;
         line-height: 1.5;
+        color: #455a64;
       }
     }
 
     .detail-divider {
-      margin: 8px 0;
+      display: none;
     }
 
     .edit-form {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .form-row {
       display: flex;
-      gap: 16px;
+      gap: 14px;
 
       &.two-columns {
         display: grid;
@@ -299,38 +307,49 @@ export interface AppointmentManageDialogData {
 
     .status-actions {
       margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eceff1;
     }
 
     .action-divider {
-      margin-bottom: 16px;
+      display: none;
     }
 
     .action-title {
-      margin: 0 0 12px;
-      color: rgba(0, 0, 0, 0.6);
-      font-size: 14px;
+      margin: 0 0 10px;
+      color: #546e7a;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 500;
     }
 
     .action-buttons {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
 
       button {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        border-radius: 3px;
+        font-weight: 500;
       }
     }
 
     .dialog-actions {
-      padding: 16px 24px;
+      padding: 12px 24px;
       gap: 8px;
+      border-top: 1px solid #eceff1;
+      background: #fafafa;
 
       button {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        border-radius: 3px;
+        font-weight: 500;
       }
     }
 
@@ -374,7 +393,6 @@ export class AppointmentManageDialogComponent {
     const date = new Date(data.appointment.appointmentDate);
     
     this.appointmentForm = this.fb.group({
-      doctorName: [data.appointment.doctorName, Validators.required],
       appointmentDate: [date, Validators.required],
       appointmentTime: [this.formatTime(date), Validators.required],
       reason: [data.appointment.reason, Validators.required],
@@ -401,7 +419,6 @@ export class AppointmentManageDialogComponent {
     date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
 
     const updateRequest: AppointmentUpdateRequest = {
-      doctorName: formValue.doctorName,
       appointmentDate: date.toISOString(),
       reason: formValue.reason,
       status: formValue.status,

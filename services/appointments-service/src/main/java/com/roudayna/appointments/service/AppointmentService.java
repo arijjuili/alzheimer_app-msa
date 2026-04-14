@@ -67,12 +67,24 @@ public class AppointmentService {
     // Update appointment
     public Optional<Appointment> updateAppointment(UUID id, Appointment updatedAppointment) {
         return appointmentRepository.findById(id).map(existing -> {
-            existing.setPatientId(updatedAppointment.getPatientId());
-            existing.setDoctorName(updatedAppointment.getDoctorName());
-            existing.setAppointmentDate(updatedAppointment.getAppointmentDate());
-            existing.setReason(updatedAppointment.getReason());
-            existing.setStatus(updatedAppointment.getStatus());
-            existing.setNotes(updatedAppointment.getNotes());
+            if (updatedAppointment.getPatientId() != null) {
+                existing.setPatientId(updatedAppointment.getPatientId());
+            }
+            if (updatedAppointment.getDoctorName() != null) {
+                existing.setDoctorName(updatedAppointment.getDoctorName());
+            }
+            if (updatedAppointment.getAppointmentDate() != null) {
+                existing.setAppointmentDate(updatedAppointment.getAppointmentDate());
+            }
+            if (updatedAppointment.getReason() != null) {
+                existing.setReason(updatedAppointment.getReason());
+            }
+            if (updatedAppointment.getStatus() != null) {
+                existing.setStatus(updatedAppointment.getStatus());
+            }
+            if (updatedAppointment.getNotes() != null) {
+                existing.setNotes(updatedAppointment.getNotes());
+            }
             return appointmentRepository.save(existing);
         });
     }
