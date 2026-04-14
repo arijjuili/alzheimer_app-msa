@@ -156,7 +156,7 @@ export class PatientEditComponent implements OnInit {
       .subscribe(result => {
         if (result) {
           this.errorHandler.showSuccess('Patient created successfully');
-          this.router.navigate(['/patients']);
+          this.router.navigate(['/app', 'patients']);
         }
       });
   }
@@ -173,9 +173,50 @@ export class PatientEditComponent implements OnInit {
       .subscribe(result => {
         if (result) {
           this.errorHandler.showSuccess('Patient updated successfully');
-          this.router.navigate(['/patients', id]);
+          this.router.navigate(['/app', 'patients', id]);
         }
       });
+  }
+
+  deletePatient(): void {
+    if (!this.patientId || this.isNewPatient || !this.patient) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete Patient?',
+        message: `Delete ${this.patient.firstName} ${this.patient.lastName}? This removes the patient profile and linked user account.`,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'warn',
+        icon: 'delete'
+      } as ConfirmDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result || !this.patientId) {
+        return;
+      }
+
+      this.saving = true;
+      this.patientService.deletePatient(this.patientId)
+        .pipe(
+          catchError(err => {
+            this.errorHandler.handleError(err);
+            return of(null);
+          }),
+          finalize(() => this.saving = false)
+        )
+        .subscribe(response => {
+          if (response === null) {
+            return;
+          }
+
+          this.errorHandler.showSuccess('Patient deleted successfully');
+          this.router.navigate(['/app', 'patients']);
+        });
+    });
   }
 
   onCancel(): void {
@@ -203,11 +244,11 @@ export class PatientEditComponent implements OnInit {
 
   goBack(): void {
     if (this.isNewPatient) {
-      this.router.navigate(['/patients']);
+      this.router.navigate(['/app', 'patients']);
     } else if (this.patientId) {
-      this.router.navigate(['/patients', this.patientId]);
+      this.router.navigate(['/app', 'patients', this.patientId]);
     } else {
-      this.router.navigate(['/patients']);
+      this.router.navigate(['/app', 'patients']);
     }
   }
 

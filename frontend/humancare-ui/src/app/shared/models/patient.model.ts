@@ -53,18 +53,47 @@ export interface AssignmentRequest {
   caregiverId?: string;
 }
 
-export interface Doctor {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  specialty?: string;
-}
-
 export interface Caregiver {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  username?: string;
   phone?: string;
+  enabled?: boolean;
+}
+
+export type UserRole = 'PATIENT' | 'CAREGIVER' | 'DOCTOR';
+
+export interface Doctor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username?: string;
+  specialty?: string;
+  enabled?: boolean;
+}
+
+export interface UserRegistrationRequest {
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  role: UserRole;
+  phone?: string;
+  dateOfBirth?: string;
+  address?: string;
+  emergencyContact?: string;
+  medicalHistory?: string;
+}
+
+export interface UserRegistrationResponse {
+  message: string;
+  userId: string;
+  patientId?: string | null;
+  username: string;
+  email: string;
+  role: UserRole;
 }

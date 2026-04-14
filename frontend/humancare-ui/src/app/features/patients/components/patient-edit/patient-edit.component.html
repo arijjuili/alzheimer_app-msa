@@ -110,6 +110,17 @@
       </mat-card-content>
 
       <mat-card-actions align="end">
+        <button
+          *ngIf="!isNewPatient"
+          mat-stroked-button
+          color="warn"
+          type="button"
+          (click)="deletePatient()"
+          [disabled]="saving"
+        >
+          <mat-icon>delete</mat-icon>
+          Delete Patient
+        </button>
         <button 
           mat-button 
           type="button" 

@@ -22,10 +22,35 @@ const Patient = sequelize.define('Patient', {
     allowNull: false,
     field: 'last_name'
   },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'email'
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'phone'
+  },
   birthDate: {
     type: DataTypes.DATEONLY,
     allowNull: true,
     field: 'birth_date'
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'address'
+  },
+  emergencyContact: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'emergency_contact'
+  },
+  medicalHistory: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'medical_history'
   },
   caregiverId: {
     type: DataTypes.UUID,

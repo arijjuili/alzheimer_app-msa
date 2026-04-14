@@ -1,0 +1,66 @@
+<div class="assignment-dialog">
+  <h2 mat-dialog-title>
+    <mat-icon>person_add_alt_1</mat-icon>
+    Assign Care Team
+  </h2>
+
+  <mat-dialog-content>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Patient</p>
+        <h3>{{ patientName }}</h3>
+        <p class="subtitle">Choose a caregiver and a doctor from the current user directory.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="assignmentForm" class="assignment-form">
+      <section class="assignment-panel caregiver-panel">
+        <div class="panel-header">
+          <mat-icon>volunteer_activism</mat-icon>
+          <div>
+            <h4>Caregiver Assignment</h4>
+            <p>Pick the caregiver responsible for daily follow-up.</p>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Caregiver</mat-label>
+          <mat-select formControlName="caregiverId">
+            <mat-option [value]="null">No caregiver assigned</mat-option>
+            <mat-option *ngFor="let caregiver of data.caregivers" [value]="caregiver.id">
+              {{ caregiver.firstName }} {{ caregiver.lastName }} • {{ caregiver.email }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </section>
+
+      <section class="assignment-panel doctor-panel">
+        <div class="panel-header">
+          <mat-icon>medical_services</mat-icon>
+          <div>
+            <h4>Doctor Assignment</h4>
+            <p>Select the doctor who owns the patient’s medical plan.</p>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Doctor</mat-label>
+          <mat-select formControlName="doctorId">
+            <mat-option [value]="null">No doctor assigned</mat-option>
+            <mat-option *ngFor="let doctor of data.doctors" [value]="doctor.id">
+              Dr. {{ doctor.firstName }} {{ doctor.lastName }} • {{ doctor.email }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </section>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="saving">Cancel</button>
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="saving || !hasChanges">
+      <mat-spinner *ngIf="saving" diameter="18"></mat-spinner>
+      <span *ngIf="!saving">Save Assignments</span>
+    </button>
+  </mat-dialog-actions>
+</div>

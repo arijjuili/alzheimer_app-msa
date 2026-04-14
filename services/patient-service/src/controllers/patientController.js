@@ -1,6 +1,55 @@
+const axios = require('axios');
 const { Patient, AuditLog, sequelize } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
+
+const KEYCLOAK_URL = process.env.KEYCLOAK_URL || 'http://localhost:8090';
+const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM || 'humancare';
+const KEYCLOAK_ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN_USERNAME || 'admin';
+const KEYCLOAK_ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin';
+
+async function getAdminToken() {
+  const response = await axios.post(
+    `${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`,
+    new URLSearchParams({
+      username: KEYCLOAK_ADMIN_USERNAME,
+      password: KEYCLOAK_ADMIN_PASSWORD,
+      grant_type: 'password',
+      client_id: 'admin-cli'
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  );
+
+  return response.data.access_token;
+}
+
+async function updateKeycloakUser(adminToken, keycloakId, payload) {
+  await axios.put(
+    `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${keycloakId}`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+}
+
+async function deleteKeycloakUser(adminToken, keycloakId) {
+  await axios.delete(
+    `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${keycloakId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${adminToken}`
+      }
+    }
+  );
+}
 
 // Get all patients with pagination and optional filters
 const getAllPatients = async (req, res) => {
@@ -291,7 +340,18 @@ const updatePatient = async (req, res) => {
   
   try {
     const { id } = req.params;
-    const { firstName, lastName, birthDate, caregiverId, doctorId } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      emergencyContact,
+      medicalHistory,
+      birthDate,
+      caregiverId,
+      doctorId
+    } = req.body;
     const performedBy = req.headers['x-user-id'] || 'system';
 
     const patient = await Patient.findByPk(id, { transaction });
@@ -304,18 +364,39 @@ const updatePatient = async (req, res) => {
     const oldValues = {
       firstName: patient.firstName,
       lastName: patient.lastName,
+      email: patient.email,
+      phone: patient.phone,
+      address: patient.address,
+      emergencyContact: patient.emergencyContact,
+      medicalHistory: patient.medicalHistory,
       birthDate: patient.birthDate,
       caregiverId: patient.caregiverId,
       doctorId: patient.doctorId
     };
 
-    await patient.update({
+    const nextValues = {
       firstName: firstName || patient.firstName,
       lastName: lastName || patient.lastName,
+      email: email !== undefined ? email : patient.email,
+      phone: phone !== undefined ? phone : patient.phone,
+      address: address !== undefined ? address : patient.address,
+      emergencyContact: emergencyContact !== undefined ? emergencyContact : patient.emergencyContact,
+      medicalHistory: medicalHistory !== undefined ? medicalHistory : patient.medicalHistory,
       birthDate: birthDate !== undefined ? birthDate : patient.birthDate,
       caregiverId: caregiverId !== undefined ? caregiverId : patient.caregiverId,
       doctorId: doctorId !== undefined ? doctorId : patient.doctorId
-    }, { transaction });
+    };
+
+    if (patient.keycloakId && (firstName !== undefined || lastName !== undefined || email !== undefined)) {
+      const adminToken = await getAdminToken();
+      await updateKeycloakUser(adminToken, patient.keycloakId, {
+        firstName: nextValues.firstName,
+        lastName: nextValues.lastName,
+        email: nextValues.email
+      });
+    }
+
+    await patient.update(nextValues, { transaction });
 
     // Log UPDATE action
     await AuditLog.create({
@@ -325,7 +406,7 @@ const updatePatient = async (req, res) => {
       performedBy,
       details: {
         oldValues,
-        newValues: { firstName, lastName, birthDate, caregiverId, doctorId }
+        newValues: nextValues
       }
     }, { transaction });
 
@@ -335,6 +416,41 @@ const updatePatient = async (req, res) => {
     await transaction.rollback();
     console.error('Error updating patient:', error);
     res.status(500).json({ error: 'Failed to update patient' });
+  }
+};
+
+const deletePatient = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findByPk(id, { transaction });
+
+    if (!patient) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    if (patient.keycloakId) {
+      const adminToken = await getAdminToken();
+      await deleteKeycloakUser(adminToken, patient.keycloakId);
+    }
+
+    await AuditLog.destroy({
+      where: { patientId: id },
+      transaction
+    });
+
+    await patient.destroy({ transaction });
+    await transaction.commit();
+
+    return res.status(204).send();
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Error deleting patient:', error.response?.data || error.message || error);
+    return res.status(500).json({
+      error: 'Failed to delete patient'
+    });
   }
 };
 
@@ -471,6 +587,7 @@ module.exports = {
   getPatientById,
   createPatient,
   updatePatient,
+  deletePatient,
   getPatientAudit,
   getPatientsByDoctor,
   getUnassignedPatients,

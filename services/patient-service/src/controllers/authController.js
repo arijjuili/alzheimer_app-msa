@@ -33,12 +33,69 @@ async function getAdminToken() {
   }
 }
 
+async function getRealmRoleByName(adminToken, roleName) {
+  const response = await axios.get(
+    `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/roles`,
+    {
+      headers: {
+        Authorization: `Bearer ${adminToken}`
+      }
+    }
+  );
+
+  return response.data.find(role => role.name === roleName) || null;
+}
+
+async function deleteKeycloakUser(adminToken, userId) {
+  await axios.delete(
+    `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/users/${userId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${adminToken}`
+      }
+    }
+  );
+}
+
+function extractKeycloakErrorMessage(error, fallbackMessage) {
+  const responseData = error?.response?.data;
+
+  if (typeof responseData === 'string' && responseData.trim()) {
+    return responseData;
+  }
+
+  if (responseData?.errorMessage) {
+    return responseData.errorMessage;
+  }
+
+  if (responseData?.error) {
+    return responseData.error;
+  }
+
+  return error.message || fallbackMessage;
+}
+
 /**
  * Register a new user with a specific role
  */
 async function registerUser(req, res) {
+  let adminToken;
+  let createdUserId = null;
+
   try {
-    const { username, email, firstName, lastName, password, role } = req.body;
+    const { 
+      username, 
+      email, 
+      firstName, 
+      lastName, 
+      password, 
+      role,
+      phone,
+      dateOfBirth,
+      address,
+      emergencyContact,
+      medicalHistory
+    } = req.body;
 
     // Validate required fields
     if (!username || !email || !firstName || !lastName || !password || !role) {
@@ -58,7 +115,15 @@ async function registerUser(req, res) {
     }
 
     // Get admin token
-    const adminToken = await getAdminToken();
+    adminToken = await getAdminToken();
+
+    const targetRole = await getRealmRoleByName(adminToken, role);
+    if (!targetRole) {
+      return res.status(500).json({
+        error: 'Registration failed',
+        message: `Realm role ${role} was not found in Keycloak. Reimport the humancare realm or create the role first.`
+      });
+    }
 
     // Check if user already exists
     try {
@@ -107,7 +172,7 @@ async function registerUser(req, res) {
         firstName,
         lastName,
         enabled: true,
-        emailVerified: false,
+        emailVerified: true,
         credentials: [
           {
             type: 'password',
@@ -144,6 +209,7 @@ async function registerUser(req, res) {
       
       if (userSearch.data.length > 0) {
         const user = userSearch.data[0];
+        createdUserId = user.id;
         
         // Assign role to user
         await assignRoleToUser(adminToken, user.id, role);
@@ -163,6 +229,8 @@ async function registerUser(req, res) {
       });
     }
 
+    createdUserId = userId;
+
     // Assign role to user
     await assignRoleToUser(adminToken, userId, role);
 
@@ -175,7 +243,12 @@ async function registerUser(req, res) {
           keycloakId: userId,
           firstName: firstName,
           lastName: lastName,
-          birthDate: null,
+          email: email,
+          phone: phone || null,
+          birthDate: dateOfBirth || null,
+          address: address || null,
+          emergencyContact: emergencyContact || null,
+          medicalHistory: medicalHistory || null,
           caregiverId: null,
           doctorId: null
         });
@@ -198,6 +271,18 @@ async function registerUser(req, res) {
 
   } catch (error) {
     console.error('Registration error:', error.response?.data || error.message);
+
+    if (createdUserId && adminToken) {
+      try {
+        await deleteKeycloakUser(adminToken, createdUserId);
+        console.log(`[registerUser] Rolled back Keycloak user ${createdUserId} after failed registration`);
+      } catch (cleanupError) {
+        console.error(
+          `[registerUser] Failed to rollback Keycloak user ${createdUserId}:`,
+          cleanupError.response?.data || cleanupError.message
+        );
+      }
+    }
     
     if (error.response?.status === 409) {
       return res.status(409).json({
@@ -208,7 +293,7 @@ async function registerUser(req, res) {
     
     return res.status(500).json({
       error: 'Registration failed',
-      message: error.response?.data?.errorMessage || 'An error occurred during registration'
+      message: extractKeycloakErrorMessage(error, 'An error occurred during registration')
     });
   }
 }
@@ -261,20 +346,8 @@ async function assignRoleToUser(adminToken, userId, roleName) {
   try {
     console.log(`[assignRoleToUser] Starting for user ${userId}, target role: ${roleName}`);
     
-    // Get all available realm roles
-    const allRolesResponse = await axios.get(
-      `${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/roles`,
-      {
-        headers: {
-          Authorization: `Bearer ${adminToken}`
-        }
-      }
-    );
-
-    const allRoles = allRolesResponse.data;
-    
     // Find the target role
-    const targetRole = allRoles.find(r => r.name === roleName);
+    const targetRole = await getRealmRoleByName(adminToken, roleName);
     if (!targetRole) {
       throw new Error(`Role ${roleName} not found in Keycloak`);
     }

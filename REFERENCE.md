@@ -1104,12 +1104,12 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 # Security: Run as non-root
-RUN addgroup -S humancare && adduser -S humancare -G humancare
+RUN groupadd -r humancare && useradd -r -g humancare humancare
 USER humancare
 
 EXPOSE 8080
@@ -1136,7 +1136,7 @@ RUN npm ci --only=production
 COPY src ./src
 
 # Security: Run as non-root
-RUN addgroup -S humancare && adduser -S humancare -G humancare
+RUN groupadd -r humancare && useradd -r -g humancare humancare
 USER humancare
 
 EXPOSE 8082

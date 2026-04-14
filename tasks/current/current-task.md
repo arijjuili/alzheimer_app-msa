@@ -1,19 +1,18 @@
 ﻿# Current Task
 
-**Task:** Containerize frontend and push image for Railway deployment
-**Status:** COMPLETED
-**Started:** 2026-04-08
-**Completed:** 2026-04-08
+**Task:** Admin user management UI upgrade
+**Status:** IN PROGRESS
+**Started:** 2026-04-14
 
 ---
 
 ## Summary
 
-Created frontend Docker assets, built/pushed image to Docker Hub, and verified container startup.
+Upgrade the admin-facing frontend user management page to support all user roles, patient assignment workflows, and a stronger visual design.
 
 ### Scope
-- Add `frontend/humancare-ui/Dockerfile`
-- Add `frontend/humancare-ui/.dockerignore`
-- Build and push `hebhebj/humancare:frontend-latest`
-- Verify local run returns HTTP 200
-- Record task in `tasks/current/2026-04-08_frontend-docker-railway.md`
+- Show patients, caregivers, and doctors from the admin user-management page
+- Remove the existing assigned/unassigned filter UI
+- Add an assignment dialog for selecting caregiver and doctor per patient
+- Replace `Add New Patient` with role-based `Add New User`
+- Keep backend changes minimal and report any required rebuilds if made

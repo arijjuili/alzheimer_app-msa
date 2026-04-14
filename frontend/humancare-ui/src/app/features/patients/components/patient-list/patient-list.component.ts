@@ -1,36 +1,32 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatBadgeModule } from '@angular/material/badge';
-import { debounceTime, distinctUntilChanged, finalize, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { catchError, debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
 
 import { PatientService } from '../../../profile/services/patient.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { Patient } from '../../../../shared/models/patient.model';
+import { Caregiver, Doctor, Patient } from '../../../../shared/models/patient.model';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
 import { InitialsPipe } from '../../../../shared/pipes/initials.pipe';
-import { AssignmentConfirmDialogComponent } from '../assignment-confirm-dialog/assignment-confirm-dialog.component';
+import { PatientCreateDialogComponent } from '../patient-create-dialog/patient-create-dialog.component';
+import { PatientAssignmentDialogComponent } from '../patient-assignment-dialog/patient-assignment-dialog.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
-type FilterTab = 'all' | 'my-patients' | 'unassigned';
-
-type FilterType = 'all' | 'my' | 'unassigned';
+type UserTab = 'patients' | 'caregivers' | 'doctors';
 
 @Component({
   selector: 'app-patient-list',
@@ -46,13 +42,10 @@ type FilterType = 'all' | 'my' | 'unassigned';
     MatInputModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
-    MatPaginatorModule,
-    MatSortModule,
     MatChipsModule,
     MatTooltipModule,
     MatTabsModule,
     MatDialogModule,
-    MatBadgeModule,
     DateFormatPipe,
     InitialsPipe
   ],
@@ -60,34 +53,30 @@ type FilterType = 'all' | 'my' | 'unassigned';
   styleUrls: ['./patient-list.component.scss']
 })
 export class PatientListComponent implements OnInit {
-  dataSource = new MatTableDataSource<Patient>([]);
-  displayedColumns: string[] = ['name', 'email', 'phone', 'dateOfBirth', 'assignment', 'actions'];
-  loading = true;
-  error: string | null = null;
-  searchControl = new FormControl('');
-
-  // Filter tabs
-  activeTab: FilterTab = 'all';
-  readonly tabs = [
-    { key: 'all' as FilterTab, label: 'All Patients', icon: 'people' },
-    { key: 'my-patients' as FilterTab, label: 'My Patients', icon: 'person_pin' },
-    { key: 'unassigned' as FilterTab, label: 'Unassigned', icon: 'person_outline' }
+  readonly searchControl = new FormControl('', { nonNullable: true });
+  readonly tabs: Array<{ key: UserTab; label: string; icon: string }> = [
+    { key: 'patients', label: 'Patients', icon: 'personal_injury' },
+    { key: 'caregivers', label: 'Caregivers', icon: 'volunteer_activism' },
+    { key: 'doctors', label: 'Doctors', icon: 'medical_services' }
   ];
 
-  // Pagination
-  totalPatients = 0;
-  pageSize = 10;
-  pageIndex = 0;
+  readonly patientColumns = ['name', 'email', 'phone', 'dateOfBirth', 'caregiver', 'doctor', 'actions'];
+  readonly caregiverColumns = ['name', 'email', 'username', 'status'];
+  readonly doctorColumns = ['name', 'email', 'username', 'status'];
 
-  // Assignment loading states
-  assigningPatientId: string | null = null;
+  activeTab: UserTab = 'patients';
+  loading = true;
+  error: string | null = null;
 
-  // Filter and current doctor
-  activeFilter: FilterType = 'all';
-  currentDoctorId: string | null = null;
+  patients: Patient[] = [];
+  caregivers: Caregiver[] = [];
+  doctors: Doctor[] = [];
+  filteredPatients: Patient[] = [];
+  filteredCaregivers: Caregiver[] = [];
+  filteredDoctors: Doctor[] = [];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private doctorDirectory = new Map<string, Doctor>();
+  private caregiverDirectory = new Map<string, Caregiver>();
 
   constructor(
     private patientService: PatientService,
@@ -98,203 +87,176 @@ export class PatientListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentDoctor();
-    this.loadPatients();
+    this.loadDirectory();
     this.setupSearch();
   }
 
-  private loadCurrentDoctor(): void {
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser && (this.isDoctor() || this.isAdmin())) {
-      this.currentDoctorId = currentUser.id;
-    }
+  get totalUsers(): number {
+    return this.patients.length + this.caregivers.length + this.doctors.length;
   }
 
-  loadPatients(): void {
+  get canManageUsers(): boolean {
+    return this.isAdmin();
+  }
+
+  loadDirectory(): void {
     this.loading = true;
     this.error = null;
 
-    const loadMethod = this.getLoadMethod();
+    const requests = this.isAdmin()
+      ? forkJoin({
+          patients: this.patientService.getPatients(1, 1000),
+          caregivers: this.patientService.getAvailableCaregivers(),
+          doctors: this.patientService.getAvailableDoctors()
+        })
+      : forkJoin({
+          patients: this.patientService.getPatients(1, 1000),
+          caregivers: of([] as Caregiver[]),
+          doctors: of([] as Doctor[])
+        });
 
-    loadMethod
+    requests
       .pipe(
-        catchError(err => {
-          this.errorHandler.handleError(err);
-          this.error = 'Failed to load patients';
-          return of({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+        catchError(error => {
+          this.errorHandler.handleError(error);
+          this.error = 'Failed to load the user directory';
+          return of({
+            patients: { data: [], total: 0, page: 1, limit: 1000, totalPages: 0 },
+            caregivers: [],
+            doctors: []
+          });
         }),
-        finalize(() => this.loading = false)
+        finalize(() => (this.loading = false))
       )
-      .subscribe(response => {
-        // If API returns empty data, use mock data for demo
-        if (response.data.length === 0 && this.activeTab === 'all') {
-          this.dataSource.data = this.getMockPatients();
-          this.totalPatients = this.dataSource.data.length;
-        } else {
-          this.dataSource.data = response.data;
-          this.totalPatients = response.total;
-        }
+      .subscribe(result => {
+        this.patients = result.patients.data ?? [];
+        this.caregivers = result.caregivers ?? [];
+        this.doctors = result.doctors ?? [];
+
+        this.doctorDirectory = new Map(this.doctors.map(doctor => [doctor.id, doctor]));
+        this.caregiverDirectory = new Map(this.caregivers.map(caregiver => [caregiver.id, caregiver]));
+
+        this.applySearch();
       });
-  }
-
-  private getLoadMethod() {
-    // Use activeFilter if set, otherwise fall back to activeTab
-    const filter = this.activeFilter !== 'all' ? this.activeFilter : this.mapTabToFilter(this.activeTab);
-
-    switch (filter) {
-      case 'my':
-        if (this.currentDoctorId) {
-          return this.patientService.getPatientsByDoctor(this.currentDoctorId, this.pageIndex + 1, this.pageSize);
-        }
-        // Fallback to all patients if no doctor ID
-        return this.patientService.getPatients(this.pageIndex + 1, this.pageSize);
-      case 'unassigned':
-        return this.patientService.getUnassignedPatients(this.pageIndex + 1, this.pageSize);
-      case 'all':
-      default:
-        return this.patientService.getPatients(this.pageIndex + 1, this.pageSize);
-    }
-  }
-
-  private mapTabToFilter(tab: FilterTab): FilterType {
-    switch (tab) {
-      case 'my-patients': return 'my';
-      case 'unassigned': return 'unassigned';
-      case 'all':
-      default: return 'all';
-    }
-  }
-
-  /**
-   * Set the active filter for patient list
-   */
-  setFilter(filter: FilterType): void {
-    this.activeFilter = filter;
-    this.pageIndex = 0;
-    if (this.paginator) {
-      this.paginator.pageIndex = 0;
-    }
-    this.loadPatients();
-  }
-
-  /**
-   * Check if patient is assigned to current doctor
-   */
-  isMyPatient(patient: Patient): boolean {
-    if (!this.currentDoctorId) return false;
-    return patient.doctorId === this.currentDoctorId;
-  }
-
-  /**
-   * Check if doctor can assign this patient
-   */
-  canAssign(patient: Patient): boolean {
-    if (!this.canAssignPatient()) return false;
-    if (patient.doctorId) return false; // Already assigned
-    if (!this.currentDoctorId) return false;
-    
-    // Admin or Doctor can assign unassigned patients
-    return this.isAdmin() || this.isDoctor();
-  }
-
-  onTabChange(tab: FilterTab): void {
-    this.activeTab = tab;
-    this.pageIndex = 0;
-    if (this.paginator) {
-      this.paginator.pageIndex = 0;
-    }
-    this.loadPatients();
   }
 
   setupSearch(): void {
     this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
-      .subscribe(query => {
-        if (query) {
-          this.searchPatients(query);
-        } else {
-          this.loadPatients();
+      .pipe(debounceTime(200), distinctUntilChanged())
+      .subscribe(() => this.applySearch());
+  }
+
+  onTabChange(index: number): void {
+    this.activeTab = this.tabs[index]?.key ?? 'patients';
+  }
+
+  openCreateUserDialog(): void {
+    const dialogRef = this.dialog.open(PatientCreateDialogComponent, {
+      width: '880px',
+      maxWidth: '95vw',
+      disableClose: true,
+      data: {
+        title: 'Add New User'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        this.loadDirectory();
+      }
+    });
+  }
+
+  openAssignmentDialog(patient: Patient, event?: Event): void {
+    event?.stopPropagation();
+
+    const dialogRef = this.dialog.open(PatientAssignmentDialogComponent, {
+      width: '760px',
+      maxWidth: '95vw',
+      data: {
+        patient,
+        caregivers: this.caregivers,
+        doctors: this.doctors
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        this.loadDirectory();
+      }
+    });
+  }
+
+  viewPatient(patient: Patient, event?: Event): void {
+    event?.stopPropagation();
+    this.router.navigate(['/app', 'patients', patient.id]);
+  }
+
+  editPatient(patient: Patient, event?: Event): void {
+    event?.stopPropagation();
+    this.router.navigate(['/app', 'patients', patient.id, 'edit']);
+  }
+
+  deletePatient(patient: Patient, event?: Event): void {
+    event?.stopPropagation();
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Delete Patient',
+        message: `Delete ${patient.firstName} ${patient.lastName}? This removes the patient profile and linked user account.`,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'warn',
+        icon: 'delete'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        return;
+      }
+
+      this.patientService.deletePatient(patient.id).subscribe({
+        next: () => {
+          this.errorHandler.showSuccess('Patient deleted successfully');
+          this.loadDirectory();
+        },
+        error: (error) => {
+          this.errorHandler.handleError(error);
         }
       });
+    });
   }
 
-  searchPatients(query: string): void {
-    this.loading = true;
-    
-    // If searching by name (not email pattern), filter locally
-    if (this.isNameSearch(query)) {
-      this.performLocalNameSearch(query);
-    } else {
-      // Use API search for other queries
-      this.patientService.searchPatients(query)
-        .pipe(
-          catchError(err => {
-            this.errorHandler.handleError(err);
-            return of([]);
-          }),
-          finalize(() => this.loading = false)
-        )
-        .subscribe(patients => {
-          this.dataSource.data = patients;
-          this.totalPatients = patients.length;
-        });
+  getDoctorDisplay(patient: Patient): string {
+    if (!patient.doctorId) {
+      return 'Unassigned';
     }
+
+    if (patient.doctorName) {
+      return `Dr. ${patient.doctorName}`;
+    }
+
+    const doctor = this.doctorDirectory.get(patient.doctorId);
+    return doctor ? `Dr. ${doctor.firstName} ${doctor.lastName}` : 'Assigned';
   }
 
-  private isNameSearch(query: string): boolean {
-    // Simple heuristic: if query contains spaces or letters without special characters, treat as name
-    return /^[a-zA-Z\s]+$/.test(query.trim());
+  getCaregiverDisplay(patient: Patient): string {
+    if (!patient.caregiverId) {
+      return 'Unassigned';
+    }
+
+    if (patient.caregiverName) {
+      return patient.caregiverName;
+    }
+
+    const caregiver = this.caregiverDirectory.get(patient.caregiverId);
+    return caregiver ? `${caregiver.firstName} ${caregiver.lastName}` : 'Assigned';
   }
 
-  private performLocalNameSearch(query: string): void {
-    const lowerQuery = query.toLowerCase();
-    
-    // First load all patients if needed
-    this.patientService.getPatients(1, 1000)
-      .pipe(
-        catchError(err => {
-          this.errorHandler.handleError(err);
-          return of({ 
-            data: this.dataSource.data.length > 0 ? this.dataSource.data : this.getMockPatients(), 
-            total: 0, page: 1, limit: 1000, totalPages: 0 
-          });
-        }),
-        finalize(() => this.loading = false)
-      )
-      .subscribe(response => {
-        const allPatients = response.data.length > 0 ? response.data : this.getMockPatients();
-        const filtered = allPatients.filter(patient => {
-          const fullName = `${patient.firstName} ${patient.lastName}`.toLowerCase();
-          return fullName.includes(lowerQuery) ||
-                 patient.firstName.toLowerCase().includes(lowerQuery) ||
-                 patient.lastName.toLowerCase().includes(lowerQuery);
-        });
-        this.dataSource.data = filtered;
-        this.totalPatients = filtered.length;
-      });
-  }
-
-  onRowClick(patient: Patient): void {
-    this.router.navigate(['/patients', patient.id]);
-  }
-
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.loadPatients();
-  }
-
-  onSort(sort: Sort): void {
-    // In a real implementation, you would sort on the server side
-    // or use MatTableDataSource's built-in sorting
-    this.dataSource.sort = this.sort;
-  }
-
-  canCreatePatient(): boolean {
-    return this.authService.hasRole('ADMIN') || this.authService.hasRole('DOCTOR');
+  getStatusTone(enabled?: boolean): string {
+    return enabled === false ? 'offline' : 'online';
   }
 
   canEditPatient(): boolean {
@@ -305,177 +267,51 @@ export class PatientListComponent implements OnInit {
     return this.authService.hasRole('ADMIN') || this.authService.hasRole('DOCTOR');
   }
 
-  isDoctor(): boolean {
-    return this.authService.hasRole('DOCTOR');
-  }
-
   isAdmin(): boolean {
     return this.authService.hasRole('ADMIN');
   }
 
-  /**
-   * Check if the current user can assign this specific patient to themselves
-   */
-  canAssignToMe(patient: Patient): boolean {
-    if (!this.canAssignPatient()) return false;
-    if (patient.doctorId) return false; // Already assigned
-    
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return false;
-    
-    // Admin can assign any unassigned patient
-    if (this.isAdmin()) return true;
-    
-    // Doctor can assign unassigned patients to themselves
-    return this.isDoctor();
+  private applySearch(): void {
+    const query = this.searchControl.value.trim().toLowerCase();
+
+    this.filteredPatients = this.patients.filter(patient => this.matchesPatient(patient, query));
+    this.filteredCaregivers = this.caregivers.filter(caregiver => this.matchesDirectoryUser(caregiver, query));
+    this.filteredDoctors = this.doctors.filter(doctor => this.matchesDirectoryUser(doctor, query));
   }
 
-  /**
-   * Assign patient to current user (doctor)
-   */
-  assignToMe(patient: Patient, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
+  private matchesPatient(patient: Patient, query: string): boolean {
+    if (!query) {
+      return true;
     }
-    
-    if (!this.currentDoctorId) {
-      this.errorHandler.showError('You must be logged in to perform this action');
-      return;
-    }
-
-    const patientName = `${patient.firstName} ${patient.lastName}`;
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Confirm Assignment',
-        message: `Assign ${patientName} to yourself?`,
-        confirmButtonText: 'Assign',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: 'primary',
-        icon: 'person_add'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.performAssignment(patient.id, this.currentDoctorId!);
-      }
-    });
-  }
-
-  private performAssignment(patientId: string, doctorId: string): void {
-    this.assigningPatientId = patientId;
-    
-    this.patientService.assignDoctor(patientId, doctorId)
-      .pipe(
-        catchError(err => {
-          this.errorHandler.handleError(err);
-          return of(null);
-        }),
-        finalize(() => this.assigningPatientId = null)
-      )
-      .subscribe(result => {
-        if (result) {
-          this.errorHandler.showSuccess('Patient successfully assigned to you');
-          this.loadPatients(); // Refresh the list
-        }
-      });
-  }
-
-  /**
-   * Get assignment status text for a patient
-   */
-  getAssignmentStatus(patient: Patient): { text: string; type: 'assigned' | 'unassigned' | 'self' } {
-    const currentUser = this.authService.getCurrentUser();
-    
-    if (patient.doctorId) {
-      if (currentUser && patient.doctorId === currentUser.id) {
-        return { text: 'Assigned to Me', type: 'self' };
-      }
-      return { 
-        text: `Dr. ${patient.doctorName || 'Unknown'}`, 
-        type: 'assigned' 
-      };
-    }
-    return { text: 'Unassigned', type: 'unassigned' };
-  }
-
-  private getMockPatients(): Patient[] {
-    const currentUser = this.authService.getCurrentUser();
-    const myId = currentUser?.id;
 
     return [
-      {
-        id: 'p1',
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        phone: '+1 (555) 123-4567',
-        dateOfBirth: '1985-06-15',
-        address: '123 Main St, City, State 12345',
-        emergencyContact: 'Jane Doe - +1 (555) 987-6543',
-        medicalHistory: 'No significant medical history',
-        doctorId: myId,
-        doctorName: 'Smith',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'p2',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        email: 'jane.smith@example.com',
-        phone: '+1 (555) 234-5678',
-        dateOfBirth: '1990-03-22',
-        address: '456 Oak Ave, Town, State 67890',
-        emergencyContact: 'Bob Smith - +1 (555) 876-5432',
-        medicalHistory: 'Allergic to penicillin',
-        doctorId: 'd2',
-        doctorName: 'Johnson',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'p3',
-        firstName: 'Robert',
-        lastName: 'Johnson',
-        email: 'robert.j@example.com',
-        phone: '+1 (555) 345-6789',
-        dateOfBirth: '1978-11-08',
-        address: '789 Pine Rd, Village, State 11111',
-        emergencyContact: 'Mary Johnson - +1 (555) 765-4321',
-        medicalHistory: 'Hypertension, takes medication daily',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'p4',
-        firstName: 'Emily',
-        lastName: 'Williams',
-        email: 'emily.w@example.com',
-        phone: '+1 (555) 456-7890',
-        dateOfBirth: '1995-09-30',
-        address: '321 Elm St, Hamlet, State 22222',
-        emergencyContact: 'David Williams - +1 (555) 654-3210',
-        medicalHistory: 'None',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'p5',
-        firstName: 'Michael',
-        lastName: 'Brown',
-        email: 'michael.b@example.com',
-        phone: '+1 (555) 567-8901',
-        dateOfBirth: '1982-07-14',
-        address: '654 Maple Dr, City, State 33333',
-        emergencyContact: 'Sarah Brown - +1 (555) 543-2109',
-        medicalHistory: 'Asthma, uses inhaler as needed',
-        doctorId: 'd3',
-        doctorName: 'Davis',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ];
+      patient.firstName,
+      patient.lastName,
+      patient.email,
+      patient.phone,
+      this.getDoctorDisplay(patient),
+      this.getCaregiverDisplay(patient)
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query);
+  }
+
+  private matchesDirectoryUser(user: Caregiver | Doctor, query: string): boolean {
+    if (!query) {
+      return true;
+    }
+
+    return [
+      user.firstName,
+      user.lastName,
+      user.email,
+      user.username
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query);
   }
 }

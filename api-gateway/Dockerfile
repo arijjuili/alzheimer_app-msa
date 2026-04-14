@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Build
 # -----------------------------------------------------------------------------
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 WORKDIR /build
 
@@ -25,17 +25,17 @@ RUN mvn clean package -DskipTests -B
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 # Metadata
 LABEL maintainer="HumanCare Team"
 LABEL description="Spring Cloud Gateway for HumanCare Platform"
 
 # Create non-root user
-RUN addgroup -S humancare && adduser -S humancare -G humancare
+RUN groupadd -r humancare && useradd -r -g humancare humancare
 
 # Install curl for health checks
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y curl
 
 WORKDIR /app
 

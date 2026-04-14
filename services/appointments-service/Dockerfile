@@ -2,29 +2,29 @@
 # Java 17 + Maven build
 
 # Stage 1: Build
-FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (cache layer)
+# Copy pom.xml and source code
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
-# Copy source code and build
 COPY src ./src
-RUN mvn clean package -DskipTests -B
+
+# Configure Maven with retry settings
+RUN echo '<?xml version="1.0" encoding="UTF-8"?><settings xmlns="http://maven.apache.org/SETTINGS/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd"><profiles><profile><id>default</id><repositories><repository><id>central</id><url>https://repo.maven.apache.org/maven2</url><releases><enabled>true</enabled></releases><snapshots><enabled>false</enabled></snapshots></repository></repositories><pluginRepositories><pluginRepository><id>central</id><url>https://repo.maven.apache.org/maven2</url></pluginRepository></pluginRepositories></profile></profiles><activeProfiles><activeProfile>default</activeProfile></activeProfiles></settings>' > /usr/share/maven/conf/settings.xml && \
+    mvn clean package -DskipTests -B -Dmaven.resolver.transport=wagon -Dmaven.download.retry.count=5
 
 # Stage 2: Runtime
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 # Install curl for healthcheck
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y curl
 
 WORKDIR /app
 
 # Create non-root user
-RUN addgroup -g 1001 -S appointments && \
-    adduser -u 1001 -S appointments -G appointments
+RUN groupadd -r appointments && \
+    useradd -r -g appointments -m appointments
 
 # Copy jar from builder
 COPY --from=builder /app/target/appointments-service-*.jar app.jar

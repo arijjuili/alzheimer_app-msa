@@ -5,6 +5,7 @@ const {
   getPatientById,
   createPatient,
   updatePatient,
+  deletePatient,
   getPatientAudit,
   getPatientsByDoctor,
   getUnassignedPatients,
@@ -31,6 +32,9 @@ router.post('/', createPatient);
 
 // PUT /patients/:id - Update patient
 router.put('/:id', updatePatient);
+
+// DELETE /patients/:id - Delete patient and linked Keycloak user
+router.delete('/:id', deletePatient);
 
 // PUT /patients/:id/assign-doctor - Assign a doctor to a patient
 router.put('/:id/assign-doctor', assignDoctor);

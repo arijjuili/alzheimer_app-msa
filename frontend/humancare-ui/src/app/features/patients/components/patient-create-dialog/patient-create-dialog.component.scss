@@ -1,0 +1,138 @@
+.dialog-shell {
+  min-width: min(860px, 94vw);
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 20px 24px 10px;
+  color: #143642;
+
+  mat-icon {
+    color: #ff7a59;
+  }
+}
+
+mat-dialog-content {
+  padding-top: 0;
+}
+
+.hero-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 22px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(97, 210, 187, 0.25), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(255, 122, 89, 0.24), transparent 26%),
+    linear-gradient(135deg, #f5fbff 0%, #fff8ee 100%);
+  border: 1px solid rgba(20, 54, 66, 0.08);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5f7983;
+}
+
+.hero-panel h3 {
+  margin: 0;
+  font-size: 26px;
+  color: #143642;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: #5e7881;
+}
+
+.role-chip {
+  background: rgba(20, 54, 66, 0.08);
+  color: #143642;
+  font-weight: 600;
+
+  mat-icon {
+    color: #ff7a59;
+  }
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(20, 54, 66, 0.08);
+  background: #ffffff;
+  box-shadow: 0 20px 45px rgba(20, 54, 66, 0.06);
+}
+
+.patient-section {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+}
+
+.section-header {
+  margin-bottom: 14px;
+
+  h4 {
+    margin: 0 0 4px;
+    color: #143642;
+  }
+
+  p {
+    margin: 0;
+    color: #6b848d;
+    font-size: 13px;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px 24px;
+
+  button[mat-raised-button] {
+    min-width: 170px;
+  }
+
+  mat-spinner {
+    display: inline-block;
+  }
+}
+
+@media (max-width: 760px) {
+  .dialog-shell {
+    min-width: 0;
+  }
+
+  .hero-panel {
+    flex-direction: column;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -30,7 +30,7 @@ spring:
         - id: patient-service
           uri: lb://patient-service
           predicates:
-            - Path=/api/v1/patients/**,/api/v1/audit/**,/api/v1/doctors/**,/api/v1/caregivers/**,/auth/**
+            - Path=/api/v1/patients,/api/v1/patients/**,/api/v1/audit,/api/v1/audit/**,/api/v1/doctors,/api/v1/doctors/**,/api/v1/caregivers,/api/v1/caregivers/**,/auth/**
           filters:
             - StripPrefix=0
             - name: Retry
@@ -238,7 +238,7 @@ spring:
         - id: patient-service
           uri: lb://patient-service
           predicates:
-            - Path=/api/v1/patients/**,/api/v1/audit/**,/api/v1/doctors/**,/api/v1/caregivers/**,/auth/**
+            - Path=/api/v1/patients,/api/v1/patients/**,/api/v1/audit,/api/v1/audit/**,/api/v1/doctors,/api/v1/doctors/**,/api/v1/caregivers,/api/v1/caregivers/**,/auth/**
           filters:
             - StripPrefix=0
             - name: Retry
@@ -382,7 +382,7 @@ spring:
         - id: patient-service
           uri: http://localhost:8082
           predicates:
-            - Path=/api/v1/patients/**,/api/v1/audit/**,/api/v1/doctors/**,/api/v1/caregivers/**,/auth/**
+            - Path=/api/v1/patients,/api/v1/patients/**,/api/v1/audit,/api/v1/audit/**,/api/v1/doctors,/api/v1/doctors/**,/api/v1/caregivers,/api/v1/caregivers/**,/auth/**
           filters:
             - StripPrefix=0
             - name: Retry

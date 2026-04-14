@@ -20,6 +20,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { Patient, PatientAudit } from '../../../../shared/models/patient.model';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
 import { InitialsPipe } from '../../../../shared/pipes/initials.pipe';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-patient-detail',
@@ -104,7 +105,49 @@ export class PatientDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/patients']);
+    this.router.navigate(['/app', 'patients']);
+  }
+
+  goToEdit(): void {
+    if (!this.patient) {
+      return;
+    }
+
+    this.router.navigate(['/app', 'patients', this.patient.id, 'edit']);
+  }
+
+  deletePatient(): void {
+    if (!this.patient) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Delete Patient',
+        message: `Delete ${this.patient.firstName} ${this.patient.lastName}? This removes the patient profile and linked user account.`,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'warn',
+        icon: 'delete'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed || !this.patient) {
+        return;
+      }
+
+      this.patientService.deletePatient(this.patient.id).subscribe({
+        next: () => {
+          this.errorHandler.showSuccess('Patient deleted successfully');
+          this.router.navigate(['/app', 'patients']);
+        },
+        error: (error) => {
+          this.errorHandler.handleError(error);
+        }
+      });
+    });
   }
 
   canEdit(): boolean {

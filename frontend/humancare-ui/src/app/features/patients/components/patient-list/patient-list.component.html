@@ -1,208 +1,285 @@
-<div class="patients-container">
-  <mat-card class="patients-card">
-    <mat-card-header>
-      <div class="header-content">
-        <div>
-          <mat-card-title>
-            <mat-icon>people</mat-icon>
-            Patients
-          </mat-card-title>
-          <mat-card-subtitle>Manage and view all patients</mat-card-subtitle>
-        </div>
-        <button 
-          *ngIf="canCreatePatient()"
-          mat-raised-button 
-          color="primary" 
-          routerLink="/patients/new"
-          class="add-button"
-        >
-          <mat-icon>add</mat-icon>
-          Add New Patient
-        </button>
-      </div>
-    </mat-card-header>
+<div class="directory-page">
+  <section class="hero-banner">
+    <div class="hero-copy">
+      <p class="eyebrow">Admin Console</p>
+      <h1>User Management</h1>
+      <p class="subtitle">
+        Review patients, caregivers, and doctors in one place, then assign the right care team without leaving the page.
+      </p>
+    </div>
 
+    <button
+      *ngIf="canManageUsers"
+      mat-raised-button
+      color="primary"
+      class="hero-action"
+      (click)="openCreateUserDialog()"
+    >
+      <mat-icon>group_add</mat-icon>
+      Add New User
+    </button>
+  </section>
+
+  <section class="stats-grid">
+    <mat-card class="stat-card total-card">
+      <span class="stat-label">Directory Size</span>
+      <strong class="stat-value">{{ totalUsers }}</strong>
+      <span class="stat-meta">All active users across the platform</span>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <span class="stat-label">Patients</span>
+      <strong class="stat-value">{{ patients.length }}</strong>
+      <span class="stat-meta">Profiles with care assignments</span>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <span class="stat-label">Caregivers</span>
+      <strong class="stat-value">{{ caregivers.length }}</strong>
+      <span class="stat-meta">Support contacts available to assign</span>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <span class="stat-label">Doctors</span>
+      <strong class="stat-value">{{ doctors.length }}</strong>
+      <span class="stat-meta">Clinical users in the system</span>
+    </mat-card>
+  </section>
+
+  <mat-card class="directory-card">
     <mat-card-content>
-      <!-- Filter Tabs -->
-      <div class="filter-tabs">
-        <nav mat-tab-nav-bar [tabPanel]="tabPanel">
-          <a
-            mat-tab-link
-            *ngFor="let tab of tabs"
-            (click)="onTabChange(tab.key)"
-            [active]="activeTab === tab.key"
-          >
-            <mat-icon>{{ tab.icon }}</mat-icon>
-            {{ tab.label }}
-            <span 
-              *ngIf="tab.key === 'unassigned' && totalPatients > 0 && activeTab !== 'unassigned'" 
-              class="badge"
-              matBadge="{{ totalPatients }}" 
-              matBadgeSize="small"
-              matBadgeColor="warn"
-            ></span>
-          </a>
-        </nav>
-        <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
-      </div>
+      <div class="toolbar">
+        <div>
+          <h2>Team Directory</h2>
+          <p>Switch between user roles and manage assignments directly from the patient list.</p>
+        </div>
 
-      <!-- Search Bar -->
-      <div class="search-container">
         <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Search patients by name</mat-label>
-          <input matInput [formControl]="searchControl" placeholder="Enter patient name">
+          <mat-label>Search users</mat-label>
+          <input matInput [formControl]="searchControl" placeholder="Search by name, email, or assignment">
           <mat-icon matSuffix>search</mat-icon>
-          <mat-hint>Type a name to filter patients</mat-hint>
         </mat-form-field>
       </div>
 
-      <!-- Loading State -->
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="48"></mat-spinner>
-        <p>Loading patients...</p>
+      <div *ngIf="loading" class="state-panel">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Loading user directory...</p>
       </div>
 
-      <!-- Error State -->
-      <div *ngIf="error && !loading" class="error-container">
-        <mat-icon class="error-icon">error_outline</mat-icon>
-        <h3>Failed to load patients</h3>
+      <div *ngIf="error && !loading" class="state-panel error-state">
+        <mat-icon>error_outline</mat-icon>
+        <h3>Directory unavailable</h3>
         <p>{{ error }}</p>
-        <button mat-raised-button color="primary" (click)="loadPatients()">
+        <button mat-raised-button color="primary" (click)="loadDirectory()">
           <mat-icon>refresh</mat-icon>
           Retry
         </button>
       </div>
 
-      <!-- Patients Table -->
-      <div *ngIf="!loading && !error" class="table-container">
-        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" class="patients-table">
-          <!-- Name Column -->
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-            <td mat-cell *matCellDef="let patient">
-              <div class="patient-name">
-                <div class="avatar">
-                  {{ patient.firstName + ' ' + patient.lastName | initials }}
-                </div>
-                <span>{{ patient.firstName }} {{ patient.lastName }}</span>
+      <mat-tab-group *ngIf="!loading && !error" (selectedIndexChange)="onTabChange($event)" class="directory-tabs">
+        <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
+          <ng-template mat-tab-label>
+            <mat-icon>{{ tab.icon }}</mat-icon>
+            <span>{{ tab.label }}</span>
+          </ng-template>
+
+          <div class="table-shell" [ngSwitch]="tab.key">
+            <ng-container *ngSwitchCase="'patients'">
+              <table mat-table [dataSource]="filteredPatients" class="directory-table">
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Patient</th>
+                  <td mat-cell *matCellDef="let patient">
+                    <div class="identity-cell">
+                      <div class="avatar patient-avatar">
+                        {{ patient.firstName + ' ' + patient.lastName | initials }}
+                      </div>
+                      <div>
+                        <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+                        <span>{{ patient.id }}</span>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <td mat-cell *matCellDef="let patient">{{ patient.email || '—' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="phone">
+                  <th mat-header-cell *matHeaderCellDef>Phone</th>
+                  <td mat-cell *matCellDef="let patient">{{ patient.phone || '—' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="dateOfBirth">
+                  <th mat-header-cell *matHeaderCellDef>Date of Birth</th>
+                  <td mat-cell *matCellDef="let patient">{{ patient.dateOfBirth | dateFormat:'short' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="caregiver">
+                  <th mat-header-cell *matHeaderCellDef>Caregiver</th>
+                  <td mat-cell *matCellDef="let patient">
+                    <mat-chip class="assignment-chip caregiver-chip" [class.empty-chip]="!patient.caregiverId">
+                      {{ getCaregiverDisplay(patient) }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="doctor">
+                  <th mat-header-cell *matHeaderCellDef>Doctor</th>
+                  <td mat-cell *matCellDef="let patient">
+                    <mat-chip class="assignment-chip doctor-chip" [class.empty-chip]="!patient.doctorId">
+                      {{ getDoctorDisplay(patient) }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let patient">
+                    <div class="actions-cell">
+                      <button
+                        *ngIf="canAssignPatient()"
+                        mat-stroked-button
+                        color="primary"
+                        (click)="openAssignmentDialog(patient, $event)"
+                      >
+                        <mat-icon>person_add_alt_1</mat-icon>
+                        Assign
+                      </button>
+
+                      <button mat-stroked-button color="primary" (click)="viewPatient(patient, $event)" matTooltip="View patient">
+                        <mat-icon>visibility</mat-icon>
+                        View
+                      </button>
+
+                      <button
+                        *ngIf="canEditPatient()"
+                        mat-icon-button
+                        color="accent"
+                        (click)="editPatient(patient, $event)"
+                        matTooltip="Edit patient"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+
+                      <button
+                        *ngIf="canManageUsers"
+                        mat-icon-button
+                        color="warn"
+                        (click)="deletePatient(patient, $event)"
+                        matTooltip="Delete patient"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="patientColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: patientColumns"></tr>
+              </table>
+
+              <div *ngIf="filteredPatients.length === 0" class="empty-state">
+                <mat-icon>personal_injury</mat-icon>
+                <p>No patients match the current search.</p>
               </div>
-            </td>
-          </ng-container>
+            </ng-container>
 
-          <!-- Email Column -->
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
-            <td mat-cell *matCellDef="let patient">{{ patient.email }}</td>
-          </ng-container>
+            <ng-container *ngSwitchCase="'caregivers'">
+              <table mat-table [dataSource]="filteredCaregivers" class="directory-table">
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Caregiver</th>
+                  <td mat-cell *matCellDef="let caregiver">
+                    <div class="identity-cell">
+                      <div class="avatar caregiver-avatar">
+                        {{ caregiver.firstName + ' ' + caregiver.lastName | initials }}
+                      </div>
+                      <div>
+                        <strong>{{ caregiver.firstName }} {{ caregiver.lastName }}</strong>
+                        <span>Support team</span>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
 
-          <!-- Phone Column -->
-          <ng-container matColumnDef="phone">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Phone</th>
-            <td mat-cell *matCellDef="let patient">{{ patient.phone || '-' }}</td>
-          </ng-container>
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <td mat-cell *matCellDef="let caregiver">{{ caregiver.email || '—' }}</td>
+                </ng-container>
 
-          <!-- Date of Birth Column -->
-          <ng-container matColumnDef="dateOfBirth">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date of Birth</th>
-            <td mat-cell *matCellDef="let patient">{{ patient.dateOfBirth | dateFormat:'short' }}</td>
-          </ng-container>
+                <ng-container matColumnDef="username">
+                  <th mat-header-cell *matHeaderCellDef>Username</th>
+                  <td mat-cell *matCellDef="let caregiver">{{ caregiver.username || '—' }}</td>
+                </ng-container>
 
-          <!-- Assignment Status Column -->
-          <ng-container matColumnDef="assignment">
-            <th mat-header-cell *matHeaderCellDef>Assignment</th>
-            <td mat-cell *matCellDef="let patient">
-              <ng-container *ngIf="getAssignmentStatus(patient) as status">
-                <mat-chip-set>
-                  <mat-chip 
-                    [class.assigned-chip]="status.type === 'assigned'"
-                    [class.unassigned-chip]="status.type === 'unassigned'"
-                    [class.self-chip]="status.type === 'self'"
-                  >
-                    <mat-icon *ngIf="status.type === 'self'">check_circle</mat-icon>
-                    <mat-icon *ngIf="status.type === 'assigned'">person</mat-icon>
-                    <mat-icon *ngIf="status.type === 'unassigned'">person_outline</mat-icon>
-                    {{ status.text }}
-                  </mat-chip>
-                </mat-chip-set>
-              </ng-container>
-            </td>
-          </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                  <td mat-cell *matCellDef="let caregiver">
+                    <mat-chip class="status-chip" [class.offline-chip]="getStatusTone(caregiver.enabled) === 'offline'">
+                      {{ caregiver.enabled === false ? 'Disabled' : 'Active' }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
 
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let patient">
-              <!-- View Details -->
-              <button 
-                mat-icon-button 
-                color="primary"
-                [routerLink]="['/patients', patient.id]"
-                matTooltip="View Details"
-              >
-                <mat-icon>visibility</mat-icon>
-              </button>
+                <tr mat-header-row *matHeaderRowDef="caregiverColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: caregiverColumns"></tr>
+              </table>
 
-              <!-- Edit -->
-              <button 
-                *ngIf="canEditPatient()"
-                mat-icon-button 
-                color="accent"
-                [routerLink]="['/patients', patient.id, 'edit']"
-                matTooltip="Edit Patient"
-              >
-                <mat-icon>edit</mat-icon>
-              </button>
+              <div *ngIf="filteredCaregivers.length === 0" class="empty-state">
+                <mat-icon>volunteer_activism</mat-icon>
+                <p>No caregivers match the current search.</p>
+              </div>
+            </ng-container>
 
-              <!-- Assign to Me -->
-              <button 
-                *ngIf="canAssignToMe(patient)"
-                mat-icon-button 
-                color="primary"
-                (click)="assignToMe(patient, $event)"
-                [disabled]="assigningPatientId === patient.id"
-                matTooltip="Assign to Me"
-              >
-                <mat-icon *ngIf="assigningPatientId !== patient.id">person_add</mat-icon>
-                <mat-spinner *ngIf="assigningPatientId === patient.id" diameter="20"></mat-spinner>
-              </button>
-            </td>
-          </ng-container>
+            <ng-container *ngSwitchCase="'doctors'">
+              <table mat-table [dataSource]="filteredDoctors" class="directory-table">
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Doctor</th>
+                  <td mat-cell *matCellDef="let doctor">
+                    <div class="identity-cell">
+                      <div class="avatar doctor-avatar">
+                        {{ doctor.firstName + ' ' + doctor.lastName | initials }}
+                      </div>
+                      <div>
+                        <strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong>
+                        <span>Clinical team</span>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr 
-            mat-row 
-            *matRowDef="let row; columns: displayedColumns;"
-            class="patient-row"
-            (click)="onRowClick(row)"
-          ></tr>
-        </table>
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <td mat-cell *matCellDef="let doctor">{{ doctor.email || '—' }}</td>
+                </ng-container>
 
-        <!-- No Data -->
-        <div *ngIf="dataSource.data.length === 0" class="no-data">
-          <mat-icon>search_off</mat-icon>
-          <p>No patients found</p>
-          <p *ngIf="activeTab === 'my-patients'" class="hint">You don't have any assigned patients yet.</p>
-          <p *ngIf="activeTab === 'unassigned'" class="hint">All patients have been assigned to doctors.</p>
-          <button 
-            *ngIf="searchControl.value" 
-            mat-button 
-            color="primary" 
-            (click)="searchControl.setValue('')"
-          >
-            Clear Search
-          </button>
-        </div>
+                <ng-container matColumnDef="username">
+                  <th mat-header-cell *matHeaderCellDef>Username</th>
+                  <td mat-cell *matCellDef="let doctor">{{ doctor.username || '—' }}</td>
+                </ng-container>
 
-        <mat-paginator
-          [length]="totalPatients"
-          [pageSize]="pageSize"
-          [pageSizeOptions]="[5, 10, 25, 50]"
-          [pageIndex]="pageIndex"
-          (page)="onPageChange($event)"
-          aria-label="Select page of patients"
-        >
-        </mat-paginator>
-      </div>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                  <td mat-cell *matCellDef="let doctor">
+                    <mat-chip class="status-chip" [class.offline-chip]="getStatusTone(doctor.enabled) === 'offline'">
+                      {{ doctor.enabled === false ? 'Disabled' : 'Active' }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="doctorColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: doctorColumns"></tr>
+              </table>
+
+              <div *ngIf="filteredDoctors.length === 0" class="empty-state">
+                <mat-icon>medical_services</mat-icon>
+                <p>No doctors match the current search.</p>
+              </div>
+            </ng-container>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
     </mat-card-content>
   </mat-card>
 </div>
