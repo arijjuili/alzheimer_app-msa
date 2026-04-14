@@ -7,4 +7,4 @@ public record RoutineCompletedEvent(
         UUID patientId,
         String title,
         java.time.LocalDateTime completedAt
-) {}
+) implements java.io.Serializable {}

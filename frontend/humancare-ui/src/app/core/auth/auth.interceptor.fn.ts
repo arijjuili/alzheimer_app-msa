@@ -46,13 +46,15 @@ function handle401Error(
             setHeaders: { Authorization: `Bearer ${token}` }
           }));
         }
-        authService.logout();
-        return throwError(() => new Error('Session expired'));
+        // Don't auto-logout - let user retry or navigate manually
+        console.warn('Token refresh failed, user needs to re-authenticate');
+        return throwError(() => new Error('Session expired. Please log in again.'));
       }),
-      catchError(() => {
+      catchError((error) => {
         isRefreshing = false;
-        authService.logout();
-        return throwError(() => new Error('Session expired'));
+        // Don't auto-logout - this prevents unwanted redirects during data loading
+        console.warn('Token refresh error:', error.message);
+        return throwError(() => error);
       })
     );
   } else {

@@ -21,6 +21,7 @@ import {
   MedicationPlanCreateRequest 
 } from '../../../../shared/models/medication.model';
 import { MedicationService } from '../../services/medication.service';
+import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { MedicationCreateDialogComponent } from '../dialogs/medication-create-dialog.component';
@@ -59,19 +60,17 @@ export class PatientMedicationsComponent implements OnInit {
 
   constructor(
     private medicationService: MedicationService,
+    private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.patientId = this.getPatientIdFromToken();
-    this.loadMedications();
-  }
-
-  getPatientIdFromToken(): string | null {
-    const user = this.authService.getCurrentUser();
-    return user?.id || null;
+    this.patientService.resolveCurrentPatient().subscribe(patient => {
+      this.patientId = patient?.id || this.authService.getCurrentUser()?.id || null;
+      this.loadMedications();
+    });
   }
 
   loadMedications(): void {

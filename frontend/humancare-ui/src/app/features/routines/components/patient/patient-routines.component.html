@@ -40,12 +40,14 @@
       <mat-card-actions align="end">
         <button 
           mat-raised-button 
-          color="primary" 
+          [color]="isCompletedToday(routine) ? 'accent' : 'primary'"
           [disabled]="!routine.isActive"
           (click)="completeRoutine(routine)"
         >
-          <mat-icon>check_circle</mat-icon>
-          Complete
+          <mat-icon>
+            {{ isCompletedToday(routine) ? 'undo' : 'check_circle' }}
+          </mat-icon>
+          {{ isCompletedToday(routine) ? 'Undo' : 'Complete' }}
         </button>
       </mat-card-actions>
     </mat-card>

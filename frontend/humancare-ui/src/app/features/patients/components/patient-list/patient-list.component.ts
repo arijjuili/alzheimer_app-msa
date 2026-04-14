@@ -64,6 +64,9 @@ export class PatientListComponent implements OnInit {
   readonly caregiverColumns = ['name', 'email', 'username', 'status'];
   readonly doctorColumns = ['name', 'email', 'username', 'status'];
 
+  // Simplified columns for caregiver/doctor view (no caregiver/doctor assignment columns)
+  readonly simplePatientColumns = ['name', 'email', 'phone', 'dateOfBirth', 'actions'];
+
   activeTab: UserTab = 'patients';
   loading = true;
   error: string | null = null;
@@ -74,6 +77,7 @@ export class PatientListComponent implements OnInit {
   filteredPatients: Patient[] = [];
   filteredCaregivers: Caregiver[] = [];
   filteredDoctors: Doctor[] = [];
+  currentUserId: string | null = null;
 
   private doctorDirectory = new Map<string, Doctor>();
   private caregiverDirectory = new Map<string, Caregiver>();
@@ -81,14 +85,28 @@ export class PatientListComponent implements OnInit {
   constructor(
     private patientService: PatientService,
     private errorHandler: ErrorHandlerService,
-    private authService: AuthService,
+    public authService: AuthService,
     private router: Router,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
+    const currentUser = this.authService.getCurrentUser();
+    this.currentUserId = currentUser?.id || null;
     this.loadDirectory();
     this.setupSearch();
+  }
+
+  get isCaregiver(): boolean {
+    return this.authService.hasRole('CAREGIVER');
+  }
+
+  get isDoctor(): boolean {
+    return this.authService.hasRole('DOCTOR');
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.hasRole('ADMIN');
   }
 
   get totalUsers(): number {
@@ -96,14 +114,21 @@ export class PatientListComponent implements OnInit {
   }
 
   get canManageUsers(): boolean {
-    return this.isAdmin();
+    return this.isAdmin;
   }
 
   loadDirectory(): void {
     this.loading = true;
     this.error = null;
 
-    const requests = this.isAdmin()
+    // For admins: show all users
+    // For caregivers: show only their assigned patients
+    // For doctors: show only their assigned patients
+    const isAdmin = this.authService.hasRole('ADMIN');
+    const isCaregiver = this.authService.hasRole('CAREGIVER');
+    const isDoctor = this.authService.hasRole('DOCTOR');
+
+    const requests = isAdmin
       ? forkJoin({
           patients: this.patientService.getPatients(1, 1000),
           caregivers: this.patientService.getAvailableCaregivers(),
@@ -129,7 +154,16 @@ export class PatientListComponent implements OnInit {
         finalize(() => (this.loading = false))
       )
       .subscribe(result => {
-        this.patients = result.patients.data ?? [];
+        let patients = result.patients.data ?? [];
+        
+        // Filter patients for caregivers and doctors
+        if (isCaregiver && this.currentUserId) {
+          patients = patients.filter(p => p.caregiverId === this.currentUserId);
+        } else if (isDoctor && this.currentUserId) {
+          patients = patients.filter(p => p.doctorId === this.currentUserId);
+        }
+        
+        this.patients = patients;
         this.caregivers = result.caregivers ?? [];
         this.doctors = result.doctors ?? [];
 
@@ -267,8 +301,36 @@ export class PatientListComponent implements OnInit {
     return this.authService.hasRole('ADMIN') || this.authService.hasRole('DOCTOR');
   }
 
-  isAdmin(): boolean {
-    return this.authService.hasRole('ADMIN');
+  unassignPatient(patient: Patient, event?: Event): void {
+    event?.stopPropagation();
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Unassign Patient',
+        message: `Unassign ${patient.firstName} ${patient.lastName} from your care? You will no longer see this patient in your list.`,
+        confirmButtonText: 'Unassign',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'warn',
+        icon: 'person_remove'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        return;
+      }
+
+      this.patientService.unassignPatient(patient.id).subscribe({
+        next: () => {
+          this.errorHandler.showSuccess('Patient unassigned successfully');
+          this.loadDirectory();
+        },
+        error: (error) => {
+          this.errorHandler.handleError(error);
+        }
+      });
+    });
   }
 
   private applySearch(): void {

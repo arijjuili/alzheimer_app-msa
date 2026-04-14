@@ -9,15 +9,24 @@ import {
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { KeycloakService } from '../keycloak/keycloak.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private keycloakService: KeycloakService
+  ) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    // Skip auth for public endpoints
+    if (this.isPublicEndpoint(request.url)) {
+      return next.handle(request);
+    }
+
     // Add auth token to request if available
     const token = this.authService.getToken();
     
@@ -28,7 +37,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError(error => {
         if (error instanceof HttpErrorResponse) {
-          // Handle 401 Unauthorized - Token expired
+          // Handle 401 Unauthorized - Token expired or invalid
           if (error.status === 401) {
             return this.handle401Error(request, next);
           }
@@ -36,12 +45,22 @@ export class AuthInterceptor implements HttpInterceptor {
           // Handle 403 Forbidden - No permission
           if (error.status === 403) {
             console.error('Access forbidden:', error);
-            // Could redirect to unauthorized page here
           }
         }
         return throwError(() => error);
       })
     );
+  }
+
+  private isPublicEndpoint(url: string): boolean {
+    const publicPatterns = [
+      '/auth/login',
+      '/auth/register',
+      '/realms/',
+      '/health',
+      '/actuator/'
+    ];
+    return publicPatterns.some(pattern => url.includes(pattern));
   }
 
   private addTokenToRequest(request: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
@@ -64,13 +83,16 @@ export class AuthInterceptor implements HttpInterceptor {
             this.refreshTokenSubject.next(token);
             return next.handle(this.addTokenToRequest(request, token));
           }
-          // Refresh failed, logout user
-          this.authService.logout();
-          return throwError(() => new Error('Session expired'));
+          // Refresh failed - don't logout immediately, just return error
+          // Let the user retry or navigate manually
+          console.warn('Token refresh failed, user needs to re-authenticate');
+          return throwError(() => new Error('Session expired. Please log in again.'));
         }),
         catchError((error) => {
           this.isRefreshing = false;
-          this.authService.logout();
+          // Don't automatically logout on refresh failure
+          // This prevents unwanted redirects during data loading
+          console.warn('Token refresh error:', error.message);
           return throwError(() => error);
         })
       );

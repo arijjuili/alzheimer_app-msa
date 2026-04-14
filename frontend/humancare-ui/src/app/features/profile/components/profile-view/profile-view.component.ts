@@ -64,24 +64,20 @@ export class ProfileViewComponent implements OnInit {
       return;
     }
 
-    // For demo purposes, we'll create a patient from user data
-    // In production, you would fetch the patient by user ID
-    this.patientService.getPatients(1, 10)
+    this.patientService.resolveCurrentPatient()
       .pipe(
         catchError(err => {
           this.errorHandler.handleError(err);
           this.error = 'Failed to load patient data';
-          return of({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+          return of(null);
         }),
         finalize(() => this.loading = false)
       )
-      .subscribe(response => {
-        // For demo, create a patient from user data
-        // In production, fetch the actual patient by ID
-        if (response.data.length > 0) {
-          this.patient = response.data[0];
+      .subscribe(patient => {
+        if (patient) {
+          this.patient = patient;
         } else {
-          // Mock patient data for demo
+          // Fallback to user data if no patient record found
           this.patient = {
             id: currentUser.id,
             firstName: currentUser.firstName,

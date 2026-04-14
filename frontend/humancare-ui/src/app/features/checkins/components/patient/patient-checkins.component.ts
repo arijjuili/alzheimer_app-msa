@@ -13,6 +13,7 @@ import { of, forkJoin } from 'rxjs';
 
 import { DailyCheckin, MoodType, SleepQuality } from '../../../../shared/models/checkin.model';
 import { CheckinService } from '../../services/checkin.service';
+import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -45,15 +46,17 @@ export class PatientCheckinsComponent implements OnInit {
 
   constructor(
     private checkinService: CheckinService,
+    private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    this.currentPatientId = user?.id || null;
-    this.loadCheckins();
+    this.patientService.resolveCurrentPatient().subscribe(patient => {
+      this.currentPatientId = patient?.id || this.authService.getCurrentUser()?.id || null;
+      this.loadCheckins();
+    });
   }
 
   loadCheckins(): void {
@@ -68,7 +71,7 @@ export class PatientCheckinsComponent implements OnInit {
     forkJoin({
       today: this.checkinService.getTodaysCheckin(this.currentPatientId).pipe(
         catchError(err => {
-          if (err.status !== 404) {
+          if (err.status !== 404 && err.status !== 401) {
             this.errorHandler.handleError(err);
           }
           return of(null);

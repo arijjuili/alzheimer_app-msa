@@ -97,7 +97,10 @@ export class CaregiverDashboardComponent implements OnInit {
         }
 
         return forkJoin({
-          routines: this.routineService.getAllRoutines(0, 1000).pipe(catchError(() => of([] as Routine[]))),
+          routines: this.routineService.getAllRoutines(0, 1000).pipe(
+            catchError(() => of({ content: [] } as any)),
+            map(page => page.content || [])
+          ),
           appointments: this.appointmentService.getAllAppointments().pipe(catchError(() => of([] as Appointment[]))),
           plans: this.medicationService.getAllPlans().pipe(catchError(() => of([] as MedicationPlan[]))),
           intakes: this.medicationService.getAllIntakes().pipe(catchError(() => of([] as MedicationIntake[])))

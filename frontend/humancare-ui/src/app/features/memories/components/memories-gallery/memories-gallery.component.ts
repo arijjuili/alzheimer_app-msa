@@ -13,6 +13,7 @@ import { of } from 'rxjs';
 import { MemoryItem, MemoryType } from '../../../../shared/models/memory.model';
 import { Role } from '../../../../shared/models/user.model';
 import { MemoryService } from '../../services/memory.service';
+import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { MemoryCreateDialogComponent, MemoryCreateDialogData } from '../dialogs/memory-create-dialog.component';
@@ -46,15 +47,18 @@ export class MemoriesGalleryComponent implements OnInit {
 
   constructor(
     private memoryService: MemoryService,
+    private patientService: PatientService,
     private authService: AuthService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    this.currentUserId = user?.id || null;
-    this.currentPatientId = user?.id || null;
-    this.loadMemories();
+    this.patientService.resolveCurrentPatient().subscribe(patient => {
+      const user = this.authService.getCurrentUser();
+      this.currentUserId = user?.id || null;
+      this.currentPatientId = patient?.id || user?.id || null;
+      this.loadMemories();
+    });
   }
 
   loadMemories(): void {

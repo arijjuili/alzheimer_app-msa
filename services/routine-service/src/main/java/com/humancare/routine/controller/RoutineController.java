@@ -78,4 +78,9 @@ public class RoutineController {
     public ResponseEntity<RoutineResponse> complete(@PathVariable UUID id) {
         return ResponseEntity.ok(service.completeRoutine(id));
     }
+
+    @PatchMapping("/{id}/uncomplete")
+    public ResponseEntity<RoutineResponse> uncomplete(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.uncompleteRoutine(id));
+    }
 }

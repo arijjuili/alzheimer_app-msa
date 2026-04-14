@@ -1,10 +1,14 @@
 <div class="directory-page">
   <section class="hero-banner">
     <div class="hero-copy">
-      <p class="eyebrow">Admin Console</p>
-      <h1>User Management</h1>
+      <p class="eyebrow">{{ isAdmin ? 'Admin Console' : isCaregiver ? 'Caregiver Workspace' : 'Doctor Workspace' }}</p>
+      <h1>{{ isAdmin ? 'User Management' : 'My Patients' }}</h1>
       <p class="subtitle">
-        Review patients, caregivers, and doctors in one place, then assign the right care team without leaving the page.
+        {{ isAdmin 
+          ? 'Review patients, caregivers, and doctors in one place, then assign the right care team without leaving the page.' 
+          : (isCaregiver 
+              ? 'View and manage your assigned patients. Access their profiles, routines, and care information.'
+              : 'View and manage your assigned patients. Access their medical records and care plans.') }}
       </p>
     </div>
 
@@ -20,7 +24,7 @@
     </button>
   </section>
 
-  <section class="stats-grid">
+  <section class="stats-grid" *ngIf="isAdmin">
     <mat-card class="stat-card total-card">
       <span class="stat-label">Directory Size</span>
       <strong class="stat-value">{{ totalUsers }}</strong>
@@ -46,6 +50,14 @@
     </mat-card>
   </section>
 
+  <section class="stats-grid" *ngIf="!isAdmin">
+    <mat-card class="stat-card total-card">
+      <span class="stat-label">My Patients</span>
+      <strong class="stat-value">{{ patients.length }}</strong>
+      <span class="stat-meta">Patients assigned to you</span>
+    </mat-card>
+  </section>
+
   <mat-card class="directory-card">
     <mat-card-content>
       <div class="toolbar">
@@ -63,12 +75,12 @@
 
       <div *ngIf="loading" class="state-panel">
         <mat-spinner diameter="44"></mat-spinner>
-        <p>Loading user directory...</p>
+        <p>Loading your patients...</p>
       </div>
 
       <div *ngIf="error && !loading" class="state-panel error-state">
         <mat-icon>error_outline</mat-icon>
-        <h3>Directory unavailable</h3>
+        <h3>Unable to load patients</h3>
         <p>{{ error }}</p>
         <button mat-raised-button color="primary" (click)="loadDirectory()">
           <mat-icon>refresh</mat-icon>
@@ -76,7 +88,64 @@
         </button>
       </div>
 
-      <mat-tab-group *ngIf="!loading && !error" (selectedIndexChange)="onTabChange($event)" class="directory-tabs">
+      <!-- Simplified view for caregivers and doctors - no tabs -->
+      <div *ngIf="!loading && !error && !isAdmin" class="table-shell">
+        <table mat-table [dataSource]="filteredPatients" class="directory-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Patient</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="identity-cell">
+                <div class="avatar patient-avatar">
+                  {{ patient.firstName + ' ' + patient.lastName | initials }}
+                </div>
+                <div>
+                  <strong>{{ patient.firstName }} {{ patient.lastName }}</strong>
+                  <span>{{ patient.email }}</span>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let patient">{{ patient.email || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef>Phone</th>
+            <td mat-cell *matCellDef="let patient">{{ patient.phone || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="dateOfBirth">
+            <th mat-header-cell *matHeaderCellDef>Date of Birth</th>
+            <td mat-cell *matCellDef="let patient">{{ patient.dateOfBirth | dateFormat:'short' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="actions-cell">
+                <button mat-stroked-button color="primary" (click)="viewPatient(patient, $event)">
+                  <mat-icon>visibility</mat-icon>
+                  View
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="simplePatientColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: simplePatientColumns;" class="clickable-row" (click)="viewPatient(row)"></tr>
+        </table>
+
+        <div *ngIf="filteredPatients.length === 0" class="empty-state">
+          <mat-icon>person_off</mat-icon>
+          <h3>No patients assigned</h3>
+          <p>You don't have any patients assigned to you yet.</p>
+        </div>
+      </div>
+
+      <!-- Full directory view for admins with tabs -->
+      <mat-tab-group *ngIf="!loading && !error && isAdmin" (selectedIndexChange)="onTabChange($event)" class="directory-tabs">
         <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
           <ng-template mat-tab-label>
             <mat-icon>{{ tab.icon }}</mat-icon>

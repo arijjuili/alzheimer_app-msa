@@ -88,8 +88,10 @@ export class PatientDashboardComponent implements OnInit {
       this.error = 'Could not identify current user';
       return;
     }
-    this.currentPatientId = currentUser.id;
-    this.loadDashboard();
+    this.patientService.resolveCurrentPatient().subscribe(patient => {
+      this.currentPatientId = patient?.id || currentUser.id;
+      this.loadDashboard();
+    });
   }
 
   loadDashboard(): void {
@@ -99,10 +101,10 @@ export class PatientDashboardComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // a. Today's check-in (graceful 404)
+    // a. Today's check-in (graceful 404 and 401)
     const todaysCheckin$ = this.checkinService.getTodaysCheckin(this.currentPatientId).pipe(
       catchError(err => {
-        if (err.status === 404) {
+        if (err.status === 404 || err.status === 401) {
           return of(null);
         }
         throw err;
@@ -121,7 +123,8 @@ export class PatientDashboardComponent implements OnInit {
 
     // d. Routines
     const routines$ = this.routineService.getRoutinesByPatient(this.currentPatientId, 0, 20).pipe(
-      catchError(() => of([] as Routine[]))
+      catchError(() => of({ content: [] } as any)),
+      map(page => page.content || [])
     );
 
     // e. Memories
@@ -158,7 +161,7 @@ export class PatientDashboardComponent implements OnInit {
           .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())
           .slice(0, 3);
 
-        this.activeRoutines = (results.routines || []).filter(r => r.isActive).slice(0, 3);
+        this.activeRoutines = (results.routines || []).filter((r: Routine) => r.isActive).slice(0, 3);
         this.recentMemories = (results.memories || []).slice(0, 3);
         this.patientRecord = results.patient;
 

@@ -94,8 +94,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 10
+      start_period: 300s
     restart: unless-stopped
     deploy:
       resources:
@@ -314,15 +314,23 @@ services:
       - "3308:3306"        # External 3308 to avoid conflicts
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
     restart: unless-stopped
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=128M
+      --performance-schema=OFF
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # ---------------------------------------------------------------------------
   # Medication Service - Java + Spring Boot + MySQL
@@ -390,15 +398,23 @@ services:
       - "3307:3306"        # External 3307 to avoid conflicts
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
     restart: unless-stopped
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=128M
+      --performance-schema=OFF
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # ---------------------------------------------------------------------------
   # Appointments Service - Java + Spring Boot + MySQL
@@ -466,20 +482,20 @@ services:
     ports:
       - "27017:27017"
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 15s
+      timeout: 30s
+      retries: 10
+      start_period: 60s
     restart: unless-stopped
     deploy:
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
+          memory: 1G
         reservations:
           cpus: '0.25'
-          memory: 256M
+          memory: 512M
 
   # ---------------------------------------------------------------------------
   # Notification Service - Java + Spring Boot + MongoDB
@@ -599,15 +615,23 @@ services:
       - "3311:3306"        # External 3311 to avoid conflicts
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
     restart: unless-stopped
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=128M
+      --performance-schema=OFF
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # ---------------------------------------------------------------------------
   # Memory Service - Java + Spring Boot + H2

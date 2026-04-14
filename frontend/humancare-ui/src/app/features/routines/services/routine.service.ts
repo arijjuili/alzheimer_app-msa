@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
   Routine,
   CreateRoutineRequest,
-  UpdateRoutineRequest
+  UpdateRoutineRequest,
+  Page
 } from '../../../shared/models/routine.model';
 
 @Injectable({
@@ -20,12 +22,12 @@ export class RoutineService {
     page = 0,
     size = 20,
     sort = 'createdAt,desc'
-  ): Observable<Routine[]> {
+  ): Observable<Page<Routine>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
-    return this.http.get<Routine[]>(this.apiUrl, { params });
+    return this.http.get<Page<Routine>>(this.apiUrl, { params });
   }
 
   getRoutineById(id: string): Observable<Routine> {
@@ -37,12 +39,12 @@ export class RoutineService {
     page = 0,
     size = 20,
     sort = 'createdAt,desc'
-  ): Observable<Routine[]> {
+  ): Observable<Page<Routine>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
-    return this.http.get<Routine[]>(`${this.apiUrl}/patient/${patientId}`, { params });
+    return this.http.get<Page<Routine>>(`${this.apiUrl}/patient/${patientId}`, { params });
   }
 
   createRoutine(request: CreateRoutineRequest): Observable<Routine> {
@@ -59,5 +61,9 @@ export class RoutineService {
 
   completeRoutine(id: string): Observable<Routine> {
     return this.http.patch<Routine>(`${this.apiUrl}/${id}/complete`, {});
+  }
+
+  uncompleteRoutine(id: string): Observable<Routine> {
+    return this.http.patch<Routine>(`${this.apiUrl}/${id}/uncomplete`, {});
   }
 }

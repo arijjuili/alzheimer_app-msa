@@ -546,6 +546,76 @@ const unassignCaregiver = async (req, res) => {
   }
 };
 
+// Unassign current user (doctor or caregiver) from patient
+const unassignCurrentUser = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
+  try {
+    const { id } = req.params;
+    const performedBy = req.headers['x-user-id'] || 'system';
+    const userRoles = req.headers['x-user-roles'] ? req.headers['x-user-roles'].split(',') : [];
+    const userId = req.headers['x-user-id'] || null;
+
+    const patient = await Patient.findByPk(id, { transaction });
+
+    if (!patient) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    // Check if user is a doctor or caregiver and unassign accordingly
+    const isDoctor = userRoles.includes('DOCTOR');
+    const isCaregiver = userRoles.includes('CAREGIVER');
+
+    if (isDoctor && patient.doctorId === userId) {
+      const oldDoctorId = patient.doctorId;
+      await patient.update({ doctorId: null }, { transaction });
+
+      await AuditLog.create({
+        id: uuidv4(),
+        patientId: id,
+        action: 'UPDATE',
+        performedBy,
+        details: {
+          type: 'UNASSIGN_DOCTOR',
+          oldDoctorId,
+          newDoctorId: null
+        }
+      }, { transaction });
+
+      await transaction.commit();
+      return res.json(patient);
+    }
+
+    if (isCaregiver && patient.caregiverId === userId) {
+      const oldCaregiverId = patient.caregiverId;
+      await patient.update({ caregiverId: null }, { transaction });
+
+      await AuditLog.create({
+        id: uuidv4(),
+        patientId: id,
+        action: 'UPDATE',
+        performedBy,
+        details: {
+          type: 'UNASSIGN_CAREGIVER',
+          oldCaregiverId,
+          newCaregiverId: null
+        }
+      }, { transaction });
+
+      await transaction.commit();
+      return res.json(patient);
+    }
+
+    await transaction.rollback();
+    return res.status(403).json({ error: 'You are not assigned to this patient' });
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Error unassigning current user:', error);
+    res.status(500).json({ error: 'Failed to unassign from patient' });
+  }
+};
+
 // Get patient audit logs
 const getPatientAudit = async (req, res) => {
   try {
@@ -594,5 +664,6 @@ module.exports = {
   assignDoctor,
   assignCaregiver,
   unassignDoctor,
-  unassignCaregiver
+  unassignCaregiver,
+  unassignCurrentUser
 };

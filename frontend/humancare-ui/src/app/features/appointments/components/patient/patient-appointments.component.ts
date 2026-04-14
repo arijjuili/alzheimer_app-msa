@@ -13,6 +13,7 @@ import { of } from 'rxjs';
 
 import { Appointment, AppointmentStatus, AppointmentCreateRequest } from '../../../../shared/models/appointment.model';
 import { AppointmentService } from '../../services/appointment.service';
+import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { AppointmentDetailDialogComponent } from './dialogs/appointment-detail-dialog.component';
@@ -45,19 +46,17 @@ export class PatientAppointmentsComponent implements OnInit {
 
   constructor(
     private appointmentService: AppointmentService,
+    private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.patientId = this.getPatientIdFromToken();
-    this.loadAppointments();
-  }
-
-  getPatientIdFromToken(): string | null {
-    const user = this.authService.getCurrentUser();
-    return user?.id || null;
+    this.patientService.resolveCurrentPatient().subscribe(patient => {
+      this.patientId = patient?.id || this.authService.getCurrentUser()?.id || null;
+      this.loadAppointments();
+    });
   }
 
   loadAppointments(): void {

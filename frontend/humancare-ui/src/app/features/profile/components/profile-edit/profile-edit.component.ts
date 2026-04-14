@@ -86,32 +86,44 @@ export class ProfileEditComponent implements OnInit {
       return;
     }
 
-    // For demo, create mock patient data
-    // In production, fetch actual patient data
-    this.patient = {
-      id: currentUser.id,
-      firstName: currentUser.firstName,
-      lastName: currentUser.lastName,
-      email: currentUser.email,
-      phone: '+1 (555) 123-4567',
-      dateOfBirth: '1985-06-15',
-      address: '123 Main St, City, State 12345',
-      emergencyContact: 'Jane Doe - +1 (555) 987-6543',
-      medicalHistory: 'No significant medical history. Allergic to penicillin.'
-    };
+    this.patientService.resolveCurrentPatient()
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Failed to load patient data';
+          return of(null);
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe(patient => {
+        if (patient) {
+          this.patient = patient;
+        } else {
+          // Fallback to user data if no patient record found
+          this.patient = {
+            id: currentUser.id,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+            email: currentUser.email,
+            phone: '+1 (555) 123-4567',
+            dateOfBirth: '1985-06-15',
+            address: '123 Main St, City, State 12345',
+            emergencyContact: 'Jane Doe - +1 (555) 987-6543',
+            medicalHistory: 'No significant medical history. Allergic to penicillin.'
+          };
+        }
 
-    this.profileForm.patchValue({
-      firstName: this.patient.firstName,
-      lastName: this.patient.lastName,
-      email: this.patient.email,
-      phone: this.patient.phone,
-      dateOfBirth: this.patient.dateOfBirth ? new Date(this.patient.dateOfBirth) : null,
-      address: this.patient.address,
-      emergencyContact: this.patient.emergencyContact,
-      medicalHistory: this.patient.medicalHistory
-    });
-
-    this.loading = false;
+        this.profileForm.patchValue({
+          firstName: this.patient.firstName,
+          lastName: this.patient.lastName,
+          email: this.patient.email,
+          phone: this.patient.phone,
+          dateOfBirth: this.patient.dateOfBirth ? new Date(this.patient.dateOfBirth) : null,
+          address: this.patient.address,
+          emergencyContact: this.patient.emergencyContact,
+          medicalHistory: this.patient.medicalHistory
+        });
+      });
   }
 
   onSubmit(): void {

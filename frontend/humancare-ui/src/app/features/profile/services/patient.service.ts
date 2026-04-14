@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/auth/auth.service';
 import {
   Patient,
   PatientCreateRequest,
@@ -37,7 +38,41 @@ export class PatientService {
   private readonly usersApiUrl = `${environment.apiUrl}/api/v1`;
   private readonly authUrl = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient) {}
+  private currentPatient: Patient | null = null;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
+  resolveCurrentPatient(): Observable<Patient | null> {
+    if (this.currentPatient) {
+      return of(this.currentPatient);
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      return of(null);
+    }
+
+    return this.getPatients(1, 1000).pipe(
+      map(response => {
+        const patient = response.data.find(p =>
+          p.keycloakId === currentUser.id ||
+          p.email?.toLowerCase() === currentUser.email?.toLowerCase()
+        ) || null;
+        if (patient) {
+          this.currentPatient = patient;
+        }
+        return patient;
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  clearCurrentPatientCache(): void {
+    this.currentPatient = null;
+  }
 
   getPatients(page?: number, limit?: number, doctorId?: string): Observable<PaginatedResponse<Patient>> {
     let params = new HttpParams();
@@ -159,6 +194,15 @@ export class PatientService {
   unassignCaregiver(patientId: string): Observable<Patient> {
     return this.http
       .delete<unknown>(`${this.apiUrl}/${patientId}/assign-caregiver`)
+      .pipe(map(patient => this.normalizePatient(patient)));
+  }
+
+  /**
+   * Unassign current user from a patient (caregiver or doctor)
+   */
+  unassignPatient(patientId: string): Observable<Patient> {
+    return this.http
+      .delete<unknown>(`${this.apiUrl}/${patientId}/unassign`)
       .pipe(map(patient => this.normalizePatient(patient)));
   }
 

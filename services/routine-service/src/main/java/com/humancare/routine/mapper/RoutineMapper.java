@@ -38,6 +38,9 @@ public class RoutineMapper {
                 routine.getFrequency(),
                 routine.getTimeOfDay(),
                 routine.getIsActive(),
+                routine.getCompleted(),
+                routine.getLastCompletedDate(),
+                routine.getStreak(),
                 routine.getCreatedAt(),
                 routine.getUpdatedAt()
         );

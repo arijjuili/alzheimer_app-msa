@@ -1,5 +1,6 @@
 package com.humancare.routine.service;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -62,8 +63,19 @@ public class RoutineService {
     @Transactional
     public RoutineResponse completeRoutine(UUID id) {
         Routine routine = getOrThrow(id);
+        LocalDate today = LocalDate.now();
+        LocalDate lastDate = routine.getLastCompletedDate();
+        int currentStreak = routine.getStreak() == null ? 0 : routine.getStreak();
+
+        if (lastDate == null || lastDate.isBefore(today.minusDays(1))) {
+            routine.setStreak(1);
+        } else if (lastDate.isEqual(today.minusDays(1))) {
+            routine.setStreak(currentStreak + 1);
+        }
+        // if already completed today, streak unchanged
+
         routine.setCompleted(true);
-        routine.setIsActive(false);
+        routine.setLastCompletedDate(today);
         Routine saved = repository.save(routine);
 
         eventPublisher.publishRoutineCompleted(new com.humancare.routine.event.RoutineCompletedEvent(
@@ -73,6 +85,24 @@ public class RoutineService {
                 java.time.LocalDateTime.now()
         ));
 
+        return mapper.toResponse(saved);
+    }
+
+    @Transactional
+    public RoutineResponse uncompleteRoutine(UUID id) {
+        Routine routine = getOrThrow(id);
+        LocalDate today = LocalDate.now();
+        int currentStreak = routine.getStreak() == null ? 0 : routine.getStreak();
+
+        if (today.equals(routine.getLastCompletedDate()) && currentStreak > 0) {
+            routine.setStreak(currentStreak - 1);
+        }
+
+        routine.setCompleted(false);
+        if (today.equals(routine.getLastCompletedDate())) {
+            routine.setLastCompletedDate(null);
+        }
+        Routine saved = repository.save(routine);
         return mapper.toResponse(saved);
     }
 

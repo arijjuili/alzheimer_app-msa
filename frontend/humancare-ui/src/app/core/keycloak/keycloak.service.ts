@@ -105,13 +105,27 @@ export class KeycloakService {
   }
 
   async refreshToken(): Promise<string | undefined> {
-    if (this.keycloakInstance) {
+    if (this.keycloakInstance && this.keycloakInstance.authenticated) {
       try {
+        // Check if token needs refresh (less than 30 seconds remaining)
+        const parsed = this.keycloakInstance.tokenParsed as any;
+        if (parsed && parsed.exp) {
+          const expTime = parsed.exp * 1000;
+          const now = Date.now();
+          const timeUntilExpiry = expTime - now;
+          
+          // If token still valid with more than 30 seconds, just return current token
+          if (timeUntilExpiry > 30000) {
+            return this.keycloakInstance.token;
+          }
+        }
+        
         await this.keycloakInstance.updateToken(30);
         return this.keycloakInstance.token;
       } catch (error) {
         console.error('Token refresh failed:', error);
-        return undefined;
+        // Don't return undefined and trigger logout - return current token and let the API fail naturally
+        return this.keycloakInstance.token;
       }
     }
     return undefined;

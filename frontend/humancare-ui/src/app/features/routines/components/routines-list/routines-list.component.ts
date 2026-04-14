@@ -12,12 +12,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
-import { Routine, RoutineFrequency } from '../../../../shared/models/routine.model';
+import { Routine, RoutineFrequency, Page } from '../../../../shared/models/routine.model';
 import { RoutineService } from '../../services/routine.service';
+import { PatientService } from '../../../profile/services/patient.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { RoutineCreateDialogComponent } from '../dialogs/routine-create-dialog.component';
 import { RoutineEditDialogComponent } from '../dialogs/routine-edit-dialog.component';
+import { Patient } from '../../../../shared/models/patient.model';
 
 @Component({
   selector: 'app-routines-list',
@@ -39,16 +41,18 @@ import { RoutineEditDialogComponent } from '../dialogs/routine-edit-dialog.compo
 })
 export class RoutinesListComponent implements OnInit {
   dataSource = new MatTableDataSource<Routine>([]);
-  displayedColumns: string[] = ['title', 'patientId', 'frequency', 'timeOfDay', 'isActive', 'actions'];
+  displayedColumns: string[] = ['title', 'patient', 'frequency', 'timeOfDay', 'isActive', 'actions'];
   loading = false;
   page = 0;
   size = 20;
   totalElements = 0;
+  patientMap = new Map<string, string>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private routineService: RoutineService,
+    private patientService: PatientService,
     private errorHandler: ErrorHandlerService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
@@ -68,15 +72,35 @@ export class RoutinesListComponent implements OnInit {
       .pipe(
         catchError(err => {
           this.errorHandler.handleError(err);
-          return of([]);
+          return of({ content: [], totalElements: 0, totalPages: 0, size: 20, number: 0 } as Page<Routine>);
         }),
         finalize(() => this.loading = false)
       )
-      .subscribe(routines => {
-        this.routines = routines;
-        this.dataSource.data = routines;
-        this.totalElements = routines.length;
+      .subscribe(page => {
+        this.routines = page.content;
+        this.dataSource.data = page.content;
+        this.totalElements = page.totalElements;
+        this.loadPatientNames(page.content);
       });
+  }
+
+  private loadPatientNames(routines: Routine[]): void {
+    const patientIds = [...new Set(routines.map(r => r.patientId).filter(Boolean))];
+    if (patientIds.length === 0) return;
+
+    patientIds.forEach(id => {
+      this.patientService.getPatientById(id).pipe(
+        catchError(() => of(null))
+      ).subscribe(patient => {
+        if (patient) {
+          this.patientMap.set(id, `${patient.firstName} ${patient.lastName}`);
+        }
+      });
+    });
+  }
+
+  getPatientName(patientId: string): string {
+    return this.patientMap.get(patientId) || patientId;
   }
 
   set routines(value: Routine[]) {

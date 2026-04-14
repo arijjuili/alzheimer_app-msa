@@ -14,6 +14,9 @@ public record RoutineResponse(
         RoutineFrequency frequency,
         LocalTime timeOfDay,
         Boolean isActive,
+        Boolean completed,
+        java.time.LocalDate lastCompletedDate,
+        Integer streak,
         Instant createdAt,
         Instant updatedAt
 ) {}

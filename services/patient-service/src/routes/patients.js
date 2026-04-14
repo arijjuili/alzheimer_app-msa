@@ -12,7 +12,8 @@ const {
   assignDoctor,
   assignCaregiver,
   unassignDoctor,
-  unassignCaregiver
+  unassignCaregiver,
+  unassignCurrentUser
 } = require('../controllers/patientController');
 
 // GET /patients - Get all patients with pagination (supports ?doctorId and ?caregiverId filters)
@@ -47,6 +48,9 @@ router.put('/:id/assign-caregiver', assignCaregiver);
 
 // DELETE /patients/:id/assign-caregiver - Unassign caregiver from patient
 router.delete('/:id/assign-caregiver', unassignCaregiver);
+
+// DELETE /patients/:id/unassign - Unassign current user (doctor or caregiver) from patient
+router.delete('/:id/unassign', unassignCurrentUser);
 
 // GET /patients/:id/audit - Get patient audit logs
 router.get('/:id/audit', getPatientAudit);

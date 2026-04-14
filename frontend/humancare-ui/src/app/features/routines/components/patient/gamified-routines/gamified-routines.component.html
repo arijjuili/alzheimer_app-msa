@@ -1,0 +1,123 @@
+<div class="gamified-container">
+  <!-- Hero Section with Celebration -->
+  <div class="hero-section" [class.all-complete]="progressPercent === 100">
+    <div class="hero-content">
+      <div class="avatar-section">
+        <div class="avatar-circle">
+          <span class="avatar-emoji">🌟</span>
+        </div>
+        <div class="streak-badge" *ngIf="streak > 0">
+          <mat-icon>local_fire_department</mat-icon>
+          <span>{{ streak }} day streak!</span>
+        </div>
+      </div>
+      
+      <div class="greeting-section">
+        <h1>{{ greeting }}, Champion! 👋</h1>
+        <p class="motivational">{{ motivationalMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Progress Ring -->
+    <div class="progress-section">
+      <div class="progress-ring-container">
+        <svg class="progress-ring" viewBox="0 0 120 120">
+          <circle class="progress-ring-bg" cx="60" cy="60" r="54" />
+          <circle 
+            class="progress-ring-fill" 
+            cx="60" 
+            cy="60" 
+            r="54"
+            [style.stroke-dasharray]="progressPercent * 3.39 + ', 339'"
+          />
+        </svg>
+        <div class="progress-text">
+          <span class="progress-number">{{ completedCount }}/{{ totalCount }}</span>
+          <span class="progress-label">Done Today!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-animation">
+      <div class="bounce-dot"></div>
+      <div class="bounce-dot"></div>
+      <div class="bounce-dot"></div>
+    </div>
+    <p>Loading your adventures...</p>
+  </div>
+
+  <!-- Routines Cards -->
+  <div class="routines-section" *ngIf="!loading">
+    <div class="section-header">
+      <h2>📋 Your Today's Missions</h2>
+      <p class="subtitle">Tap the circle to complete each task!</p>
+    </div>
+
+    <div class="routines-list">
+      <div 
+        *ngFor="let routine of routines; let i = index" 
+        class="routine-card"
+        [class.completed]="routine.checked"
+        [class.morning-routine]="routine.timeOfDay && routine.timeOfDay.startsWith('0')"
+        [class.afternoon-routine]="routine.timeOfDay && routine.timeOfDay.startsWith('1')"
+        (click)="toggleRoutine(routine)"
+      >
+        <div class="card-glow" *ngIf="routine.checked"></div>
+        
+        <div class="checkbox-wrapper">
+          <div class="custom-checkbox" [class.checked]="routine.checked">
+            <mat-icon *ngIf="routine.checked">check</mat-icon>
+          </div>
+        </div>
+
+        <div class="routine-content">
+          <div class="routine-header">
+            <h3 class="routine-title">{{ routine.title }}</h3>
+            <div class="frequency-badge" [matTooltip]="getFrequencyLabel(routine.frequency)">
+              <mat-icon>{{ getFrequencyIcon(routine.frequency) }}</mat-icon>
+            </div>
+          </div>
+          
+          <p class="routine-description" *ngIf="routine.description">
+            {{ routine.description }}
+          </p>
+
+          <div class="routine-meta">
+            <span class="time-badge" *ngIf="routine.timeOfDay">
+              <mat-icon>schedule</mat-icon>
+              {{ getTimeLabel(routine.timeOfDay) }}
+            </span>
+            <span class="frequency-label">
+              {{ getFrequencyLabel(routine.frequency) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="completion-effect" *ngIf="routine.checked">
+          <span class="effect-emoji">✨</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="routines.length === 0">
+      <div class="empty-illustration">
+        <span>🎉</span>
+      </div>
+      <h3>No missions yet!</h3>
+      <p>Your caregiver will add some exciting tasks for you soon!</p>
+    </div>
+  </div>
+
+  <!-- Confetti for celebration -->
+  <div class="confetti-container" *ngIf="completedCount > 0 && completedCount === totalCount && totalCount > 0">
+    <div class="confetti confetti-1">🎉</div>
+    <div class="confetti confetti-2">⭐</div>
+    <div class="confetti confetti-3">🌟</div>
+    <div class="confetti confetti-4">🎊</div>
+    <div class="confetti confetti-5">💫</div>
+  </div>
+</div>

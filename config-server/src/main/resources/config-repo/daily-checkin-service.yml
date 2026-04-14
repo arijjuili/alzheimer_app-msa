@@ -17,6 +17,12 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/humancare
+          jwk-set-uri: http://localhost:8090/realms/humancare/protocol/openid-connect/certs
 
 server:
   port: 8084
@@ -49,6 +55,12 @@ spring:
     console:
       settings:
         web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://hc-keycloak:8080/realms/humancare
+          jwk-set-uri: http://hc-keycloak:8080/realms/humancare/protocol/openid-connect/certs
 
 eureka:
   client:

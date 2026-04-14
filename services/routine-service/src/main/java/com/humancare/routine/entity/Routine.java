@@ -1,6 +1,7 @@
 package com.humancare.routine.entity;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -49,6 +50,12 @@ public class Routine {
     @Column(name = "completed", nullable = false)
     private Boolean completed = false;
 
+    @Column(name = "last_completed_date")
+    private LocalDate lastCompletedDate;
+
+    @Column(name = "streak", nullable = false)
+    private Integer streak = 0;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
@@ -61,7 +68,8 @@ public class Routine {
     }
 
     public Routine(UUID id, UUID patientId, String title, String description, RoutineFrequency frequency,
-                   LocalTime timeOfDay, Boolean isActive, Boolean completed, Instant createdAt, Instant updatedAt) {
+                   LocalTime timeOfDay, Boolean isActive, Boolean completed, LocalDate lastCompletedDate,
+                   Integer streak, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.patientId = patientId;
         this.title = title;
@@ -70,6 +78,8 @@ public class Routine {
         this.timeOfDay = timeOfDay;
         this.isActive = isActive;
         this.completed = completed;
+        this.lastCompletedDate = lastCompletedDate;
+        this.streak = streak;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -152,5 +162,21 @@ public class Routine {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public LocalDate getLastCompletedDate() {
+        return lastCompletedDate;
+    }
+
+    public void setLastCompletedDate(LocalDate lastCompletedDate) {
+        this.lastCompletedDate = lastCompletedDate;
+    }
+
+    public Integer getStreak() {
+        return streak;
+    }
+
+    public void setStreak(Integer streak) {
+        this.streak = streak;
     }
 }

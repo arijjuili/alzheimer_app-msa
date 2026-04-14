@@ -11,8 +11,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
-import { Routine, RoutineFrequency } from '../../../../shared/models/routine.model';
+import { Routine, RoutineFrequency, Page } from '../../../../shared/models/routine.model';
 import { RoutineService } from '../../services/routine.service';
+import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 
@@ -37,9 +38,11 @@ export class PatientRoutinesComponent implements OnInit {
   routines: Routine[] = [];
   loading = false;
   currentPatientId: string | null = null;
+  today = new Date();
 
   constructor(
     private routineService: RoutineService,
+    private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private snackBar: MatSnackBar,
@@ -47,13 +50,10 @@ export class PatientRoutinesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.currentPatientId = this.getPatientIdFromToken();
-    this.loadRoutines();
-  }
-
-  getPatientIdFromToken(): string | null {
-    const user = this.authService.getCurrentUser();
-    return user?.id || null;
+    this.patientService.resolveCurrentPatient().subscribe(patient => {
+      this.currentPatientId = patient?.id || this.authService.getCurrentUser()?.id || null;
+      this.loadRoutines();
+    });
   }
 
   loadRoutines(): void {
@@ -67,31 +67,55 @@ export class PatientRoutinesComponent implements OnInit {
       .pipe(
         catchError(err => {
           this.errorHandler.handleError(err);
-          return of([]);
+          return of({ content: [], totalElements: 0, totalPages: 0, size: 20, number: 0 } as Page<Routine>);
         }),
         finalize(() => this.loading = false)
       )
-      .subscribe(routines => {
-        this.routines = routines;
+      .subscribe(page => {
+        this.routines = page.content;
       });
   }
 
   completeRoutine(routine: Routine): void {
     if (!routine.id || !routine.isActive) return;
 
-    this.routineService.completeRoutine(routine.id)
-      .pipe(
-        catchError(err => {
-          this.errorHandler.handleError(err);
-          return of(null);
-        })
-      )
-      .subscribe(result => {
-        if (result) {
-          this.snackBar.open('Routine completed!', 'Close', { duration: 3000 });
-          this.loadRoutines();
-        }
-      });
+    const today = new Date().toISOString().split('T')[0];
+    if (routine.completed && routine.lastCompletedDate === today) {
+      // Already completed today - allow uncomplete
+      this.routineService.uncompleteRoutine(routine.id)
+        .pipe(
+          catchError(err => {
+            this.errorHandler.handleError(err);
+            return of(null);
+          })
+        )
+        .subscribe(result => {
+          if (result) {
+            this.snackBar.open('Routine unchecked', 'Close', { duration: 3000 });
+            this.loadRoutines();
+          }
+        });
+    } else {
+      this.routineService.completeRoutine(routine.id)
+        .pipe(
+          catchError(err => {
+            this.errorHandler.handleError(err);
+            return of(null);
+          })
+        )
+        .subscribe(result => {
+          if (result) {
+            this.snackBar.open('Routine completed!', 'Close', { duration: 3000 });
+            this.loadRoutines();
+          }
+        });
+    }
+  }
+
+  isCompletedToday(routine: Routine): boolean {
+    if (!routine.completed || !routine.lastCompletedDate) return false;
+    const todayStr = new Date().toISOString().split('T')[0];
+    return routine.lastCompletedDate === todayStr;
   }
 
   getFrequencyLabel(frequency: RoutineFrequency): string {
