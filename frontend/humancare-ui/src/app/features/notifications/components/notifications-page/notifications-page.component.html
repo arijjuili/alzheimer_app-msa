@@ -2,23 +2,36 @@
   <mat-card class="notifications-card">
     <mat-card-header>
       <div class="header-content">
-        <div>
-          <mat-card-title>
-            <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">notifications</mat-icon>
-            Notifications
-          </mat-card-title>
+        <div class="header-title-block">
+          <div class="title-row">
+            <mat-icon class="title-icon" [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">notifications</mat-icon>
+            <mat-card-title>Notifications</mat-card-title>
+          </div>
           <mat-card-subtitle>Stay updated with your health reminders and alerts</mat-card-subtitle>
         </div>
-        <button 
-          mat-raised-button 
-          color="primary" 
-          (click)="markAllAsRead()"
-          [disabled]="unreadCount === 0"
-          class="mark-all-button"
-        >
-          <mat-icon>done_all</mat-icon>
-          Mark All Read
-        </button>
+        <div class="header-actions">
+          <button
+            *ngIf="canTriggerReminders"
+            mat-stroked-button
+            color="accent"
+            (click)="triggerAppointmentReminders()"
+            [disabled]="triggering"
+            class="trigger-button"
+          >
+            <mat-icon>notifications_active</mat-icon>
+            {{ triggering ? 'Triggering...' : 'Test Reminders' }}
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="markAllAsRead()"
+            [disabled]="unreadCount === 0"
+            class="mark-all-button"
+          >
+            <mat-icon>done_all</mat-icon>
+            Mark All Read
+          </button>
+        </div>
       </div>
     </mat-card-header>
 
@@ -67,23 +80,26 @@
 
       <!-- Notifications List -->
       <div *ngIf="!loading && !error" class="notifications-list">
-        <div 
-          *ngFor="let notification of filteredNotifications" 
+        <div
+          *ngFor="let notification of filteredNotifications"
           class="notification-item"
           [class.unread]="!notification.isRead"
+          [class.info]="notification.type === 'INFO'"
+          [class.alert]="notification.type === 'ALERT'"
+          [class.reminder]="notification.type === 'REMINDER'"
         >
-          <div class="notification-icon-wrapper" [class]="'type-' + notification.type.toLowerCase()">
+          <div class="notification-icon-wrapper">
             <mat-icon>{{ getNotificationIcon(notification.type) }}</mat-icon>
           </div>
-          
+
           <div class="notification-content">
             <div class="notification-header">
               <h4 class="notification-title">{{ notification.title }}</h4>
               <span class="notification-time">{{ formatDate(notification.createdAt) }}</span>
             </div>
             <p class="notification-message">{{ notification.message }}</p>
-            <mat-chip 
-              [color]="getNotificationColor(notification.type)" 
+            <mat-chip
+              [color]="getNotificationColor(notification.type)"
               selected
               class="notification-type-chip"
             >
@@ -92,17 +108,17 @@
           </div>
 
           <div class="notification-actions">
-            <button 
+            <button
               *ngIf="!notification.isRead"
-              mat-icon-button 
+              mat-icon-button
               color="primary"
               (click)="markAsRead(notification)"
               matTooltip="Mark as read"
             >
               <mat-icon>mark_email_read</mat-icon>
             </button>
-            <button 
-              mat-icon-button 
+            <button
+              mat-icon-button
               color="warn"
               (click)="deleteNotification(notification)"
               matTooltip="Delete notification"

@@ -245,20 +245,20 @@ export class CaregiverMedicationsComponent implements OnInit {
     const now = new Date();
     return [
       {
-        id: `intake-${planId}-1`,
+        id: '550e8400-e29b-41d4-a716-446655440101',
         planId,
         scheduledAt: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
         status: IntakeStatus.TAKEN,
         takenAt: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString()
       },
       {
-        id: `intake-${planId}-2`,
+        id: '550e8400-e29b-41d4-a716-446655440102',
         planId,
         scheduledAt: new Date(now.getTime()).toISOString(),
         status: IntakeStatus.SCHEDULED
       },
       {
-        id: `intake-${planId}-3`,
+        id: '550e8400-e29b-41d4-a716-446655440103',
         planId,
         scheduledAt: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(),
         status: IntakeStatus.SCHEDULED

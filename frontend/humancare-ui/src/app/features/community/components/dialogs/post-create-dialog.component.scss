@@ -1,59 +1,79 @@
-h2[mat-dialog-title] {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-
-  mat-icon {
-    color: #1976d2;
-  }
-}
-
-mat-dialog-content {
-  padding-top: 16px;
-  min-width: 500px;
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.full-width {
-  width: 100%;
-}
-
-mat-form-field {
-  mat-icon[matPrefix] {
-    color: #666;
-    margin-right: 8px;
-  }
-}
-
-textarea {
-  resize: vertical;
-}
-
-mat-dialog-actions {
-  padding: 16px 24px;
-  gap: 8px;
-
-  button[mat-raised-button] {
+.dialog-wrapper {
+  h2[mat-dialog-title] {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f766e;
+
+    mat-icon {
+      color: #14b8a6;
+      font-size: 28px;
+    }
   }
-}
 
-.inline-spinner {
-  display: inline-block;
-  margin-right: 8px;
-}
-
-@media (max-width: 600px) {
   mat-dialog-content {
-    min-width: auto;
+    padding-top: 16px;
+    min-width: 500px;
+    background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+    border-radius: 20px;
+    margin: 8px 16px;
+  }
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px;
+  }
+
+  .full-width {
     width: 100%;
+  }
+
+  mat-form-field {
+    background: rgba(255,255,255,0.9);
+    border-radius: 14px;
+    padding: 4px 8px;
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.1);
+
+    mat-icon[matPrefix] {
+      color: #14b8a6;
+      margin-right: 8px;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  mat-dialog-actions {
+    padding: 16px 24px;
+    gap: 8px;
+
+    .submit-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 50px;
+      padding: 8px 24px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #14b8a6, #06b6d4);
+      color: white;
+    }
+  }
+
+  .inline-spinner {
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  @media (max-width: 600px) {
+    mat-dialog-content {
+      min-width: auto;
+      width: 100%;
+    }
   }
 }

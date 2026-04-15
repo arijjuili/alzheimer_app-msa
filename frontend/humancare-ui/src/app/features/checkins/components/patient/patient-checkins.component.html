@@ -1,14 +1,20 @@
 <div class="checkins-container">
+  <!-- Streak Banner -->
+  <div class="streak-banner" *ngIf="getStreak() > 0">
+    <mat-icon>local_fire_department</mat-icon>
+    <span class="streak-text">{{ getStreak() }} day streak! Keep it up!</span>
+  </div>
+
   <!-- Today's Check-in Hero Card -->
   <mat-card class="dashboard-card today-card">
     <mat-card-header>
       <div class="header-content">
-        <div>
-          <mat-card-title>
-            <mat-icon>today</mat-icon>
-            Today's Check-in
-          </mat-card-title>
-          <mat-card-subtitle>Track how you're feeling today</mat-card-subtitle>
+        <div class="title-block">
+          <mat-icon class="title-icon">today</mat-icon>
+          <div>
+            <mat-card-title>Today's Check-in</mat-card-title>
+            <mat-card-subtitle>Track how you're feeling today</mat-card-subtitle>
+          </div>
         </div>
       </div>
     </mat-card-header>
@@ -23,14 +29,14 @@
       <!-- Today's Check-in Present -->
       <div *ngIf="!loading && todaysCheckin" class="today-content">
         <div class="metrics-grid">
-          <div class="metric-item">
+          <div class="metric-item mood-metric" [class]="'mood-' + todaysCheckin.mood.toLowerCase()">
+            <span class="metric-emoji">{{ getMoodEmoji(todaysCheckin.mood) }}</span>
             <span class="metric-label">Mood</span>
-            <mat-chip [color]="getMoodColor(todaysCheckin.mood)" selected>
-              {{ todaysCheckin.mood }}
-            </mat-chip>
+            <span class="metric-value">{{ todaysCheckin.mood }}</span>
           </div>
 
-          <div class="metric-item">
+          <div class="metric-item energy-metric">
+            <span class="metric-emoji">⚡</span>
             <span class="metric-label">Energy Level</span>
             <div class="energy-display">
               <div class="energy-bar-container">
@@ -40,26 +46,22 @@
             </div>
           </div>
 
-          <div class="metric-item">
+          <div class="metric-item sleep-metric">
+            <span class="metric-emoji">{{ getSleepEmoji(todaysCheckin.sleepQuality) }}</span>
             <span class="metric-label">Sleep Quality</span>
-            <mat-chip [color]="getSleepColor(todaysCheckin.sleepQuality)" selected>
-              {{ todaysCheckin.sleepQuality }}
-            </mat-chip>
+            <span class="metric-value">{{ todaysCheckin.sleepQuality }}</span>
           </div>
         </div>
 
         <div *ngIf="todaysCheckin.symptoms && todaysCheckin.symptoms.length > 0" class="symptoms-section">
           <h4><mat-icon>healing</mat-icon> Symptoms</h4>
-          <mat-list dense>
-            <mat-list-item *ngFor="let symptom of todaysCheckin.symptoms">
-              <mat-icon matListIcon>healing</mat-icon>
-              <div matLine>{{ symptom.symptomType }}</div>
-              <div matLine class="symptom-details">
-                Severity: {{ symptom.severity }}/10
-                <span *ngIf="symptom.notes"> — {{ symptom.notes }}</span>
-              </div>
-            </mat-list-item>
-          </mat-list>
+          <div class="symptom-chips">
+            <div class="symptom-chip" *ngFor="let symptom of todaysCheckin.symptoms">
+              <mat-icon>healing</mat-icon>
+              <span>{{ symptom.symptomType }}</span>
+              <span class="severity">({{ symptom.severity }}/10)</span>
+            </div>
+          </div>
         </div>
 
         <div *ngIf="todaysCheckin.notes" class="notes-section">
@@ -68,21 +70,23 @@
         </div>
 
         <div class="today-actions">
-          <button mat-icon-button color="primary" (click)="openDetailDialog(todaysCheckin!)" matTooltip="View Details">
+          <button mat-stroked-button color="primary" (click)="openDetailDialog(todaysCheckin!)" matTooltip="View Details">
             <mat-icon>visibility</mat-icon>
+            Details
           </button>
-          <button mat-icon-button color="warn" (click)="deleteCheckin(todaysCheckin!.id)" matTooltip="Delete Check-in">
+          <button mat-stroked-button color="warn" (click)="deleteCheckin(todaysCheckin!.id)" matTooltip="Delete Check-in">
             <mat-icon>delete</mat-icon>
+            Delete
           </button>
         </div>
       </div>
 
       <!-- No Check-in Today -->
       <div *ngIf="!loading && !todaysCheckin" class="empty-state">
-        <mat-icon>sentiment_dissatisfied</mat-icon>
+        <div class="empty-emoji">🌈</div>
         <p>You haven't checked in today</p>
         <p class="empty-state-subtitle">Take a moment to track your mood, energy, and sleep</p>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+        <button mat-raised-button class="checkin-btn" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
           Check In Today
         </button>
@@ -101,41 +105,38 @@
 
     <mat-card-content>
       <div *ngIf="pastCheckins.length === 0 && !loading" class="empty-state">
-        <mat-icon>history_toggle_off</mat-icon>
+        <div class="empty-emoji">📅</div>
         <p>No past check-ins found</p>
         <p class="empty-state-subtitle">Your check-in history will appear here</p>
       </div>
 
-      <mat-list *ngIf="pastCheckins.length > 0" class="checkin-list">
-        <mat-list-item *ngFor="let checkin of pastCheckins" class="checkin-list-item">
-          <div matLine class="checkin-header">
-            <span class="checkin-date">{{ formatDate(checkin.checkinDate) }}</span>
-            <div class="checkin-chips">
-              <mat-chip [color]="getMoodColor(checkin.mood)" selected>
-                {{ checkin.mood }}
-              </mat-chip>
-              <mat-chip [color]="getSleepColor(checkin.sleepQuality)" selected>
-                {{ checkin.sleepQuality }}
-              </mat-chip>
+      <div *ngIf="pastCheckins.length > 0" class="checkin-list">
+        <div *ngFor="let checkin of pastCheckins" class="checkin-list-item">
+          <div class="checkin-emoji">{{ getMoodEmoji(checkin.mood) }}</div>
+          <div class="checkin-body">
+            <div class="checkin-header">
+              <span class="checkin-date">{{ formatDate(checkin.checkinDate) }}</span>
+              <div class="checkin-badges">
+                <span class="badge sleep-badge">{{ getSleepEmoji(checkin.sleepQuality) }} {{ checkin.sleepQuality }}</span>
+                <span class="badge energy-badge">⚡ {{ checkin.energyLevel }}/10</span>
+              </div>
+            </div>
+            <div class="checkin-subheader">
+              <span *ngIf="checkin.symptoms && checkin.symptoms.length > 0" class="symptoms-text">
+                <mat-icon>healing</mat-icon> {{ checkin.symptoms.length }} symptom{{ checkin.symptoms.length === 1 ? '' : 's' }}
+              </span>
             </div>
           </div>
-          <div matLine class="checkin-subheader">
-            <span class="energy-badge">
-              <mat-icon>bolt</mat-icon> Energy: {{ checkin.energyLevel }}/10
-            </span>
-            <span *ngIf="checkin.symptoms && checkin.symptoms.length > 0" class="symptoms-badge">
-              <mat-icon>healing</mat-icon> {{ checkin.symptoms.length }} symptom{{ checkin.symptoms.length === 1 ? '' : 's' }}
-            </span>
+          <div class="checkin-actions">
+            <button mat-icon-button color="primary" (click)="openDetailDialog(checkin)" matTooltip="View Details">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteCheckin(checkin.id)" matTooltip="Delete Check-in">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
-
-          <button mat-icon-button color="primary" (click)="openDetailDialog(checkin)" matTooltip="View Details">
-            <mat-icon>visibility</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="deleteCheckin(checkin.id)" matTooltip="Delete Check-in">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </mat-list-item>
-      </mat-list>
+        </div>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

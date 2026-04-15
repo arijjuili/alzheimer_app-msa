@@ -19,9 +19,12 @@ import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Patient } from '../../../../shared/models/patient.model';
 import { Role } from '../../../../shared/models/user.model';
+import { NotificationTriggerService } from '../../../../shared/services/notification-trigger.service';
 
 export interface MemoryCreateDialogData {
   patientId?: string;
+  patients?: Patient[];
+  professional?: boolean;
 }
 
 @Component({
@@ -56,12 +59,15 @@ export class MemoryCreateDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: MemoryCreateDialogData,
     private memoryService: MemoryService,
     private patientService: PatientService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationTrigger: NotificationTriggerService
   ) {}
 
   ngOnInit(): void {
     this.isPatient = this.authService.hasRole(Role.PATIENT);
-    if (!this.isPatient && !this.data?.patientId) {
+    if (this.data?.patients) {
+      this.patients = this.data.patients;
+    } else if (!this.isPatient && !this.data?.patientId) {
       this.loadPatients();
     }
     this.initForm();
@@ -103,6 +109,13 @@ export class MemoryCreateDialogComponent implements OnInit {
         .pipe(catchError(() => of(null)))
         .subscribe(result => {
           if (result) {
+            if (!this.isPatient && raw.patientId) {
+              const caregiver = this.authService.getCurrentUser();
+              this.notificationTrigger.memoryShared(
+                raw.patientId,
+                caregiver ? `${caregiver.firstName} ${caregiver.lastName}` : 'Your caregiver'
+              );
+            }
             this.dialogRef.close(true);
           }
         });

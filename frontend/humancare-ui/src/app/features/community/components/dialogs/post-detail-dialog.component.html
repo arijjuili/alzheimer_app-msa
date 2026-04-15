@@ -1,19 +1,11 @@
 <div class="detail-dialog">
   <div class="dialog-header">
-    <mat-chip
-      [color]="data.post.category === 'EVENT' ? 'accent' : 'primary'"
-      selected
-      class="category-chip"
-    >
+    <div class="category-badge" [class]="'cat-' + data.post.category.toLowerCase()">
       {{ data.post.category }}
-    </mat-chip>
-    <mat-chip
-      [color]="data.post.isActive ? 'primary' : 'warn'"
-      selected
-      class="status-chip"
-    >
+    </div>
+    <div class="status-badge" [class.active]="data.post.isActive">
       {{ data.post.isActive ? 'Active' : 'Inactive' }}
-    </mat-chip>
+    </div>
   </div>
 
   <h2 mat-dialog-title class="post-title">{{ data.post.title }}</h2>
@@ -36,7 +28,7 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close color="primary">
+    <button mat-raised-button class="close-btn" mat-dialog-close>
       <mat-icon>close</mat-icon>
       Close
     </button>

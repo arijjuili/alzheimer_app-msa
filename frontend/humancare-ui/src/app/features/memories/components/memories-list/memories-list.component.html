@@ -1,86 +1,121 @@
-<div class="memories-list-container">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Memories</mat-card-title>
-      <mat-card-subtitle>Manage patient memories</mat-card-subtitle>
-      <span class="spacer"></span>
-      <button mat-raised-button color="primary" (click)="openCreateDialog()">
-        <mat-icon>add</mat-icon>
-        Add Memory
-      </button>
-    </mat-card-header>
-
-    <mat-card-content>
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="48"></mat-spinner>
-        <p>Loading memories...</p>
+<div class="memories-page">
+  <!-- Patient Sidebar -->
+  <aside class="patient-sidebar" *ngIf="assignedPatients.length > 0">
+    <div class="sidebar-header">
+      <mat-icon>people</mat-icon>
+      <span>My Patients</span>
+    </div>
+    <div class="patient-list">
+      <div
+        *ngFor="let patient of assignedPatients"
+        class="patient-item"
+        [class.active]="selectedPatient?.id === patient.id"
+        (click)="selectPatient(patient)"
+      >
+        <div class="patient-avatar">{{ patient.firstName.charAt(0) }}{{ patient.lastName.charAt(0) }}</div>
+        <div class="patient-info">
+          <span class="patient-name">{{ patient.firstName }} {{ patient.lastName }}</span>
+        </div>
       </div>
+    </div>
+  </aside>
 
-      <div *ngIf="!loading">
-        <table mat-table [dataSource]="memories" class="memories-table">
-          <!-- Title Column -->
-          <ng-container matColumnDef="title">
-            <th mat-header-cell *matHeaderCellDef>Title</th>
-            <td mat-cell *matCellDef="let memory">{{ memory.title }}</td>
-          </ng-container>
+  <!-- Main Content -->
+  <div class="main-content">
+    <mat-card class="memories-card">
+      <mat-card-header>
+        <div class="header-content">
+          <div class="title-block">
+            <mat-icon class="title-icon">photo_library</mat-icon>
+            <div>
+              <mat-card-title>Memories</mat-card-title>
+              <mat-card-subtitle>Manage patient memories</mat-card-subtitle>
+            </div>
+          </div>
+          <button mat-raised-button class="add-btn" (click)="openCreateDialog()">
+            <mat-icon>add</mat-icon>
+            Add Memory
+          </button>
+        </div>
+      </mat-card-header>
 
-          <!-- Patient ID Column -->
-          <ng-container matColumnDef="patientId">
-            <th mat-header-cell *matHeaderCellDef>Patient ID</th>
-            <td mat-cell *matCellDef="let memory">{{ memory.patientId }}</td>
-          </ng-container>
-
-          <!-- Type Column -->
-          <ng-container matColumnDef="memoryType">
-            <th mat-header-cell *matHeaderCellDef>Type</th>
-            <td mat-cell *matCellDef="let memory">
-              <mat-icon class="type-icon">{{ getTypeIcon(memory.memoryType) }}</mat-icon>
-              {{ memory.memoryType }}
-            </td>
-          </ng-container>
-
-          <!-- Memory Date Column -->
-          <ng-container matColumnDef="memoryDate">
-            <th mat-header-cell *matHeaderCellDef>Memory Date</th>
-            <td mat-cell *matCellDef="let memory">{{ formatDate(memory.memoryDate) }}</td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let memory">
-              <button mat-icon-button color="primary" (click)="openDetailDialog(memory)" matTooltip="View">
-                <mat-icon>visibility</mat-icon>
-              </button>
-              <button
-                *ngIf="canDelete(memory)"
-                mat-icon-button
-                color="warn"
-                (click)="deleteMemory(memory)"
-                matTooltip="Delete">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-
-        <div *ngIf="memories.length === 0" class="no-data">
-          <mat-icon>photo_library</mat-icon>
-          <p>No memories found</p>
+      <mat-card-content>
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner diameter="48"></mat-spinner>
+          <p>Loading memories...</p>
         </div>
 
-        <mat-paginator
-          [length]="totalElements"
-          [pageSize]="size"
-          [pageIndex]="page"
-          [pageSizeOptions]="[10, 20, 50]"
-          (page)="onPageChange($event)"
-          showFirstLastButtons>
-        </mat-paginator>
-      </div>
-    </mat-card-content>
-  </mat-card>
+        <div *ngIf="!loading">
+          <table mat-table [dataSource]="dataSource" class="memories-table">
+            <!-- Title Column -->
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef>Title</th>
+              <td mat-cell *matCellDef="let memory">{{ memory.title }}</td>
+            </ng-container>
+
+            <!-- Patient Name Column -->
+            <ng-container matColumnDef="patientName">
+              <th mat-header-cell *matHeaderCellDef>Patient</th>
+              <td mat-cell *matCellDef="let memory">
+                <span class="patient-badge">{{ memory.patientName }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="memoryType">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let memory">
+                <span class="type-pill" [class]="'type-' + memory.memoryType.toLowerCase()">
+                  <mat-icon>{{ getTypeIcon(memory.memoryType) }}</mat-icon>
+                  {{ memory.memoryType | titlecase }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Memory Date Column -->
+            <ng-container matColumnDef="memoryDate">
+              <th mat-header-cell *matHeaderCellDef>Memory Date</th>
+              <td mat-cell *matCellDef="let memory">{{ formatDate(memory.memoryDate) }}</td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let memory">
+                <button mat-icon-button color="primary" (click)="openDetailDialog(memory)" matTooltip="View">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button
+                  *ngIf="canDelete(memory)"
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteMemory(memory)"
+                  matTooltip="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+
+          <div *ngIf="dataSource.data.length === 0" class="no-data">
+            <mat-icon>photo_library</mat-icon>
+            <p>No memories found</p>
+          </div>
+
+          <mat-paginator
+            *ngIf="dataSource.data.length > 0"
+            [length]="totalElements"
+            [pageSize]="size"
+            [pageIndex]="page"
+            [pageSizeOptions]="[10, 20, 50]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>

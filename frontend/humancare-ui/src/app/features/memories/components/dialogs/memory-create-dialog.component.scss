@@ -3,21 +3,35 @@ h2[mat-dialog-title] {
   align-items: center;
   gap: 12px;
   margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #9333ea;
 
   mat-icon {
-    color: #1976d2;
+    color: #d946ef;
+    font-size: 28px;
+    animation: bounce 2s infinite;
   }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 mat-dialog-content {
   padding-top: 16px;
   min-width: 500px;
+  background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+  border-radius: 20px;
+  margin: 8px 16px;
 }
 
 .form-container {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 8px;
 }
 
 .full-width {
@@ -25,8 +39,13 @@ mat-dialog-content {
 }
 
 mat-form-field {
+  background: rgba(255,255,255,0.9);
+  border-radius: 14px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.1);
+
   mat-icon[matPrefix] {
-    color: #666;
+    color: #a855f7;
     margin-right: 8px;
   }
 }
@@ -43,6 +62,11 @@ mat-dialog-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+    border-radius: 50px;
+    padding: 8px 24px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #9333ea, #ec4899);
+    color: white;
   }
 }
 
@@ -51,4 +75,37 @@ mat-dialog-actions {
     min-width: auto;
     width: 100%;
   }
+}
+
+/* Professional mode overrides */
+.professional-mode h2[mat-dialog-title] {
+  color: #263238;
+  font-size: 18px;
+  font-weight: 500;
+}
+.professional-mode h2[mat-dialog-title] mat-icon {
+  color: #455a64;
+  animation: none;
+}
+.professional-mode mat-dialog-content {
+  background: #ffffff;
+  border-radius: 0;
+  margin: 0;
+}
+.professional-mode .form-container {
+  padding: 0;
+}
+.professional-mode mat-form-field {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.professional-mode mat-form-field mat-icon[matPrefix] {
+  color: #607d8b;
+}
+.professional-mode mat-dialog-actions button[mat-raised-button] {
+  border-radius: 4px;
+  background: #1976d2;
+  font-weight: 500;
 }

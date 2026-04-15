@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,12 +11,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { catchError, finalize } from 'rxjs/operators';
 import { of, Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 import { Notification, NotificationType } from '../../../../shared/models/notification.model';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { Role } from '../../../../shared/models/user.model';
+import { environment } from '../../../../../environments/environment';
 
 type FilterType = 'all' | 'unread' | 'read';
 
@@ -48,13 +51,19 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
   currentFilter: FilterType = 'all';
   
   private unreadCountSubscription: Subscription | null = null;
+  private http = inject(HttpClient);
+  canTriggerReminders = false;
+  triggering = false;
 
   constructor(
     private notificationService: NotificationService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
-  ) {}
+  ) {
+    const roles = this.authService.getRoles();
+    this.canTriggerReminders = roles.includes(Role.ADMIN) || roles.includes(Role.DOCTOR);
+  }
 
   ngOnInit(): void {
     this.recipientId = this.getRecipientIdFromToken();
@@ -243,6 +252,23 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
         minute: '2-digit'
       });
     }
+  }
+
+  triggerAppointmentReminders(): void {
+    this.triggering = true;
+    this.http.post(`${environment.apiUrl}/api/notifications/test/trigger-appointment-reminders`, {})
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          return of(null);
+        }),
+        finalize(() => this.triggering = false)
+      )
+      .subscribe(result => {
+        if (result !== null) {
+          this.loadNotifications();
+        }
+      });
   }
 
   private getMockNotifications(): Notification[] {

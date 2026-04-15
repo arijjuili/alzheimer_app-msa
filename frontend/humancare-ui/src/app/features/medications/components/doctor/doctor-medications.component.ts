@@ -22,6 +22,7 @@ import { MedicationService } from '../../services/medication.service';
 import { PatientService } from '../../../../features/profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
+import { NotificationTriggerService } from '../../../../shared/services/notification-trigger.service';
 import { Patient } from '../../../../shared/models/patient.model';
 import {
   MedicationPlan,
@@ -94,7 +95,8 @@ export class DoctorMedicationsComponent implements OnInit {
     private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private notificationTrigger: NotificationTriggerService
   ) {}
 
   ngOnInit(): void {
@@ -324,7 +326,15 @@ export class DoctorMedicationsComponent implements OnInit {
         this.medicationService.createPlan(newPlan)
           .pipe(catchError(err => { this.errorHandler.handleError(err); return of(null); }))
           .subscribe(createdPlan => {
-            if (createdPlan) this.loadMedications();
+            if (createdPlan) {
+              const doctor = this.authService.getCurrentUser();
+              this.notificationTrigger.medicationPrescribed(
+                createdPlan.patientId,
+                createdPlan.medicationName,
+                doctor ? `${doctor.firstName} ${doctor.lastName}` : 'Your doctor'
+              );
+              this.loadMedications();
+            }
           });
       }
     });

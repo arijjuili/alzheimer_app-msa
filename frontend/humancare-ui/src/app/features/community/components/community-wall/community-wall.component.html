@@ -2,18 +2,17 @@
   <mat-card class="community-card">
     <mat-card-header>
       <div class="header-content">
-        <div>
-          <mat-card-title>
-            <mat-icon>forum</mat-icon>
-            Community Wall
-          </mat-card-title>
-          <mat-card-subtitle>Connect, share, and support each other</mat-card-subtitle>
+        <div class="title-block">
+          <mat-icon class="title-icon">forum</mat-icon>
+          <div>
+            <mat-card-title>Community Wall</mat-card-title>
+            <mat-card-subtitle>Connect, share, and support each other</mat-card-subtitle>
+          </div>
         </div>
         <button
           mat-raised-button
-          color="primary"
-          (click)="openCreateDialog()"
           class="new-post-button"
+          (click)="openCreateDialog()"
         >
           <mat-icon>add</mat-icon>
           New Post
@@ -24,21 +23,23 @@
     <mat-card-content>
       <!-- Category Filter Chips -->
       <div class="filter-chips">
-        <mat-chip-listbox>
-          <mat-chip-option
-            [selected]="selectedCategory === null"
-            (click)="onCategoryChange(null)"
-          >
-            All
-          </mat-chip-option>
-          <mat-chip-option
-            *ngFor="let cat of categories"
-            [selected]="selectedCategory === cat"
-            (click)="onCategoryChange(cat)"
-          >
-            {{ cat }}
-          </mat-chip-option>
-        </mat-chip-listbox>
+        <button
+          mat-stroked-button
+          class="filter-btn"
+          [class.active]="selectedCategory === null"
+          (click)="onCategoryChange(null)"
+        >
+          All
+        </button>
+        <button
+          mat-stroked-button
+          class="filter-btn"
+          *ngFor="let cat of categories"
+          [class.active]="selectedCategory === cat"
+          (click)="onCategoryChange(cat)"
+        >
+          {{ cat }}
+        </button>
       </div>
 
       <!-- Loading State -->
@@ -49,28 +50,20 @@
 
       <!-- Posts List -->
       <div *ngIf="!loading" class="posts-list">
-        <mat-card *ngFor="let post of posts" class="post-card">
-          <mat-card-header>
-            <mat-card-title>{{ post.title }}</mat-card-title>
-            <mat-card-subtitle>
-              <mat-chip
-                [color]="post.category === 'EVENT' ? 'accent' : 'primary'"
-                selected
-                class="category-chip"
-              >
-                {{ post.category }}
-              </mat-chip>
-              <span class="post-meta">{{ formatDate(post.createdAt) }}</span>
-            </mat-card-subtitle>
-          </mat-card-header>
+        <mat-card *ngFor="let post of posts" class="post-card" [class]="'cat-' + post.category.toLowerCase()">
+          <div class="post-card-header">
+            <div class="category-badge">{{ post.category }}</div>
+            <span class="post-date">{{ formatDate(post.createdAt) }}</span>
+          </div>
 
           <mat-card-content>
+            <h3 class="post-title">{{ post.title }}</h3>
             <p class="post-content">{{ truncateContent(post.content) }}</p>
           </mat-card-content>
 
           <mat-card-actions align="end">
             <button
-              mat-button
+              mat-stroked-button
               color="primary"
               (click)="openDetailDialog(post)"
               matTooltip="View post details"
@@ -80,8 +73,8 @@
             </button>
             <button
               *ngIf="canEditOrDelete(post)"
-              mat-button
-              color="accent"
+              mat-stroked-button
+              class="edit-btn"
               (click)="editPost(post)"
               matTooltip="Edit post"
             >
@@ -90,7 +83,7 @@
             </button>
             <button
               *ngIf="canEditOrDelete(post)"
-              mat-button
+              mat-stroked-button
               color="warn"
               (click)="deletePost(post)"
               matTooltip="Delete post"
@@ -103,7 +96,7 @@
 
         <!-- Empty State -->
         <div *ngIf="posts.length === 0" class="no-data">
-          <mat-icon>forum</mat-icon>
+          <div class="empty-icon">💬</div>
           <p>No posts found</p>
           <p class="no-data-subtitle" *ngIf="selectedCategory">No posts in category {{ selectedCategory }}</p>
           <p class="no-data-subtitle" *ngIf="!selectedCategory">Be the first to share something with the community!</p>
@@ -126,7 +119,6 @@
   <!-- Floating FAB -->
   <button
     mat-fab
-    color="primary"
     class="fab-new-post"
     (click)="openCreateDialog()"
     matTooltip="Create new post"

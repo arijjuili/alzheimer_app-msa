@@ -22,6 +22,7 @@ import { AppointmentService } from '../../services/appointment.service';
 import { PatientService } from '../../../../features/profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
+import { NotificationTriggerService } from '../../../../shared/services/notification-trigger.service';
 import { Appointment, AppointmentCreateRequest, AppointmentStatus } from '../../../../shared/models/appointment.model';
 import { Patient } from '../../../../shared/models/patient.model';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
@@ -93,7 +94,8 @@ export class CaregiverAppointmentsComponent implements OnInit {
     private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private notificationTrigger: NotificationTriggerService
   ) {}
 
   ngOnInit(): void {
@@ -275,6 +277,18 @@ export class CaregiverAppointmentsComponent implements OnInit {
           )
           .subscribe(created => {
             if (created) {
+              const caregiver = this.authService.getCurrentUser();
+              const patientName = this.selectedPatient
+                ? `${this.selectedPatient.firstName} ${this.selectedPatient.lastName}`
+                : 'your patient';
+              const recipients: string[] = [];
+              if (created.patientId) recipients.push(created.patientId);
+              if (this.selectedPatient?.doctorId) recipients.push(this.selectedPatient.doctorId);
+              this.notificationTrigger.appointmentScheduled(
+                recipients,
+                patientName,
+                caregiver ? `${caregiver.firstName} ${caregiver.lastName}` : 'A caregiver'
+              );
               this.loadAppointments();
             }
           });

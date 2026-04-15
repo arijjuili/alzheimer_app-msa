@@ -12,10 +12,12 @@ import { catchError, finalize } from 'rxjs/operators';
 import { of, forkJoin } from 'rxjs';
 
 import { DailyCheckin, MoodType, SleepQuality } from '../../../../shared/models/checkin.model';
+import { Patient } from '../../../../shared/models/patient.model';
 import { CheckinService } from '../../services/checkin.service';
 import { PatientService } from '../../../profile/services/patient.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
+import { NotificationTriggerService } from '../../../../shared/services/notification-trigger.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { CheckinCreateDialogComponent } from './dialogs/checkin-create-dialog.component';
 import { CheckinDetailDialogComponent } from '../dialogs/checkin-detail-dialog.component';
@@ -42,6 +44,7 @@ export class PatientCheckinsComponent implements OnInit {
   pastCheckins: DailyCheckin[] = [];
   loading = false;
   currentPatientId: string | null = null;
+  currentPatient: Patient | null = null;
   error: string | null = null;
 
   constructor(
@@ -49,11 +52,13 @@ export class PatientCheckinsComponent implements OnInit {
     private patientService: PatientService,
     private authService: AuthService,
     private errorHandler: ErrorHandlerService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private notificationTrigger: NotificationTriggerService
   ) {}
 
   ngOnInit(): void {
     this.patientService.resolveCurrentPatient().subscribe(patient => {
+      this.currentPatient = patient;
       this.currentPatientId = patient?.id || this.authService.getCurrentUser()?.id || null;
       this.loadCheckins();
     });
@@ -102,6 +107,15 @@ export class PatientCheckinsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const recipients: string[] = [];
+        if (this.currentPatient?.caregiverId) recipients.push(this.currentPatient.caregiverId);
+        if (this.currentPatient?.doctorId) recipients.push(this.currentPatient.doctorId);
+        const patientName = this.currentPatient
+          ? `${this.currentPatient.firstName} ${this.currentPatient.lastName}`
+          : 'A patient';
+        if (recipients.length) {
+          this.notificationTrigger.checkinSubmitted(recipients, patientName);
+        }
         this.loadCheckins();
       }
     });
@@ -175,5 +189,47 @@ export class PatientCheckinsComponent implements OnInit {
       month: 'long',
       day: 'numeric'
     });
+  }
+
+  getMoodEmoji(mood: MoodType): string {
+    switch (mood) {
+      case MoodType.EXCELLENT: return '🤩';
+      case MoodType.GOOD: return '😊';
+      case MoodType.FAIR: return '😐';
+      case MoodType.POOR: return '😕';
+      case MoodType.BAD: return '😢';
+      default: return '🙂';
+    }
+  }
+
+  getSleepEmoji(sleep: SleepQuality): string {
+    switch (sleep) {
+      case SleepQuality.GREAT: return '💤';
+      case SleepQuality.GOOD: return '😴';
+      case SleepQuality.FAIR: return '🛌';
+      case SleepQuality.POOR: return '👀';
+      case SleepQuality.BAD: return '🥱';
+      default: return '🛌';
+    }
+  }
+
+  getStreak(): number {
+    if (!this.pastCheckins.length && !this.todaysCheckin) return 0;
+    let streak = this.todaysCheckin ? 1 : 0;
+    const sorted = [...this.pastCheckins].sort(
+      (a, b) => new Date(b.checkinDate).getTime() - new Date(a.checkinDate).getTime()
+    );
+    let expected = new Date();
+    expected.setDate(expected.getDate() - (this.todaysCheckin ? 1 : 0));
+    for (const checkin of sorted) {
+      const checkinDate = new Date(checkin.checkinDate);
+      if (checkinDate.toISOString().split('T')[0] === expected.toISOString().split('T')[0]) {
+        streak++;
+        expected.setDate(expected.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
   }
 }
