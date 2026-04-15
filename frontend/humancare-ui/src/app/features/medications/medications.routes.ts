@@ -21,6 +21,13 @@ export const MEDICATIONS_ROUTES: Routes = [
     loadComponent: () => import('./components/doctor/doctor-medications.component')
       .then(m => m.DoctorMedicationsComponent),
     canActivate: [RoleGuard],
-    data: { roles: ['DOCTOR', 'CAREGIVER', 'ADMIN'] }
+    data: { roles: ['DOCTOR', 'ADMIN'] }
+  },
+  {
+    path: 'caregiver',
+    loadComponent: () => import('./components/caregiver/caregiver-medications.component')
+      .then(m => m.CaregiverMedicationsComponent),
+    canActivate: [RoleGuard],
+    data: { roles: ['CAREGIVER', 'ADMIN'] }
   }
 ];

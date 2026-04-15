@@ -19,6 +19,7 @@ export enum IntakeStatus {
 export interface MedicationPlan {
   id?: string;  // UUID
   patientId: string;  // UUID
+  patientName?: string; // Display name (frontend-only)
   medicationName: string;
   dosage: string;
   form: MedicationForm;

@@ -22,6 +22,7 @@ import { ErrorHandlerService } from '../../../../core/services/error-handler.ser
 export interface MedicationManageDialogData {
   medication: MedicationPlan;
   mode: 'view' | 'edit';
+  patientName?: string;
 }
 
 @Component({
@@ -58,8 +59,8 @@ export interface MedicationManageDialogData {
           </div>
           
           <div class="detail-row">
-            <span class="detail-label">Patient ID</span>
-            <span class="detail-value patient-id">#{{ data.medication.patientId }}</span>
+            <span class="detail-label">Patient</span>
+            <span class="detail-value patient-name">{{ data.patientName || ('#' + data.medication.patientId) }}</span>
           </div>
           
           <div class="detail-row">
@@ -113,8 +114,8 @@ export interface MedicationManageDialogData {
 
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Patient ID</mat-label>
-              <input matInput [value]="data.medication.patientId" disabled>
+              <mat-label>Patient</mat-label>
+              <input matInput [value]="data.patientName || ('#' + data.medication.patientId)" disabled>
             </mat-form-field>
           </div>
 
@@ -279,11 +280,9 @@ export interface MedicationManageDialogData {
         color: #1976d2;
       }
 
-      &.patient-id {
-        font-family: monospace;
-        background: #f5f5f5;
-        padding: 4px 8px;
-        border-radius: 4px;
+      &.patient-name {
+        font-weight: 500;
+        color: #263238;
       }
 
       &.instructions {

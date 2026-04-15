@@ -77,11 +77,11 @@
       <!-- Medications Table -->
       <div *ngIf="!loading && !error" class="table-container">
         <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" class="medications-table">
-          <!-- Patient ID Column -->
-          <ng-container matColumnDef="patientId">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient ID</th>
+          <!-- Patient Name Column -->
+          <ng-container matColumnDef="patientName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient</th>
             <td mat-cell *matCellDef="let medication">
-              <span class="patient-id">#{{ medication.patientId }}</span>
+              <span class="patient-name">{{ medication.patientName || ('#' + medication.patientId) }}</span>
             </td>
           </ng-container>
 

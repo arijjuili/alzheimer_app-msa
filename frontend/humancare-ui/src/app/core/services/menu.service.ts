@@ -19,6 +19,7 @@ export class MenuService {
     
     // Caregiver
     { icon: 'people', label: 'My Patients', route: '/app/patients', roles: [Role.CAREGIVER] },
+    { icon: 'medication', label: 'Medications', route: '/app/medications', roles: [Role.CAREGIVER] },
     { icon: 'event', label: 'Appointments', route: '/app/appointments', roles: [Role.CAREGIVER] },
     { icon: 'schedule', label: 'Routines', route: '/app/routines', roles: [Role.CAREGIVER] },
     

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -9,6 +9,8 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -18,13 +20,16 @@ import {
   MedicationForm,
   IntakeStatus
 } from '../../../../shared/models/medication.model';
+import { Patient } from '../../../../shared/models/patient.model';
 import { MedicationService } from '../../services/medication.service';
-import { PatientService } from '../../../profile/services/patient.service';
+import { PatientService } from '../../../../features/profile/services/patient.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { MedicationDetailDialogComponent } from '../dialogs/medication-detail-dialog.component';
+import { IntakeStatusDialogComponent } from '../dialogs/intake-status-dialog.component';
 
 @Component({
-  selector: 'app-patient-medications',
+  selector: 'app-caregiver-medications',
   standalone: true,
   imports: [
     CommonModule,
@@ -36,62 +41,97 @@ import { MedicationDetailDialogComponent } from '../dialogs/medication-detail-di
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatDividerModule
+    MatDividerModule,
+    MatPaginatorModule,
+    MatSortModule
   ],
-  templateUrl: './patient-medications.component.html',
-  styleUrls: ['./patient-medications.component.scss']
+  templateUrl: './caregiver-medications.component.html',
+  styleUrls: ['./caregiver-medications.component.scss']
 })
-export class PatientMedicationsComponent implements OnInit {
+export class CaregiverMedicationsComponent implements OnInit {
+  assignedPatients: Patient[] = [];
+  selectedPatient: Patient | null = null;
+
   dataSource = new MatTableDataSource<MedicationPlan>([]);
   displayedColumns: string[] = ['medicationName', 'dosage', 'form', 'frequency', 'status', 'actions'];
   intakeColumns: string[] = ['scheduledAt', 'status', 'actions'];
-  loading = true;
+
+  loadingPatients = true;
+  loadingMedications = false;
   error: string | null = null;
-  patientId: string | null = null;
-  patientName: string | undefined;
+
   expandedPlan: MedicationPlan | null = null;
   planIntakes: Map<string, MedicationIntake[]> = new Map();
   loadingIntakes: Set<string> = new Set();
 
-  IntakeStatus = IntakeStatus;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private medicationService: MedicationService,
     private patientService: PatientService,
+    private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.patientService.resolveCurrentPatient().subscribe(patient => {
-      this.patientId = patient?.id || null;
-      this.patientName = patient ? `${patient.firstName} ${patient.lastName}` : undefined;
-      this.loadMedications();
-    });
+    this.loadAssignedPatients();
   }
 
-  loadMedications(): void {
-    if (!this.patientId) {
-      this.error = 'Patient ID not found';
-      this.loading = false;
-      return;
-    }
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
 
-    this.loading = true;
-    this.error = null;
+  loadAssignedPatients(): void {
+    this.loadingPatients = true;
+    this.patientService.getPatients(1, 1000)
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Failed to load patients';
+          return of({ data: [], total: 0, page: 1, limit: 1000, totalPages: 0 });
+        }),
+        finalize(() => this.loadingPatients = false)
+      )
+      .subscribe(response => {
+        const currentUser = this.authService.getCurrentUser();
+        this.assignedPatients = response.data.filter(p => p.caregiverId === currentUser?.id);
+        if (this.assignedPatients.length > 0) {
+          this.selectPatient(this.assignedPatients[0]);
+        }
+      });
+  }
 
-    this.medicationService.getPlansByPatient(this.patientId)
+  selectPatient(patient: Patient): void {
+    this.selectedPatient = patient;
+    this.expandedPlan = null;
+    this.loadMedicationsForPatient(patient.id);
+  }
+
+  loadMedicationsForPatient(patientId: string): void {
+    this.loadingMedications = true;
+    this.medicationService.getPlansByPatient(patientId)
       .pipe(
         catchError(err => {
           this.errorHandler.handleError(err);
           this.error = 'Failed to load medications';
           return of([]);
         }),
-        finalize(() => this.loading = false)
+        finalize(() => this.loadingMedications = false)
       )
       .subscribe(plans => {
-        this.dataSource.data = plans.length ? plans : this.getMockMedicationPlans();
+        const list = plans.length ? plans : this.getMockMedicationPlans(patientId);
+        this.dataSource.data = this.enrichMedications(list);
       });
+  }
+
+  private enrichMedications(list: MedicationPlan[]): MedicationPlan[] {
+    const patientName = this.selectedPatient
+      ? `${this.selectedPatient.firstName} ${this.selectedPatient.lastName}`
+      : undefined;
+    return list.map(m => ({ ...m, patientName }));
   }
 
   togglePlanExpansion(plan: MedicationPlan): void {
@@ -124,22 +164,28 @@ export class PatientMedicationsComponent implements OnInit {
     const intakes = plan.id ? this.planIntakes.get(plan.id) || [] : [];
     this.dialog.open(MedicationDetailDialogComponent, {
       width: '500px',
-      data: { plan, intakes, gamified: true, patientName: this.patientName }
+      data: { plan, intakes, patientName: plan.patientName }
     });
   }
 
-  markAsTaken(intake: MedicationIntake, planId: string): void {
-    if (!intake.id) return;
-    this.medicationService.markAsTaken(intake.id)
-      .pipe(catchError(err => {
-        this.errorHandler.handleError(err);
-        return of(null);
-      }))
-      .subscribe(result => {
-        if (result) {
-          this.loadIntakesForPlan(planId);
-        }
-      });
+  openIntakeStatusDialog(intake: MedicationIntake, planId: string): void {
+    const dialogRef = this.dialog.open(IntakeStatusDialogComponent, {
+      width: '500px',
+      data: { intake, professional: true }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && intake.id) {
+        this.medicationService.updateIntake(intake.id, result)
+          .pipe(catchError(err => {
+            this.errorHandler.handleError(err);
+            return of(null);
+          }))
+          .subscribe(res => {
+            if (res) this.loadIntakesForPlan(planId);
+          });
+      }
+    });
   }
 
   getStatusColor(status: boolean | undefined): string {
@@ -156,9 +202,8 @@ export class PatientMedicationsComponent implements OnInit {
     }
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  formatForm(form: MedicationForm): string {
+    return form.charAt(0) + form.slice(1).toLowerCase();
   }
 
   formatDateTime(dateString: string): string {
@@ -168,15 +213,11 @@ export class PatientMedicationsComponent implements OnInit {
     });
   }
 
-  formatForm(form: MedicationForm): string {
-    return form.charAt(0) + form.slice(1).toLowerCase();
-  }
-
-  private getMockMedicationPlans(): MedicationPlan[] {
+  private getMockMedicationPlans(patientId: string): MedicationPlan[] {
     return [
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
-        patientId: this.patientId || '550e8400-e29b-41d4-a716-446655440000',
+        patientId,
         medicationName: 'Amoxicillin',
         dosage: '500mg',
         form: MedicationForm.TABLET,
@@ -188,7 +229,7 @@ export class PatientMedicationsComponent implements OnInit {
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440002',
-        patientId: this.patientId || '550e8400-e29b-41d4-a716-446655440000',
+        patientId,
         medicationName: 'Vitamin D3',
         dosage: '1000 IU',
         form: MedicationForm.TABLET,
@@ -205,20 +246,20 @@ export class PatientMedicationsComponent implements OnInit {
     return [
       {
         id: `intake-${planId}-1`,
-        planId: planId,
+        planId,
         scheduledAt: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
         status: IntakeStatus.TAKEN,
         takenAt: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString()
       },
       {
         id: `intake-${planId}-2`,
-        planId: planId,
+        planId,
         scheduledAt: new Date(now.getTime()).toISOString(),
         status: IntakeStatus.SCHEDULED
       },
       {
         id: `intake-${planId}-3`,
-        planId: planId,
+        planId,
         scheduledAt: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(),
         status: IntakeStatus.SCHEDULED
       }

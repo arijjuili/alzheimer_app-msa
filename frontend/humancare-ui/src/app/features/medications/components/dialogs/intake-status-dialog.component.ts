@@ -13,6 +13,11 @@ import { MatDividerModule } from '@angular/material/divider';
 
 import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medication.model';
 
+interface IntakeStatusDialogData {
+  intake: MedicationIntake;
+  professional?: boolean;
+}
+
 @Component({
   selector: 'app-intake-status-dialog',
   standalone: true,
@@ -30,83 +35,85 @@ import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medica
     MatDividerModule
   ],
   template: `
-    <h2 mat-dialog-title>
-      <mat-icon>edit_note</mat-icon>
-      Update Intake Status
-    </h2>
-    
-    <form [formGroup]="intakeForm" (ngSubmit)="onSubmit()">
-      <mat-dialog-content>
-        <div class="form-container">
-          <!-- Scheduled Time Info -->
-          <div class="info-row">
-            <mat-icon>schedule</mat-icon>
-            <span>Scheduled: {{ formatDateTime(data.intake.scheduledAt) }}</span>
-          </div>
+    <div [class.professional-mode]="data.professional">
+      <h2 mat-dialog-title>
+        <mat-icon>edit_note</mat-icon>
+        Update Intake Status
+      </h2>
 
-          <mat-divider></mat-divider>
+      <form [formGroup]="intakeForm" (ngSubmit)="onSubmit()">
+        <mat-dialog-content>
+          <div class="form-container">
+            <!-- Scheduled Time Info -->
+            <div class="info-row">
+              <mat-icon>schedule</mat-icon>
+              <span>Scheduled: {{ formatDateTime(data.intake.scheduledAt) }}</span>
+            </div>
 
-          <!-- Status Selection -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Status</mat-label>
-            <mat-select formControlName="status">
-              <mat-option *ngFor="let status of intakeStatuses" [value]="status.value">
-                <div class="status-option">
-                  <span class="status-dot" [ngClass]="'status-' + status.value.toLowerCase()"></span>
-                  {{ status.label }}
-                </div>
-              </mat-option>
-            </mat-select>
-            <mat-icon matPrefix>flag</mat-icon>
-            <mat-error *ngIf="intakeForm.get('status')?.hasError('required')">
-              Status is required
-            </mat-error>
-          </mat-form-field>
+            <mat-divider></mat-divider>
 
-          <!-- Taken At (for TAKEN status) -->
-          <mat-form-field 
-            appearance="outline" 
-            class="full-width"
-            *ngIf="intakeForm.get('status')?.value === 'TAKEN'"
-          >
-            <mat-label>Taken At</mat-label>
-            <input 
-              matInput 
-              type="datetime-local" 
-              formControlName="takenAt"
+            <!-- Status Selection -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option *ngFor="let status of intakeStatuses" [value]="status.value">
+                  <div class="status-option">
+                    <span class="status-dot" [ngClass]="'status-' + status.value.toLowerCase()"></span>
+                    {{ status.label }}
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix>flag</mat-icon>
+              <mat-error *ngIf="intakeForm.get('status')?.hasError('required')">
+                Status is required
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Taken At (for TAKEN status) -->
+            <mat-form-field
+              appearance="outline"
+              class="full-width"
+              *ngIf="intakeForm.get('status')?.value === 'TAKEN'"
             >
-            <mat-icon matPrefix>event_available</mat-icon>
-          </mat-form-field>
+              <mat-label>Taken At</mat-label>
+              <input
+                matInput
+                type="datetime-local"
+                formControlName="takenAt"
+              >
+              <mat-icon matPrefix>event_available</mat-icon>
+            </mat-form-field>
 
-          <!-- Notes -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Notes (Optional)</mat-label>
-            <textarea 
-              matInput 
-              formControlName="notes" 
-              rows="3"
-              placeholder="Add any notes about this intake"
-            ></textarea>
-            <mat-icon matPrefix>notes</mat-icon>
-          </mat-form-field>
-        </div>
-      </mat-dialog-content>
-      
-      <mat-dialog-actions align="end">
-        <button mat-button type="button" (click)="onCancel()">
-          Cancel
-        </button>
-        <button 
-          mat-raised-button 
-          [color]="getSubmitButtonColor()" 
-          type="submit"
-          [disabled]="intakeForm.invalid || intakeForm.pending"
-        >
-          <mat-icon>save</mat-icon>
-          Update Status
-        </button>
-      </mat-dialog-actions>
-    </form>
+            <!-- Notes -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Notes (Optional)</mat-label>
+              <textarea
+                matInput
+                formControlName="notes"
+                rows="3"
+                placeholder="Add any notes about this intake"
+              ></textarea>
+              <mat-icon matPrefix>notes</mat-icon>
+            </mat-form-field>
+          </div>
+        </mat-dialog-content>
+
+        <mat-dialog-actions align="end">
+          <button mat-button type="button" (click)="onCancel()">
+            Cancel
+          </button>
+          <button
+            mat-raised-button
+            [color]="getSubmitButtonColor()"
+            type="submit"
+            [disabled]="intakeForm.invalid || intakeForm.pending"
+          >
+            <mat-icon>save</mat-icon>
+            Update Status
+          </button>
+        </mat-dialog-actions>
+      </form>
+    </div>
   `,
   styles: [`
     h2[mat-dialog-title] {
@@ -114,21 +121,35 @@ import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medica
       align-items: center;
       gap: 12px;
       margin: 0;
-      
+      font-size: 22px;
+      font-weight: 700;
+      color: #e65100;
+
       mat-icon {
-        color: #1976d2;
+        color: #ff6f00;
+        font-size: 26px;
+        animation: bounce 2s infinite;
       }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
 
     mat-dialog-content {
       padding-top: 16px;
       min-width: 400px;
+      background: linear-gradient(180deg, #fff8e1 0%, #ffffff 100%);
+      border-radius: 20px;
+      margin: 8px 16px;
     }
 
     .form-container {
       display: flex;
       flex-direction: column;
       gap: 16px;
+      padding: 8px;
     }
 
     .info-row {
@@ -136,12 +157,13 @@ import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medica
       align-items: center;
       gap: 12px;
       padding: 12px;
-      background-color: #f5f5f5;
-      border-radius: 4px;
-      color: #333;
+      background-color: rgba(255, 243, 224, 0.8);
+      border-radius: 12px;
+      color: #bf360c;
+      font-weight: 500;
 
       mat-icon {
-        color: #666;
+        color: #ff8f00;
       }
     }
 
@@ -150,8 +172,13 @@ import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medica
     }
 
     mat-form-field {
+      background: rgba(255,255,255,0.9);
+      border-radius: 14px;
+      padding: 4px 8px;
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+
       mat-icon[matPrefix] {
-        color: #666;
+        color: #ff8f00;
         margin-right: 8px;
       }
     }
@@ -192,11 +219,14 @@ import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medica
     mat-dialog-actions {
       padding: 16px 24px;
       gap: 8px;
-      
+
       button[mat-raised-button] {
         display: flex;
         align-items: center;
         gap: 8px;
+        border-radius: 50px;
+        padding: 8px 24px;
+        font-weight: 700;
       }
     }
 
@@ -205,6 +235,46 @@ import { MedicationIntake, IntakeStatus } from '../../../../shared/models/medica
         min-width: auto;
         width: 100%;
       }
+    }
+
+    /* Professional mode overrides */
+    .professional-mode h2[mat-dialog-title] {
+      color: #263238;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .professional-mode h2[mat-dialog-title] mat-icon {
+      color: #455a64;
+      animation: none;
+    }
+    .professional-mode mat-dialog-content {
+      background: #ffffff;
+      border-radius: 0;
+      margin: 0;
+    }
+    .professional-mode .form-container {
+      padding: 0;
+    }
+    .professional-mode .info-row {
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      color: #333;
+    }
+    .professional-mode .info-row mat-icon {
+      color: #666;
+    }
+    .professional-mode mat-form-field {
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+    .professional-mode mat-form-field mat-icon[matPrefix] {
+      color: #607d8b;
+    }
+    .professional-mode mat-dialog-actions button[mat-raised-button] {
+      border-radius: 4px;
+      font-weight: 500;
     }
   `]
 })
@@ -219,7 +289,7 @@ export class IntakeStatusDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<IntakeStatusDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { intake: MedicationIntake }
+    @Inject(MAT_DIALOG_DATA) public data: IntakeStatusDialogData
   ) {}
 
   ngOnInit(): void {
@@ -229,7 +299,6 @@ export class IntakeStatusDialogComponent implements OnInit {
       notes: ['']
     });
 
-    // Listen for status changes to handle takenAt field
     this.intakeForm.get('status')?.valueChanges.subscribe(status => {
       if (status === IntakeStatus.TAKEN) {
         this.intakeForm.get('takenAt')?.setValue(new Date().toISOString().slice(0, 16));
@@ -247,7 +316,6 @@ export class IntakeStatusDialogComponent implements OnInit {
         notes: formValue.notes || undefined
       };
 
-      // Only include takenAt if status is TAKEN
       if (formValue.status === IntakeStatus.TAKEN && formValue.takenAt) {
         result.takenAt = new Date(formValue.takenAt).toISOString();
       }

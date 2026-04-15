@@ -79,7 +79,7 @@ public class MedicationPlanController {
     @PutMapping("/{id}")
     public ResponseEntity<MedicationPlan> updatePlan(
             @PathVariable UUID id,
-            @Valid @RequestBody MedicationPlan planDetails) {
+            @RequestBody MedicationPlan planDetails) {
         MedicationPlan updatedPlan = planService.updatePlan(id, planDetails);
         return ResponseEntity.ok(updatedPlan);
     }

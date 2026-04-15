@@ -26,8 +26,10 @@ export class MedicationsRedirectComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.authService.hasRole('DOCTOR') || this.authService.hasRole('CAREGIVER')) {
+    if (this.authService.hasRole('DOCTOR')) {
       this.router.navigate(['/app/medications/doctor']);
+    } else if (this.authService.hasRole('CAREGIVER')) {
+      this.router.navigate(['/app/medications/caregiver']);
     } else if (this.authService.hasRole('PATIENT')) {
       this.router.navigate(['/app/medications/patient']);
     } else {

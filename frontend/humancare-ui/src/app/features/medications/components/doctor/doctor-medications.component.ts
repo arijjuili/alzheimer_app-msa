@@ -19,12 +19,13 @@ import { debounceTime, distinctUntilChanged, finalize, catchError } from 'rxjs/o
 import { of } from 'rxjs';
 
 import { MedicationService } from '../../services/medication.service';
+import { PatientService } from '../../../../features/profile/services/patient.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
-import { 
-  MedicationPlan, 
-  MedicationIntake,
-  MedicationForm,
-  IntakeStatus 
+import { Patient } from '../../../../shared/models/patient.model';
+import {
+  MedicationPlan,
+  MedicationForm
 } from '../../../../shared/models/medication.model';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
 import { MedicationManageDialogComponent, MedicationManageDialogData } from './medication-manage-dialog.component';
@@ -62,13 +63,16 @@ type FilterTab = 'all' | 'active' | 'inactive';
 })
 export class DoctorMedicationsComponent implements OnInit {
   dataSource = new MatTableDataSource<MedicationPlan>([]);
-  displayedColumns: string[] = ['patientId', 'medicationName', 'dosage', 'form', 'frequency', 'status', 'actions'];
+  displayedColumns: string[] = ['patientName', 'medicationName', 'dosage', 'form', 'frequency', 'status', 'actions'];
   loading = true;
   error: string | null = null;
   searchControl = new FormControl('');
   activeFilter: FilterTab = 'all';
   patientIdFilter = new FormControl('');
-  
+
+  myPatients: Patient[] = [];
+  allMedications: MedicationPlan[] = [];
+
   // Pagination
   totalMedications = 0;
   pageSize = 10;
@@ -79,7 +83,6 @@ export class DoctorMedicationsComponent implements OnInit {
 
   // Expose enums to template
   MedicationForm = MedicationForm;
-  IntakeStatus = IntakeStatus;
   FilterTab = {
     ALL: 'all' as FilterTab,
     ACTIVE: 'active' as FilterTab,
@@ -88,18 +91,42 @@ export class DoctorMedicationsComponent implements OnInit {
 
   constructor(
     private medicationService: MedicationService,
+    private patientService: PatientService,
+    private authService: AuthService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.loadMedications();
+    this.loadMyPatients();
     this.setupSearch();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
+  }
+
+  loadMyPatients(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      this.error = 'Doctor profile not found';
+      this.loading = false;
+      return;
+    }
+
+    this.patientService.getPatientsByDoctor(currentUser.id, 1, 1000)
+      .pipe(
+        catchError(err => {
+          this.errorHandler.handleError(err);
+          this.error = 'Failed to load assigned patients';
+          return of({ data: [], total: 0, page: 1, limit: 1000, totalPages: 0 });
+        })
+      )
+      .subscribe(response => {
+        this.myPatients = response.data;
+        this.loadMedications();
+      });
   }
 
   loadMedications(): void {
@@ -116,34 +143,34 @@ export class DoctorMedicationsComponent implements OnInit {
         finalize(() => this.loading = false)
       )
       .subscribe(medications => {
-        // If API returns empty data, use mock data for demo
-        if (medications.length === 0) {
-          this.dataSource.data = this.getMockMedications();
-        } else {
-          this.dataSource.data = medications;
-        }
-        this.totalMedications = this.dataSource.data.length;
+        // Filter to doctor's assigned patients only; enrich with patient names
+        const patientIds = new Set(this.myPatients.map(p => p.id));
+        const filtered = medications.filter(m => patientIds.has(m.patientId));
+        this.allMedications = this.enrichMedications(filtered.length ? filtered : this.getMockMedications());
         this.applyFilter();
+        this.totalMedications = this.dataSource.data.length;
       });
   }
 
+  private enrichMedications(list: MedicationPlan[]): MedicationPlan[] {
+    return list.map(m => {
+      const patient = this.myPatients.find(p => p.id === m.patientId);
+      return {
+        ...m,
+        patientName: patient ? `${patient.firstName} ${patient.lastName}` : m.patientId
+      } as any;
+    });
+  }
+
   setupSearch(): void {
-    // Search by medication name
     this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
+      .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(query => {
         this.applySearch(query || '');
       });
 
-    // Filter by patient ID
     this.patientIdFilter.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
+      .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(patientId => {
         this.applyPatientIdFilter(patientId || '');
       });
@@ -155,7 +182,7 @@ export class DoctorMedicationsComponent implements OnInit {
   }
 
   applyFilter(): void {
-    let filteredData = [...this.dataSource.data];
+    let filteredData = [...this.allMedications];
 
     switch (this.activeFilter) {
       case 'active':
@@ -163,9 +190,6 @@ export class DoctorMedicationsComponent implements OnInit {
         break;
       case 'inactive':
         filteredData = filteredData.filter(m => m.active === false);
-        break;
-      default:
-        // 'all' - no filter
         break;
     }
 
@@ -175,28 +199,26 @@ export class DoctorMedicationsComponent implements OnInit {
 
   applySearch(query: string): void {
     const normalizedQuery = query.trim().toLowerCase();
-    this.dataSource.filterPredicate = (data: MedicationPlan, filter: string) => {
+    this.dataSource.filterPredicate = (data: any, filter: string) => {
       const searchTerms = filter.toLowerCase().split(' ');
-      return searchTerms.every(term =>
-        data.medicationName.toLowerCase().includes(term) ||
-        data.dosage.toLowerCase().includes(term) ||
-        (data.instructions && data.instructions.toLowerCase().includes(term))
-      );
+      const haystack = [
+        data.medicationName,
+        data.dosage,
+        data.instructions || '',
+        data.patientName || ''
+      ].join(' ').toLowerCase();
+      return searchTerms.every(term => haystack.includes(term));
     };
     this.dataSource.filter = normalizedQuery;
   }
 
   applyPatientIdFilter(patientId: string): void {
     if (!patientId.trim()) {
-      this.loadMedications();
+      this.applyFilter();
       return;
     }
 
     const id = patientId.trim();
-    if (!id) {
-      return;
-    }
-
     this.loading = true;
     this.medicationService.getPlansByPatient(id)
       .pipe(
@@ -208,30 +230,20 @@ export class DoctorMedicationsComponent implements OnInit {
         finalize(() => this.loading = false)
       )
       .subscribe(medications => {
-        if (medications.length === 0) {
-          // Filter mock data by patient ID
-          this.dataSource.data = this.getMockMedications().filter(m => m.patientId === id.toString());
-        } else {
-          this.dataSource.data = medications;
-        }
-        this.totalMedications = this.dataSource.data.length;
+        const filtered = medications.length ? medications : this.getMockMedications().filter(m => m.patientId === id);
+        this.allMedications = this.enrichMedications(filtered);
+        this.applyFilter();
       });
   }
 
   getFormLabel(form: MedicationForm): string {
     switch (form) {
-      case MedicationForm.TABLET:
-        return 'Tablet';
-      case MedicationForm.SYRUP:
-        return 'Syrup';
-      case MedicationForm.INJECTION:
-        return 'Injection';
-      case MedicationForm.DROPS:
-        return 'Drops';
-      case MedicationForm.OTHER:
-        return 'Other';
-      default:
-        return form;
+      case MedicationForm.TABLET: return 'Tablet';
+      case MedicationForm.SYRUP: return 'Syrup';
+      case MedicationForm.INJECTION: return 'Injection';
+      case MedicationForm.DROPS: return 'Drops';
+      case MedicationForm.OTHER: return 'Other';
+      default: return form;
     }
   }
 
@@ -254,27 +266,24 @@ export class DoctorMedicationsComponent implements OnInit {
   onViewMedication(medication: MedicationPlan): void {
     this.dialog.open(MedicationManageDialogComponent, {
       width: '700px',
-      data: { medication, mode: 'view' } as MedicationManageDialogData
+      data: { medication, mode: 'view', patientName: medication.patientName } as MedicationManageDialogData
     });
   }
 
   onEditMedication(medication: MedicationPlan): void {
     const dialogRef = this.dialog.open(MedicationManageDialogComponent, {
       width: '700px',
-      data: { medication, mode: 'edit' } as MedicationManageDialogData
+      data: { medication, mode: 'edit', patientName: medication.patientName } as MedicationManageDialogData
     });
-
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadMedications();
-      }
+      if (result) this.loadMedications();
     });
   }
 
   onViewIntakes(medication: MedicationPlan): void {
     this.dialog.open(MedicationIntakesDialogComponent, {
       width: '800px',
-      data: { medication } as MedicationIntakesDialogData
+      data: { medication, patientName: medication.patientName } as MedicationIntakesDialogData
     });
   }
 
@@ -283,7 +292,7 @@ export class DoctorMedicationsComponent implements OnInit {
       width: '400px',
       data: {
         title: 'Delete Medication Plan',
-        message: `Are you sure you want to delete the medication plan for "${medication.medicationName}" for patient ID ${medication.patientId}? This action cannot be undone.`,
+        message: `Are you sure you want to delete the medication plan for "${medication.medicationName}" for patient ${(medication as any).patientName || medication.patientId}? This action cannot be undone.`,
         confirmButtonText: 'Delete',
         cancelButtonText: 'Cancel',
         confirmButtonColor: 'warn',
@@ -294,15 +303,8 @@ export class DoctorMedicationsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result && medication.id) {
         this.medicationService.deletePlan(medication.id)
-          .pipe(
-            catchError(err => {
-              this.errorHandler.handleError(err);
-              return of(void 0);
-            })
-          )
-          .subscribe(() => {
-            this.loadMedications();
-          });
+          .pipe(catchError(err => { this.errorHandler.handleError(err); return of(void 0); }))
+          .subscribe(() => this.loadMedications());
       }
     });
   }
@@ -310,26 +312,19 @@ export class DoctorMedicationsComponent implements OnInit {
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(MedicationCreateDialogComponent, {
       width: '600px',
-      data: {} as MedicationCreateDialogData
+      data: { patients: this.myPatients, professional: true } as MedicationCreateDialogData
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         const newPlan: MedicationPlanCreateRequest = {
           ...result,
-          patientId: parseInt(result.patientId, 10)
+          patientId: result.patientId
         };
         this.medicationService.createPlan(newPlan)
-          .pipe(
-            catchError(err => {
-              this.errorHandler.handleError(err);
-              return of(null);
-            })
-          )
+          .pipe(catchError(err => { this.errorHandler.handleError(err); return of(null); }))
           .subscribe(createdPlan => {
-            if (createdPlan) {
-              this.loadMedications();
-            }
+            if (createdPlan) this.loadMedications();
           });
       }
     });
@@ -349,7 +344,7 @@ export class DoctorMedicationsComponent implements OnInit {
     return [
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
-        patientId: '550e8400-e29b-41d4-a716-446655440101',
+        patientId: this.myPatients[0]?.id || '550e8400-e29b-41d4-a716-446655440101',
         medicationName: 'Amoxicillin',
         dosage: '500mg',
         form: MedicationForm.TABLET,
@@ -361,7 +356,7 @@ export class DoctorMedicationsComponent implements OnInit {
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440002',
-        patientId: '550e8400-e29b-41d4-a716-446655440102',
+        patientId: this.myPatients[1]?.id || '550e8400-e29b-41d4-a716-446655440102',
         medicationName: 'Insulin',
         dosage: '10 units',
         form: MedicationForm.INJECTION,
@@ -372,7 +367,7 @@ export class DoctorMedicationsComponent implements OnInit {
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440003',
-        patientId: '550e8400-e29b-41d4-a716-446655440103',
+        patientId: this.myPatients[2]?.id || '550e8400-e29b-41d4-a716-446655440103',
         medicationName: 'Cough Syrup',
         dosage: '10ml',
         form: MedicationForm.SYRUP,
@@ -380,29 +375,6 @@ export class DoctorMedicationsComponent implements OnInit {
         startDate: new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         endDate: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         active: false
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440004',
-        patientId: '550e8400-e29b-41d4-a716-446655440104',
-        medicationName: 'Lisinopril',
-        dosage: '10mg',
-        form: MedicationForm.TABLET,
-        frequencyPerDay: 1,
-        startDate: today.toISOString().split('T')[0],
-        instructions: 'Take in the morning',
-        active: true
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440005',
-        patientId: '550e8400-e29b-41d4-a716-446655440105',
-        medicationName: 'Eye Drops',
-        dosage: '2 drops',
-        form: MedicationForm.DROPS,
-        frequencyPerDay: 3,
-        startDate: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        endDate: new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        instructions: 'Apply to affected eye',
-        active: true
       }
     ];
   }

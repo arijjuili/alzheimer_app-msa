@@ -80,21 +80,39 @@ public class MedicationPlanService {
     }
 
     /**
-     * Update a medication plan
+     * Update a medication plan (partial update)
      */
     public MedicationPlan updatePlan(UUID id, MedicationPlan planDetails) {
         MedicationPlan plan = getPlanById(id);
-        
-        plan.setPatientId(planDetails.getPatientId());
-        plan.setMedicationName(planDetails.getMedicationName());
-        plan.setDosage(planDetails.getDosage());
-        plan.setForm(planDetails.getForm());
-        plan.setFrequencyPerDay(planDetails.getFrequencyPerDay());
-        plan.setStartDate(planDetails.getStartDate());
-        plan.setEndDate(planDetails.getEndDate());
-        plan.setInstructions(planDetails.getInstructions());
-        plan.setActive(planDetails.getActive());
-        
+
+        if (planDetails.getPatientId() != null) {
+            plan.setPatientId(planDetails.getPatientId());
+        }
+        if (planDetails.getMedicationName() != null) {
+            plan.setMedicationName(planDetails.getMedicationName());
+        }
+        if (planDetails.getDosage() != null) {
+            plan.setDosage(planDetails.getDosage());
+        }
+        if (planDetails.getForm() != null) {
+            plan.setForm(planDetails.getForm());
+        }
+        if (planDetails.getFrequencyPerDay() != null) {
+            plan.setFrequencyPerDay(planDetails.getFrequencyPerDay());
+        }
+        if (planDetails.getStartDate() != null) {
+            plan.setStartDate(planDetails.getStartDate());
+        }
+        if (planDetails.getEndDate() != null) {
+            plan.setEndDate(planDetails.getEndDate());
+        }
+        if (planDetails.getInstructions() != null) {
+            plan.setInstructions(planDetails.getInstructions());
+        }
+        if (planDetails.getActive() != null) {
+            plan.setActive(planDetails.getActive());
+        }
+
         return medicationPlanRepository.save(plan);
     }
 

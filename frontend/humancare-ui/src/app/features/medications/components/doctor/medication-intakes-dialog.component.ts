@@ -18,6 +18,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 export interface MedicationIntakesDialogData {
   medication: MedicationPlan;
+  patientName?: string;
 }
 
 @Component({
@@ -39,7 +40,7 @@ export interface MedicationIntakesDialogData {
         <mat-icon class="header-icon">history</mat-icon>
         <div class="header-text">
           <h2 mat-dialog-title>Medication Intake History</h2>
-          <p class="subtitle">{{ data.medication.medicationName }} - Patient #{{ data.medication.patientId }}</p>
+          <p class="subtitle">{{ data.medication.medicationName }} - {{ data.patientName || ('Patient #' + data.medication.patientId) }}</p>
         </div>
       </div>
       
