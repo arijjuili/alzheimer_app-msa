@@ -50,6 +50,7 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 yarn.lock
+!frontend/humancare-ui/package-lock.json
 
 # Angular
 .angular/
