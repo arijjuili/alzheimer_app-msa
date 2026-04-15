@@ -1,0 +1,278 @@
+2026-04-15 04:43:50.193 | 
+2026-04-15 04:43:50.193 |   .   ____          _            __ _ _
+2026-04-15 04:43:50.193 |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+2026-04-15 04:43:50.193 | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+2026-04-15 04:43:50.193 |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+2026-04-15 04:43:50.193 |   '  |____| .__|_| |_|_| |_\__, | / / / /
+2026-04-15 04:43:50.193 |  =========|_|==============|___/=/_/_/_/
+2026-04-15 04:43:50.195 |  :: Spring Boot ::                (v3.2.2)
+2026-04-15 04:43:50.195 | 
+2026-04-15 04:43:50.899 | 2026-04-15 03:43:50 [main] INFO  c.h.n.NotificationServiceApplication - Starting NotificationServiceApplication v0.1.0 using Java 17.0.18 with PID 7 (/app/app.jar started by notification in /app)
+2026-04-15 04:43:50.900 | 2026-04-15 03:43:50 [main] DEBUG c.h.n.NotificationServiceApplication - Running with Spring Boot v3.2.2, Spring v6.1.3
+2026-04-15 04:43:50.901 | 2026-04-15 03:43:50 [main] INFO  c.h.n.NotificationServiceApplication - The following 1 profile is active: "docker"
+2026-04-15 04:43:51.501 | 2026-04-15 03:43:51 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://hc-config-server:8888
+2026-04-15 04:43:51.502 | 2026-04-15 03:43:51 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Located environment: name=notification-service, profiles=[default], label=null, version=null, state=null
+2026-04-15 04:43:51.502 | 2026-04-15 03:43:51 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://hc-config-server:8888
+2026-04-15 04:43:51.502 | 2026-04-15 03:43:51 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Located environment: name=notification-service, profiles=[docker], label=null, version=null, state=null
+2026-04-15 04:44:04.702 | 2026-04-15 03:44:04 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2026-04-15 04:44:05.993 | 2026-04-15 03:44:05 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 1285 ms. Found 1 MongoDB repository interface.
+2026-04-15 04:44:08.808 | 2026-04-15 03:44:08 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=ded53b6d-85ad-3f32-af8d-86336e2fc63b
+2026-04-15 04:44:12.493 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$RetryInterceptorAutoConfiguration' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$RetryInterceptorAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lbRestClientPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-04-15 04:44:12.502 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientAutoConfiguration' of type [org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:12.509 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration' of type [org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:12.695 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.commons.config.CommonsConfigAutoConfiguration' of type [org.springframework.cloud.commons.config.CommonsConfigAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:12.705 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerDefaultMappingsProviderAutoConfiguration' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerDefaultMappingsProviderAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:12.793 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'loadBalancerClientsDefaultsMappingsProvider' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerDefaultMappingsProviderAutoConfiguration$$Lambda$658/0x00007615274987c8] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:12.891 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'defaultsBindHandlerAdvisor' of type [org.springframework.cloud.commons.config.DefaultsBindHandlerAdvisor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:12.992 | 2026-04-15 03:44:12 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'spring.cloud.loadbalancer-org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.009 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'default.org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.LoadBalancerClientSpecification' of type [org.springframework.cloud.loadbalancer.annotation.LoadBalancerClientSpecification] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.014 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'default.org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientAutoConfiguration.LoadBalancerClientSpecification' of type [org.springframework.cloud.loadbalancer.annotation.LoadBalancerClientSpecification] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.094 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'default.org.springframework.cloud.netflix.eureka.loadbalancer.LoadBalancerEurekaAutoConfiguration.LoadBalancerClientSpecification' of type [org.springframework.cloud.loadbalancer.annotation.LoadBalancerClientSpecification] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.096 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'loadBalancerClientFactory' of type [org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.201 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'blockingLoadBalancerClient' of type [org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.302 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'loadBalancerServiceInstanceCookieTransformer' of type [org.springframework.cloud.loadbalancer.core.LoadBalancerServiceInstanceCookieTransformer] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.391 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'xForwarderHeadersTransformer' of type [org.springframework.cloud.loadbalancer.blocking.XForwardedHeadersTransformer] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.393 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.399 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'loadBalancerRequestFactory' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerRequestFactory] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.405 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientAutoConfiguration$BlockingLoadBalancerRetryConfig' of type [org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientAutoConfiguration$BlockingLoadBalancerRetryConfig$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.490 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'loadBalancedRetryFactory' of type [org.springframework.cloud.loadbalancer.blocking.retry.BlockingLoadBalancedRetryFactory] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:13.500 | 2026-04-15 03:44:13 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'loadBalancerInterceptor' of type [org.springframework.cloud.client.loadbalancer.RetryLoadBalancerInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-15 04:44:16.296 | 2026-04-15 03:44:16 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8088 (http)
+2026-04-15 04:44:16.394 | 2026-04-15 03:44:16 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-15 04:44:16.394 | 2026-04-15 03:44:16 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.18]
+2026-04-15 04:44:16.992 | 2026-04-15 03:44:16 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-04-15 04:44:16.995 | 2026-04-15 03:44:16 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 25487 ms
+2026-04-15 04:44:21.302 | 2026-04-15 03:44:21 [main] INFO  org.mongodb.driver.client - MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.11.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "amd64", "version": "6.6.87.2-microsoft-standard-WSL2"}, "platform": "Java/Eclipse Adoptium/17.0.18+8"} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, transportSettings=null, streamFactoryFactory=null, commandListeners=[io.micrometer.core.instrument.binder.mongodb.MongoMetricsCommandListener@37d81587], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, CollectionCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.client.model.mql.ExpressionCodecProvider@68550d86, com.mongodb.Jep395RecordCodecProvider@19d9ba89, com.mongodb.KotlinCodecProvider@484876a1]}, loggerSettings=LoggerSettings{maxDocumentLength=1000}, clusterSettings={hosts=[hc-mongo-notification:27017], srvServiceName=mongodb, mode=SINGLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='15 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[io.micrometer.core.instrument.binder.mongodb.MongoMetricsConnectionPoolListener@6b2f7527], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, dnsClient=null, inetAddressResolver=null, contextProvider=null}
+2026-04-15 04:44:21.499 | 2026-04-15 03:44:21 [cluster-ClusterId{value='69df09947548d067bef736a6', description='null'}-hc-mongo-notification:27017] INFO  org.mongodb.driver.cluster - Monitor thread successfully connected to server with description ServerDescription{address=hc-mongo-notification:27017, type=STANDALONE, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=294289278}
+2026-04-15 04:44:28.214 | 2026-04-15 03:44:28 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'appointments-service' URL not provided. Will try picking an instance via load-balancing.
+2026-04-15 04:44:28.803 | 2026-04-15 03:44:28 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'patient-service' URL not provided. Will try picking an instance via load-balancing.
+2026-04-15 04:44:36.089 | 2026-04-15 03:44:36 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-04-15 04:44:37.193 | 2026-04-15 03:44:37 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@51d26fed, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@6779959d, org.springframework.security.web.context.SecurityContextHolderFilter@282079b9, org.springframework.security.web.header.HeaderWriterFilter@119f035f, org.springframework.web.filter.CorsFilter@335a45a8, org.springframework.security.web.authentication.logout.LogoutFilter@53bc6492, org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter@4265cbed, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@85104d6, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@579cfcc4, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@294c36b9, org.springframework.security.web.session.SessionManagementFilter@5dfb65d5, org.springframework.security.web.access.ExceptionTranslationFilter@66450129, org.springframework.security.web.access.intercept.AuthorizationFilter@39f5eba4]
+2026-04-15 04:44:43.094 | 2026-04-15 03:44:43 [main] INFO  o.s.c.n.e.c.DiscoveryClientOptionalArgsConfiguration - Eureka HTTP Client uses RestTemplate.
+2026-04-15 04:44:43.391 | 2026-04-15 03:44:43 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-04-15 04:44:44.103 | 2026-04-15 03:44:44 [main] INFO  o.s.c.n.eureka.InstanceInfoFactory - Setting initial instance status as: STARTING
+2026-04-15 04:44:44.787 | 2026-04-15 03:44:44 [main] INFO  c.netflix.discovery.DiscoveryClient - Initializing Eureka in region us-east-1
+2026-04-15 04:44:44.795 | 2026-04-15 03:44:44 [main] INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Disable delta property : false
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Single vip registry refresh property : null
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Force full registry fetch : false
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Application is null : false
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Registered Applications size is zero : true
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Application version is -1: true
+2026-04-15 04:44:45.004 | 2026-04-15 03:44:45 [main] INFO  c.netflix.discovery.DiscoveryClient - Getting all instance registry info from the eureka server
+2026-04-15 04:44:46.704 | 2026-04-15 03:44:46 [main] INFO  c.netflix.discovery.DiscoveryClient - The response status is 200
+2026-04-15 04:44:46.786 | 2026-04-15 03:44:46 [main] INFO  c.netflix.discovery.DiscoveryClient - Starting heartbeat executor: renew interval is: 30
+2026-04-15 04:44:46.793 | 2026-04-15 03:44:46 [main] INFO  c.n.discovery.InstanceInfoReplicator - InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-04-15 04:44:46.801 | 2026-04-15 03:44:46 [main] INFO  c.netflix.discovery.DiscoveryClient - Discovery Client initialized at timestamp 1776224686799 with initial instances count: 10
+2026-04-15 04:44:46.890 | 2026-04-15 03:44:46 [main] INFO  o.s.c.n.e.s.EurekaServiceRegistry - Registering application NOTIFICATION-SERVICE with eureka with status UP
+2026-04-15 04:44:46.891 | 2026-04-15 03:44:46 [main] INFO  c.netflix.discovery.DiscoveryClient - Saw local status change event StatusChangeEvent [timestamp=1776224686891, current=UP, previous=STARTING]
+2026-04-15 04:44:46.894 | 2026-04-15 03:44:46 [DiscoveryClient-InstanceInfoReplicator-0] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_NOTIFICATION-SERVICE/notification-service:41d56d273f9526274cfaa23750824fec: registering service...
+2026-04-15 04:44:47.091 | 2026-04-15 03:44:47 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8088 (http) with context path ''
+2026-04-15 04:44:47.093 | 2026-04-15 03:44:47 [main] INFO  o.s.c.n.e.s.EurekaAutoServiceRegistration - Updating port to 8088
+2026-04-15 04:44:47.190 | 2026-04-15 03:44:47 [main] INFO  o.s.a.r.c.CachingConnectionFactory - Attempting to connect to: [hc-rabbitmq:5672]
+2026-04-15 04:44:47.711 | 2026-04-15 03:44:47 [DiscoveryClient-InstanceInfoReplicator-0] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_NOTIFICATION-SERVICE/notification-service:41d56d273f9526274cfaa23750824fec - registration status: 204
+2026-04-15 04:44:47.797 | 2026-04-15 03:44:47 [main] INFO  o.s.a.r.c.CachingConnectionFactory - Created new connection: rabbitConnectionFactory#5cf39df6:0/SimpleConnection@1a6e940b [delegate=amqp://humancare@172.20.0.2:5672/, localPort=45536]
+2026-04-15 04:44:48.394 | 2026-04-15 03:44:48 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-1] WARN  o.s.a.r.l.ConditionalRejectingErrorHandler - Execution of Rabbit message listener failed.
+2026-04-15 04:44:48.394 | org.springframework.amqp.rabbit.support.ListenerExecutionFailedException: Failed to convert message
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:158)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1682)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1604)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1592)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1583)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1528)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.lambda$executeListener$8(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.394 | 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1042)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:989)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1377)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1279)
+2026-04-15 04:44:48.394 | 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-04-15 04:44:48.394 | Caused by: org.springframework.amqp.support.converter.MessageConversionException: failed to convert serialized Message content
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:87)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.adapter.AbstractAdaptableMessageListener.extractMessage(AbstractAdaptableMessageListener.java:342)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter$MessagingMessageConverterAdapter.extractPayload(MessagingMessageListenerAdapter.java:385)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.support.converter.MessagingMessageConverter.fromMessage(MessagingMessageConverter.java:132)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.toMessagingMessage(MessagingMessageListenerAdapter.java:258)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:148)
+2026-04-15 04:44:48.394 | 	... 13 common frames omitted
+2026-04-15 04:44:48.394 | Caused by: java.lang.IllegalStateException: Could not deserialize object type
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:108)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:83)
+2026-04-15 04:44:48.394 | 	... 18 common frames omitted
+2026-04-15 04:44:48.394 | Caused by: java.lang.ClassNotFoundException: com.roudayna.appointments.event.AppointmentBookedEvent
+2026-04-15 04:44:48.394 | 	at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.394 | 	at org.springframework.boot.loader.net.protocol.jar.JarUrlClassLoader.loadClass(JarUrlClassLoader.java:104)
+2026-04-15 04:44:48.394 | 	at org.springframework.boot.loader.launch.LaunchedClassLoader.loadClass(LaunchedClassLoader.java:91)
+2026-04-15 04:44:48.394 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.lang.Class.forName0(Native Method)
+2026-04-15 04:44:48.394 | 	at java.base/java.lang.Class.forName(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.resolveClass(Unknown Source)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter$1.resolveClass(SimpleMessageConverter.java:150)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.readNonProxyDesc(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.readClassDesc(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.readOrdinaryObject(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.readObject0(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.394 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.394 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:102)
+2026-04-15 04:44:48.394 | 	... 19 common frames omitted
+2026-04-15 04:44:48.598 | 2026-04-15 03:44:48 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-1] WARN  o.s.a.r.l.ConditionalRejectingErrorHandler$DefaultExceptionStrategy - Fatal message conversion error; message rejected; it will be dropped or routed to a dead letter exchange, if so configured: (Body:'[serialized object]' MessageProperties [headers={}, contentType=application/x-java-serialized-object, contentLength=0, receivedDeliveryMode=PERSISTENT, priority=0, redelivered=true, receivedExchange=humancare.events, receivedRoutingKey=event.appointment.booked, deliveryTag=1, consumerTag=amq.ctag-HP3emHQw-GRBqBB331WwQg, consumerQueue=notifications.appointments])
+2026-04-15 04:44:48.688 | 2026-04-15 03:44:48 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-1] ERROR o.s.a.r.l.SimpleMessageListenerContainer - Execution of Rabbit message listener failed, and the error handler threw an exception
+2026-04-15 04:44:48.688 | org.springframework.amqp.AmqpRejectAndDontRequeueException: Error Handler converted exception to fatal
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler.handleError(ConditionalRejectingErrorHandler.java:147)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeErrorHandler(AbstractMessageListenerContainer.java:1475)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.handleListenerException(AbstractMessageListenerContainer.java:1768)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1549)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.lambda$executeListener$8(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.688 | 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1042)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:989)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1377)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1279)
+2026-04-15 04:44:48.688 | 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-04-15 04:44:48.688 | Caused by: org.springframework.amqp.rabbit.support.ListenerExecutionFailedException: Failed to convert message
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:158)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1682)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1604)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1592)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1583)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1528)
+2026-04-15 04:44:48.688 | 	... 8 common frames omitted
+2026-04-15 04:44:48.688 | Caused by: org.springframework.amqp.support.converter.MessageConversionException: failed to convert serialized Message content
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:87)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.adapter.AbstractAdaptableMessageListener.extractMessage(AbstractAdaptableMessageListener.java:342)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter$MessagingMessageConverterAdapter.extractPayload(MessagingMessageListenerAdapter.java:385)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.support.converter.MessagingMessageConverter.fromMessage(MessagingMessageConverter.java:132)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.toMessagingMessage(MessagingMessageListenerAdapter.java:258)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:148)
+2026-04-15 04:44:48.688 | 	... 13 common frames omitted
+2026-04-15 04:44:48.688 | Caused by: java.lang.IllegalStateException: Could not deserialize object type
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:108)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:83)
+2026-04-15 04:44:48.688 | 	... 18 common frames omitted
+2026-04-15 04:44:48.688 | Caused by: java.lang.ClassNotFoundException: com.roudayna.appointments.event.AppointmentBookedEvent
+2026-04-15 04:44:48.688 | 	at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.688 | 	at org.springframework.boot.loader.net.protocol.jar.JarUrlClassLoader.loadClass(JarUrlClassLoader.java:104)
+2026-04-15 04:44:48.688 | 	at org.springframework.boot.loader.launch.LaunchedClassLoader.loadClass(LaunchedClassLoader.java:91)
+2026-04-15 04:44:48.688 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.lang.Class.forName0(Native Method)
+2026-04-15 04:44:48.688 | 	at java.base/java.lang.Class.forName(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.resolveClass(Unknown Source)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter$1.resolveClass(SimpleMessageConverter.java:150)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.readNonProxyDesc(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.readClassDesc(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.readOrdinaryObject(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.readObject0(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.688 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.688 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:102)
+2026-04-15 04:44:48.688 | 	... 19 common frames omitted
+2026-04-15 04:44:48.696 | 2026-04-15 03:44:48 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-1] WARN  o.s.a.r.l.ConditionalRejectingErrorHandler - Execution of Rabbit message listener failed.
+2026-04-15 04:44:48.696 | org.springframework.amqp.rabbit.support.ListenerExecutionFailedException: Failed to convert message
+2026-04-15 04:44:48.696 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:158)
+2026-04-15 04:44:48.696 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1682)
+2026-04-15 04:44:48.696 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1604)
+2026-04-15 04:44:48.696 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1592)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1583)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1528)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.lambda$executeListener$8(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.697 | 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1042)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:989)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1377)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1279)
+2026-04-15 04:44:48.697 | 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-04-15 04:44:48.697 | Caused by: org.springframework.amqp.support.converter.MessageConversionException: failed to convert serialized Message content
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:87)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.adapter.AbstractAdaptableMessageListener.extractMessage(AbstractAdaptableMessageListener.java:342)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter$MessagingMessageConverterAdapter.extractPayload(MessagingMessageListenerAdapter.java:385)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.support.converter.MessagingMessageConverter.fromMessage(MessagingMessageConverter.java:132)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.toMessagingMessage(MessagingMessageListenerAdapter.java:258)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:148)
+2026-04-15 04:44:48.697 | 	... 13 common frames omitted
+2026-04-15 04:44:48.697 | Caused by: java.lang.IllegalStateException: Could not deserialize object type
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:108)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:83)
+2026-04-15 04:44:48.697 | 	... 18 common frames omitted
+2026-04-15 04:44:48.697 | Caused by: java.lang.ClassNotFoundException: com.roudayna.appointments.event.AppointmentBookedEvent
+2026-04-15 04:44:48.697 | 	at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.697 | 	at org.springframework.boot.loader.net.protocol.jar.JarUrlClassLoader.loadClass(JarUrlClassLoader.java:104)
+2026-04-15 04:44:48.697 | 	at org.springframework.boot.loader.launch.LaunchedClassLoader.loadClass(LaunchedClassLoader.java:91)
+2026-04-15 04:44:48.697 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.lang.Class.forName0(Native Method)
+2026-04-15 04:44:48.697 | 	at java.base/java.lang.Class.forName(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.resolveClass(Unknown Source)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter$1.resolveClass(SimpleMessageConverter.java:150)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.readNonProxyDesc(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.readClassDesc(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.readOrdinaryObject(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.readObject0(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.697 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.697 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:102)
+2026-04-15 04:44:48.697 | 	... 19 common frames omitted
+2026-04-15 04:44:48.697 | 2026-04-15 03:44:48 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-1] WARN  o.s.a.r.l.ConditionalRejectingErrorHandler$DefaultExceptionStrategy - Fatal message conversion error; message rejected; it will be dropped or routed to a dead letter exchange, if so configured: (Body:'[serialized object]' MessageProperties [headers={}, contentType=application/x-java-serialized-object, contentLength=0, receivedDeliveryMode=PERSISTENT, priority=0, redelivered=true, receivedExchange=humancare.events, receivedRoutingKey=event.appointment.booked, deliveryTag=2, consumerTag=amq.ctag-HP3emHQw-GRBqBB331WwQg, consumerQueue=notifications.appointments])
+2026-04-15 04:44:48.697 | 2026-04-15 03:44:48 [main] INFO  c.h.n.NotificationServiceApplication - Started NotificationServiceApplication in 70.189 seconds (process running for 77.365)
+2026-04-15 04:44:48.700 | 2026-04-15 03:44:48 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#2-1] ERROR o.s.a.r.l.SimpleMessageListenerContainer - Execution of Rabbit message listener failed, and the error handler threw an exception
+2026-04-15 04:44:48.702 | org.springframework.amqp.AmqpRejectAndDontRequeueException: Error Handler converted exception to fatal
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler.handleError(ConditionalRejectingErrorHandler.java:147)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeErrorHandler(AbstractMessageListenerContainer.java:1475)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.handleListenerException(AbstractMessageListenerContainer.java:1768)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1549)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.lambda$executeListener$8(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.702 | 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1506)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1042)
+2026-04-15 04:44:48.702 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:989)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1377)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1279)
+2026-04-15 04:44:48.703 | 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-04-15 04:44:48.703 | Caused by: org.springframework.amqp.rabbit.support.ListenerExecutionFailedException: Failed to convert message
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:158)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1682)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1604)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1592)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1583)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1528)
+2026-04-15 04:44:48.703 | 	... 8 common frames omitted
+2026-04-15 04:44:48.703 | Caused by: org.springframework.amqp.support.converter.MessageConversionException: failed to convert serialized Message content
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:87)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.adapter.AbstractAdaptableMessageListener.extractMessage(AbstractAdaptableMessageListener.java:342)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter$MessagingMessageConverterAdapter.extractPayload(MessagingMessageListenerAdapter.java:385)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.support.converter.MessagingMessageConverter.fromMessage(MessagingMessageConverter.java:132)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.toMessagingMessage(MessagingMessageListenerAdapter.java:258)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:148)
+2026-04-15 04:44:48.703 | 	... 13 common frames omitted
+2026-04-15 04:44:48.703 | Caused by: java.lang.IllegalStateException: Could not deserialize object type
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:108)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter.fromMessage(SimpleMessageConverter.java:83)
+2026-04-15 04:44:48.703 | 	... 18 common frames omitted
+2026-04-15 04:44:48.703 | Caused by: java.lang.ClassNotFoundException: com.roudayna.appointments.event.AppointmentBookedEvent
+2026-04-15 04:44:48.703 | 	at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.703 | 	at org.springframework.boot.loader.net.protocol.jar.JarUrlClassLoader.loadClass(JarUrlClassLoader.java:104)
+2026-04-15 04:44:48.703 | 	at org.springframework.boot.loader.launch.LaunchedClassLoader.loadClass(LaunchedClassLoader.java:91)
+2026-04-15 04:44:48.703 | 	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.lang.Class.forName0(Native Method)
+2026-04-15 04:44:48.703 | 	at java.base/java.lang.Class.forName(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.resolveClass(Unknown Source)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.support.converter.SimpleMessageConverter$1.resolveClass(SimpleMessageConverter.java:150)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.readNonProxyDesc(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.readClassDesc(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.readOrdinaryObject(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.readObject0(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.703 | 	at java.base/java.io.ObjectInputStream.readObject(Unknown Source)
+2026-04-15 04:44:48.703 | 	at org.springframework.amqp.utils.SerializationUtils.deserialize(SerializationUtils.java:102)
+2026-04-15 04:44:48.703 | 	... 19 common frames omitted
+2026-04-15 04:44:48.790 | 2026-04-15 03:44:48 [scheduling-1] INFO  c.h.n.scheduler.AppointmentScheduler - Checking for upcoming appointments...
+2026-04-15 04:44:49.698 | 2026-04-15 03:44:49 [scheduling-1] INFO  c.h.n.scheduler.AppointmentScheduler - Found 0 upcoming appointments
+2026-04-15 04:44:53.408 | 2026-04-15 03:44:53 [http-nio-8088-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-15 04:44:53.409 | 2026-04-15 03:44:53 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-04-15 04:44:53.490 | 2026-04-15 03:44:53 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 80 ms

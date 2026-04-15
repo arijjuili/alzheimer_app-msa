@@ -1,0 +1,65 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Patient Service API",
+    "version": "1.0.0",
+    "description": "HumanCare Patient Management Microservice"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/v1/patients": {
+      "get": {
+        "summary": "Get all patients",
+        "tags": ["Patients"],
+        "responses": {
+          "200": { "description": "List of patients" }
+        }
+      },
+      "post": {
+        "summary": "Create a patient",
+        "tags": ["Patients"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Patient created" }
+        }
+      }
+    },
+    "/api/v1/patients/{id}": {
+      "get": {
+        "summary": "Get patient by ID",
+        "tags": ["Patients"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Patient found" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": ["Health"],
+        "responses": {
+          "200": { "description": "Service is healthy" }
+        }
+      }
+    }
+  }
+}

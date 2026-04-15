@@ -186,6 +186,56 @@ spring:
           filters:
             - StripPrefix=0
 
+        # Swagger API Docs routes
+        - id: appointments-api-docs
+          uri: lb://appointments-service
+          predicates:
+            - Path=/appointments/v3/api-docs
+          filters:
+            - RewritePath=/appointments/v3/api-docs,/v3/api-docs
+        - id: medication-api-docs
+          uri: lb://medication-service
+          predicates:
+            - Path=/medication/v3/api-docs
+          filters:
+            - RewritePath=/medication/v3/api-docs,/v3/api-docs
+        - id: community-api-docs
+          uri: lb://community-service
+          predicates:
+            - Path=/community/v3/api-docs
+          filters:
+            - RewritePath=/community/v3/api-docs,/v3/api-docs
+        - id: notification-api-docs
+          uri: lb://notification-service
+          predicates:
+            - Path=/notification/v3/api-docs
+          filters:
+            - RewritePath=/notification/v3/api-docs,/v3/api-docs
+        - id: routine-api-docs
+          uri: lb://routine-service
+          predicates:
+            - Path=/routine/v3/api-docs
+          filters:
+            - RewritePath=/routine/v3/api-docs,/v3/api-docs
+        - id: memory-api-docs
+          uri: lb://memory-service
+          predicates:
+            - Path=/memory/v3/api-docs
+          filters:
+            - RewritePath=/memory/v3/api-docs,/v3/api-docs
+        - id: checkin-api-docs
+          uri: lb://daily-checkin-service
+          predicates:
+            - Path=/checkin/v3/api-docs
+          filters:
+            - RewritePath=/checkin/v3/api-docs,/v3/api-docs
+        - id: patient-api-docs
+          uri: lb://patient-service
+          predicates:
+            - Path=/patient/v3/api-docs
+          filters:
+            - RewritePath=/patient/v3/api-docs,/v3/api-docs
+
   # OAuth2 Resource Server Configuration
   security:
     oauth2:
@@ -204,16 +254,43 @@ eureka:
   instance:
     prefer-ip-address: true
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Gateway
+        url: /v3/api-docs
+      - name: Appointments
+        url: /appointments/v3/api-docs
+      - name: Medication
+        url: /medication/v3/api-docs
+      - name: Community
+        url: /community/v3/api-docs
+      - name: Notification
+        url: /notification/v3/api-docs
+      - name: Routine
+        url: /routine/v3/api-docs
+      - name: Memory
+        url: /memory/v3/api-docs
+      - name: Check-in
+        url: /checkin/v3/api-docs
+      - name: Patient
+        url: /patient/v3/api-docs
+    operationsSorter: method
+    tagsSorter: alpha
+
 # Actuator endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway,metrics
+        include: health,info,gateway,metrics,prometheus
   endpoint:
     health:
       show-details: always
     gateway:
+      enabled: true
+    prometheus:
       enabled: true
 
 # Logging
@@ -346,6 +423,56 @@ spring:
             - Path=/realms/**, /resources/**
           filters:
             - StripPrefix=0
+
+        # Swagger API Docs routes - Docker
+        - id: appointments-api-docs
+          uri: lb://appointments-service
+          predicates:
+            - Path=/appointments/v3/api-docs
+          filters:
+            - RewritePath=/appointments/v3/api-docs,/v3/api-docs
+        - id: medication-api-docs
+          uri: lb://medication-service
+          predicates:
+            - Path=/medication/v3/api-docs
+          filters:
+            - RewritePath=/medication/v3/api-docs,/v3/api-docs
+        - id: community-api-docs
+          uri: lb://community-service
+          predicates:
+            - Path=/community/v3/api-docs
+          filters:
+            - RewritePath=/community/v3/api-docs,/v3/api-docs
+        - id: notification-api-docs
+          uri: lb://notification-service
+          predicates:
+            - Path=/notification/v3/api-docs
+          filters:
+            - RewritePath=/notification/v3/api-docs,/v3/api-docs
+        - id: routine-api-docs
+          uri: lb://routine-service
+          predicates:
+            - Path=/routine/v3/api-docs
+          filters:
+            - RewritePath=/routine/v3/api-docs,/v3/api-docs
+        - id: memory-api-docs
+          uri: lb://memory-service
+          predicates:
+            - Path=/memory/v3/api-docs
+          filters:
+            - RewritePath=/memory/v3/api-docs,/v3/api-docs
+        - id: checkin-api-docs
+          uri: lb://daily-checkin-service
+          predicates:
+            - Path=/checkin/v3/api-docs
+          filters:
+            - RewritePath=/checkin/v3/api-docs,/v3/api-docs
+        - id: patient-api-docs
+          uri: lb://patient-service
+          predicates:
+            - Path=/patient/v3/api-docs
+          filters:
+            - RewritePath=/patient/v3/api-docs,/v3/api-docs
     loadbalancer:
       ribbon:
         enabled: false
@@ -466,6 +593,56 @@ spring:
             - Path=/realms/**, /resources/**
           filters:
             - StripPrefix=0
+
+        # Swagger API Docs routes - Local
+        - id: appointments-api-docs
+          uri: http://localhost:8085
+          predicates:
+            - Path=/appointments/v3/api-docs
+          filters:
+            - RewritePath=/appointments/v3/api-docs,/v3/api-docs
+        - id: medication-api-docs
+          uri: http://localhost:8083
+          predicates:
+            - Path=/medication/v3/api-docs
+          filters:
+            - RewritePath=/medication/v3/api-docs,/v3/api-docs
+        - id: community-api-docs
+          uri: http://localhost:8087
+          predicates:
+            - Path=/community/v3/api-docs
+          filters:
+            - RewritePath=/community/v3/api-docs,/v3/api-docs
+        - id: notification-api-docs
+          uri: http://localhost:8088
+          predicates:
+            - Path=/notification/v3/api-docs
+          filters:
+            - RewritePath=/notification/v3/api-docs,/v3/api-docs
+        - id: routine-api-docs
+          uri: http://localhost:8089
+          predicates:
+            - Path=/routine/v3/api-docs
+          filters:
+            - RewritePath=/routine/v3/api-docs,/v3/api-docs
+        - id: memory-api-docs
+          uri: http://localhost:8086
+          predicates:
+            - Path=/memory/v3/api-docs
+          filters:
+            - RewritePath=/memory/v3/api-docs,/v3/api-docs
+        - id: checkin-api-docs
+          uri: http://localhost:8084
+          predicates:
+            - Path=/checkin/v3/api-docs
+          filters:
+            - RewritePath=/checkin/v3/api-docs,/v3/api-docs
+        - id: patient-api-docs
+          uri: http://localhost:8082
+          predicates:
+            - Path=/patient/v3/api-docs
+          filters:
+            - RewritePath=/patient/v3/api-docs,/v3/api-docs
 
   security:
     oauth2:

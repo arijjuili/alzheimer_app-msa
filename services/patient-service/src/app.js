@@ -1,5 +1,6 @@
 const express = require('express');
 const helmet = require('helmet');
+const path = require('path');
 const patientRoutes = require('./routes/patients');
 const authRoutes = require('./routes/auth');
 
@@ -21,6 +22,14 @@ app.get('/health', (req, res) => {
     service: process.env.SERVICE_NAME || 'patient-service',
     timestamp: new Date().toISOString()
   });
+});
+
+// Swagger API Docs
+app.get('/v3/api-docs', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'swagger.json'));
+});
+app.get('/swagger-ui.html', (req, res) => {
+  res.redirect('https://petstore.swagger.io/?url=' + req.protocol + '://' + req.get('host') + '/v3/api-docs');
 });
 
 // API routes

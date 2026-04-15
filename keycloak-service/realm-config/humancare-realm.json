@@ -3,6 +3,7 @@
   "realm": "humancare",
   "displayName": "HumanCare Platform",
   "displayNameHtml": "<div class='kc-logo-text'><span>HumanCare</span></div>",
+  "loginTheme": "humancare",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,

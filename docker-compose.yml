@@ -250,10 +250,12 @@ services:
       KC_HEALTH_ENABLED: "true"
       KC_METRICS_ENABLED: "true"
       KC_FEATURES: token-exchange,admin-fine-grained-authz
+      KC_SPI_THEME_DEFAULT_LOGIN: humancare
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
       - ./keycloak-service/realm-config:/opt/keycloak/data/import:ro
+      - ./keycloak-service/themes/humancare:/opt/keycloak/themes/humancare:ro
     ports:
       - "8090:8080"
     depends_on:
@@ -516,6 +518,7 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: humancare
       SPRING_RABBITMQ_PASSWORD: humancare123
+      SPRING_AMQP_DESERIALIZATION_TRUST_ALL: "true"
       JAVA_OPTS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0
@@ -822,6 +825,50 @@ services:
           cpus: '0.25'
           memory: 256M
 
+  # ---------------------------------------------------------------------------
+  # Prometheus - Metrics Collection
+  # ---------------------------------------------------------------------------
+  hc-prometheus:
+    container_name: hc-prometheus
+    image: prom/prometheus:v2.50.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - hc_prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Grafana - Metrics Visualization
+  # ---------------------------------------------------------------------------
+  hc-grafana:
+    container_name: hc-grafana
+    image: grafana/grafana:10.3.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - hc_grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - hc-prometheus
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
 # -----------------------------------------------------------------------------
 # Named Volumes (prefixed with hc_)
 # -----------------------------------------------------------------------------
@@ -848,5 +895,9 @@ volumes:
   hc_checkin_data:
     driver: local
   hc_memory_data:
+    driver: local
+  hc_prometheus_data:
+    driver: local
+  hc_grafana_data:
     driver: local
 

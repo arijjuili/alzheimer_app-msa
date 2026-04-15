@@ -1,0 +1,61 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-api-gateway:8080']
+
+  - job_name: 'eureka-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-eureka-server:8761']
+
+  - job_name: 'config-server'
+    metrics_path: '/actuator/prometheus'
+    basic_auth:
+      username: config
+      password: config123
+    static_configs:
+      - targets: ['hc-config-server:8888']
+
+  - job_name: 'appointments-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-appointments-service:8085']
+
+  - job_name: 'medication-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-medication-service:8083']
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-notification-service:8088']
+
+  - job_name: 'community-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-community-service:8087']
+
+  - job_name: 'routine-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-routine-service:8089']
+
+  - job_name: 'daily-checkin-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-daily-checkin-service:8084']
+
+  - job_name: 'memory-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['hc-memory-service:8086']

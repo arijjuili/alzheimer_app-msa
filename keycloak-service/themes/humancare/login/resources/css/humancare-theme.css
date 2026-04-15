@@ -1,0 +1,140 @@
+/* HumanCare Custom Keycloak Theme */
+
+.login-pf body {
+    background: #f0fdf4 !important;
+    background-image: none !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#kc-header {
+    display: none;
+}
+
+.login-pf-page {
+    padding-top: 40px;
+}
+
+.card-pf {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.15);
+    background: #ffffff;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 40px;
+}
+
+#kc-page-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 8px;
+}
+
+.login-pf-header::before {
+    content: "🏥";
+    display: block;
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.login-pf-header::after {
+    content: "HumanCare Platform";
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    color: #10b981;
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+}
+
+.form-group label {
+    color: #374151;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 1.5px solid #d1d5db;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    outline: none;
+}
+
+#kc-login, .pf-c-button.pf-m-primary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 14px 24px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    transition: transform 0.15s, box-shadow 0.15s !important;
+}
+
+#kc-login:hover, .pf-c-button.pf-m-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45) !important;
+}
+
+.pf-c-form__helper-text {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+#kc-info {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#kc-info-wrapper {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+#kc-info-wrapper a {
+    color: #059669;
+    font-weight: 500;
+}
+
+#kc-form-options .checkbox label {
+    color: #4b5563;
+    font-size: 13px;
+}
+
+.pf-c-alert {
+    border-radius: 10px;
+}
+
+#kc-registration {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+#kc-registration span {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+#kc-registration a {
+    color: #059669;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pf-c-input-group__text {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}

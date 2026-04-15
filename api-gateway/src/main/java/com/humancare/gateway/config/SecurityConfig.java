@@ -51,7 +51,19 @@ public class SecurityConfig {
         "/",
         "/favicon.ico",
         "/auth/**",
-        "/.well-known/**"  // Chrome DevTools and other well-known endpoints
+        "/.well-known/**",
+        "/swagger-ui.html",
+        "/swagger-ui/**",
+        "/v3/api-docs/**",
+        "/webjars/swagger-ui/**",
+        "/appointments/v3/api-docs",
+        "/medication/v3/api-docs",
+        "/community/v3/api-docs",
+        "/notification/v3/api-docs",
+        "/routine/v3/api-docs",
+        "/memory/v3/api-docs",
+        "/checkin/v3/api-docs",
+        "/patient/v3/api-docs"
     };
 
     @Bean
