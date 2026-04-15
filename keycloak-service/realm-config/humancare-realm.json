@@ -92,19 +92,21 @@
       "clientId": "humancare-webapp",
       "name": "humancare Web Application",
       "description": "Angular web app for patients and caregivers",
-      "rootUrl": "http://localhost:4200",
-      "adminUrl": "http://localhost:4200",
-      "baseUrl": "http://localhost:4200",
+      "rootUrl": "http://localhost",
+      "adminUrl": "http://localhost",
+      "baseUrl": "http://localhost",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "webapp-secret-change-in-production",
       "redirectUris": [
+        "http://localhost/*",
         "http://localhost:4200/*",
         "http://127.0.0.1:4200/*"
       ],
       "webOrigins": [
+        "http://localhost",
         "http://localhost:4200",
         "http://127.0.0.1:4200"
       ],
@@ -119,7 +121,7 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:4200/*##http://127.0.0.1:4200/*"
+        "post.logout.redirect.uris": "http://localhost/*##http://localhost:4200/*##http://127.0.0.1:4200/*"
       },
       "fullScopeAllowed": true,
       "protocolMappers": [
