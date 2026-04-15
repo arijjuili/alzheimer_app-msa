@@ -29,14 +29,14 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8090/realms/humancare
-          jwk-set-uri: http://localhost:8090/realms/humancare/protocol/openid-connect/certs
+          issuer-uri: http://134.122.73.7:8090/realms/humancare
+          jwk-set-uri: http://134.122.73.7:8090/realms/humancare/protocol/openid-connect/certs
 
 # Eureka Client Configuration
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://134.122.73.7:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:

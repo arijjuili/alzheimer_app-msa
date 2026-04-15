@@ -92,22 +92,22 @@
       "clientId": "humancare-webapp",
       "name": "humancare Web Application",
       "description": "Angular web app for patients and caregivers",
-      "rootUrl": "http://localhost",
-      "adminUrl": "http://localhost",
-      "baseUrl": "http://localhost",
+      "rootUrl": "http://134.122.73.7",
+      "adminUrl": "http://134.122.73.7",
+      "baseUrl": "http://134.122.73.7",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "webapp-secret-change-in-production",
       "redirectUris": [
-        "http://localhost/*",
-        "http://localhost:4200/*",
+        "http://134.122.73.7/*",
+        "http://134.122.73.7:4200/*",
         "http://127.0.0.1:4200/*"
       ],
       "webOrigins": [
-        "http://localhost",
-        "http://localhost:4200",
+        "http://134.122.73.7",
+        "http://134.122.73.7:4200",
         "http://127.0.0.1:4200"
       ],
       "notBefore": 0,
@@ -121,7 +121,7 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost/*##http://localhost:4200/*##http://127.0.0.1:4200/*"
+        "post.logout.redirect.uris": "http://134.122.73.7/*##http://134.122.73.7:4200/*##http://127.0.0.1:4200/*"
       },
       "fullScopeAllowed": true,
       "protocolMappers": [
@@ -173,20 +173,20 @@
       "clientId": "humancare-admin",
       "name": "humancare Admin Dashboard",
       "description": "Angular admin dashboard for system administrators",
-      "rootUrl": "http://localhost:4201",
-      "adminUrl": "http://localhost:4201",
-      "baseUrl": "http://localhost:4201",
+      "rootUrl": "http://134.122.73.7:4201",
+      "adminUrl": "http://134.122.73.7:4201",
+      "baseUrl": "http://134.122.73.7:4201",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "admin-secret-change-in-production",
       "redirectUris": [
-        "http://localhost:4201/*",
+        "http://134.122.73.7:4201/*",
         "http://127.0.0.1:4201/*"
       ],
       "webOrigins": [
-        "http://localhost:4201",
+        "http://134.122.73.7:4201",
         "http://127.0.0.1:4201"
       ],
       "notBefore": 0,
@@ -200,7 +200,7 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:4201/logout##http://127.0.0.1:4201/logout"
+        "post.logout.redirect.uris": "http://134.122.73.7:4201/logout##http://127.0.0.1:4201/logout"
       },
       "fullScopeAllowed": true,
       "protocolMappers": [
@@ -307,7 +307,7 @@
     "xContentTypeOptions": "nosniff",
     "xRobotsTag": "none",
     "xFrameOptions": "",
-    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost; object-src 'none'; ",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://134.122.73.7; object-src 'none'; ",
     "xXSSProtection": "1; mode=block",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },

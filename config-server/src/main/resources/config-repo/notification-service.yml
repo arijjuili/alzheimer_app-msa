@@ -9,19 +9,19 @@ spring:
     name: notification-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/notifications_db
+      uri: mongodb://134.122.73.7:27017/notifications_db
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8090/realms/humancare
-          jwk-set-uri: http://localhost:8090/realms/humancare/protocol/openid-connect/certs
+          issuer-uri: http://134.122.73.7:8090/realms/humancare
+          jwk-set-uri: http://134.122.73.7:8090/realms/humancare/protocol/openid-connect/certs
 
 # Eureka Client Configuration
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://134.122.73.7:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -81,7 +81,7 @@ spring:
       on-profile: dev
   data:
     mongodb:
-      uri: mongodb://localhost:27017/notifications_db
+      uri: mongodb://134.122.73.7:27017/notifications_db
 
 logging:
   level:
