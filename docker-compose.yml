@@ -869,6 +869,32 @@ services:
           cpus: '0.5'
           memory: 512M
 
+  # ---------------------------------------------------------------------------
+  # Frontend - Angular + static server
+  # ---------------------------------------------------------------------------
+  hc-frontend:
+    container_name: hc-frontend
+    build:
+      context: ./frontend/humancare-ui
+      dockerfile: Dockerfile
+    image: humancare/frontend:latest
+    ports:
+      - "80:8080"
+    environment:
+      PORT: 8080
+    depends_on:
+      hc-api-gateway:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
 # -----------------------------------------------------------------------------
 # Named Volumes (prefixed with hc_)
 # -----------------------------------------------------------------------------
