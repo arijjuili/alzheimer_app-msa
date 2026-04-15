@@ -1,4 +1,4 @@
-﻿# Multi-stage Dockerfile for Angular frontend
+# Multi-stage Dockerfile for Angular frontend
 # Build stage
 FROM node:20-alpine AS build
 WORKDIR /app
@@ -9,16 +9,12 @@ RUN npm install
 COPY . .
 RUN npm run build -- --configuration production
 
-# Runtime stage (Railway-friendly: binds to $PORT)
-FROM node:20-alpine AS runtime
-WORKDIR /app
+# Runtime stage
+FROM nginx:alpine
 
-ENV NODE_ENV=production
-ENV PORT=8080
-
-RUN npm install -g serve@14.2.4
-
-COPY --from=build /app/dist/humancare-ui/browser ./dist
+COPY --from=build /app/dist/humancare-ui/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080
-CMD ["sh", "-c", "serve -s dist -l ${PORT}"]
+
+CMD ["nginx", "-g", "daemon off;"]
