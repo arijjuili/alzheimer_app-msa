@@ -28,7 +28,6 @@ export class KeycloakService {
       const authenticated = await this.keycloakInstance.init({
         onLoad: 'check-sso',
         checkLoginIframe: false,
-        pkceMethod: false,
         silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
       });
 
@@ -49,7 +48,7 @@ export class KeycloakService {
     const keycloakBaseUrl = `${environment.keycloak.url}/realms/${environment.keycloak.realm}`;
     const redirectTo = redirectUri || (window.location.origin + '/login?relogin=true');
     const logoutUrl = `${keycloakBaseUrl}/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(redirectTo)}`;
-    
+
     window.location.href = logoutUrl;
   }
 
@@ -57,17 +56,17 @@ export class KeycloakService {
     if (this.keycloakInstance) {
       // Default redirect to /app/dashboard after login
       const defaultRedirect = window.location.origin + '/app/dashboard';
-      
+
       // If already authenticated as a different user, force logout first
       if (this.keycloakInstance.authenticated) {
         const currentUser = this.getUserInfo();
         const currentEmail = currentUser?.email || 'unknown';
         console.log(`Already authenticated as ${currentEmail}, forcing logout first...`);
-        
+
         await this.forceLogoutBeforeLogin(redirectUri);
         return;
       }
-      
+
       await this.keycloakInstance.login({
         redirectUri: redirectUri || defaultRedirect,
         prompt: 'login',  // Force re-authentication even if SSO session exists
@@ -80,11 +79,11 @@ export class KeycloakService {
     // Default redirect to /logout route which shows "Logging out..." then goes to landing page
     // The /logout path is registered in Keycloak's post.logout.redirect.uris
     const redirect = redirectUri || (window.location.origin + '/logout');
-    
+
     if (this.keycloakInstance) {
       // Clear local tokens first to ensure clean state
       this.keycloakInstance.clearToken();
-      
+
       // Use Keycloak's built-in logout with redirect
       // This properly terminates the server-side session
       await this.keycloakInstance.logout({
@@ -114,13 +113,13 @@ export class KeycloakService {
           const expTime = parsed.exp * 1000;
           const now = Date.now();
           const timeUntilExpiry = expTime - now;
-          
+
           // If token still valid with more than 30 seconds, just return current token
           if (timeUntilExpiry > 30000) {
             return this.keycloakInstance.token;
           }
         }
-        
+
         await this.keycloakInstance.updateToken(30);
         return this.keycloakInstance.token;
       } catch (error) {
@@ -162,22 +161,22 @@ export class KeycloakService {
 
     // Get roles from all possible locations in the token
     const allRoles: string[] = [];
-    
+
     // 1. Root level roles (as seen in your token)
     if (tokenParsed.roles && Array.isArray(tokenParsed.roles)) {
       allRoles.push(...tokenParsed.roles);
     }
-    
+
     // 2. Realm access roles
     if (tokenParsed.realm_access?.roles) {
       allRoles.push(...tokenParsed.realm_access.roles);
     }
-    
+
     // 3. Client-specific roles
     if (tokenParsed.resource_access?.[environment.keycloak.clientId]?.roles) {
       allRoles.push(...tokenParsed.resource_access[environment.keycloak.clientId].roles);
     }
-    
+
     // Normalize roles to uppercase and remove duplicates
     return [...new Set(allRoles.map(r => r.toUpperCase()))];
   }
